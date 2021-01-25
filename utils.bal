@@ -50,7 +50,6 @@ isolated function jsonToFirewallRulePropertyArray(json payloadResponse) returns 
     FirewallRuleProperty firewallRuleProperty = {};
     firewallRuleProperty.startIP = payloadResponse.startIP != () ? payloadResponse.startIP.toString() : EMPTY_STRING;
     firewallRuleProperty.endIP = payloadResponse.endIP != () ? payloadResponse.endIP.toString() : EMPTY_STRING;
-
     return firewallRuleProperty;
 }
 

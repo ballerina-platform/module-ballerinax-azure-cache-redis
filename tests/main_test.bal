@@ -848,22 +848,23 @@ function testRegenerateRedisEnterpriseCacheDatabaseKey() {
 }
 
 # Update Redis Enterprise Database Test function(This function not available at the moment of development)
-// @test:Config {
-//     dependsOn: ["testCreateRedisEnterprise","testCreateRedisEnterpriseCacheDatabase"]
-// }
-// function testUpdateRedisEnterpriseCacheDatabase() {
-//     var response = azureRedisClient->updateRedisEnterpriseCacheDatabase("TestRedisEnterpriseCache", "TestRedisConnector", "default", "Encrypted", "AllKeysLRU", "RediSearch");
-//     if (response is StatusCode) {
-//         StatusCode statusCode = <@untainted>response;
-//         boolean getSuccess = false;
-//         if(statusCode?.code == "200" || statusCode?.code == "202"){
-//             getSuccess = true;
-//         }
-//         test:assertEquals(getSuccess, true, msg = "Error in regenerating Redis Enterprise Cache Key"); 
-//     } else {
-//         test:assertFail(response.message());
-//     }
-// }
+@test:Config {
+    dependsOn: ["testCreateRedisEnterprise","testCreateRedisEnterpriseCacheDatabase"], enable: false
+}
+function testUpdateRedisEnterpriseCacheDatabase() {
+    var response = azureRedisClient->updateRedisEnterpriseCacheDatabase("TestRedisEnterpriseCache", "TestRedisConnector", "default", "Encrypted", "AllKeysLRU", "RediSearch");
+    if (response is StatusCode) {
+        StatusCode statusCode = <@untainted>response;
+        boolean getSuccess = false;
+        if(statusCode?.code == "200" || statusCode?.code == "202"){
+            getSuccess = true;
+        }
+        test:assertEquals(getSuccess, true, msg = "Error in regenerating Redis Enterprise Cache Key"); 
+    } else {
+        test:assertFail(response.message());
+    }
+}
+
 @test:Config {dependsOn: ["testCreateRedisEnterprise", "testCreateRedisEnterpriseCacheDatabase"]}
 function testDeleteRedisEnterpriseCacheDatabase() {
     var response = azureRedisClient->deleteRedisEnterpriseCacheDatabase("TestRedisEnterpriseCache", "TestRedisConnector", 
@@ -940,22 +941,23 @@ function testListRedisEnterpriseByResourceGroup() {
 }
 
 # Update Redis Enterprise Test function(This function not available at the moment of development)
-// @test:Config {
-//     dependsOn: ["testCreateRedisEnterprise"]
-// }
-// function testUpdateRedisEnterprise() {
-//     var response = azureRedisClient->updateRedisEnterprise("TestRedisEnterpriseCache", "TestRedisConnector");
-//     if (response is StatusCode) {
-//         StatusCode statusCode = <@untainted>response;
-//         boolean getSuccess = false;
-//         if(statusCode?.code == "200"){
-//             getSuccess = true;
-//         }
-//         test:assertEquals(getSuccess, true, msg = "Error in updating RedisEnterpriseCache"); 
-//     } else {
-//         test:assertFail(response.message());
-//     }
-// }
+@test:Config {
+    dependsOn: ["testCreateRedisEnterprise"], enable: false
+}
+function testUpdateRedisEnterprise() {
+    var response = azureRedisClient->updateRedisEnterprise("TestRedisEnterpriseCache", "TestRedisConnector");
+    if (response is StatusCode) {
+        StatusCode statusCode = <@untainted>response;
+        boolean getSuccess = false;
+        if(statusCode?.code == "200"){
+            getSuccess = true;
+        }
+        test:assertEquals(getSuccess, true, msg = "Error in updating RedisEnterpriseCache"); 
+    } else {
+        test:assertFail(response.message());
+    }
+}
+
 @test:Config {dependsOn: ["testCreateRedisEnterprise"]}
 function testDeleteRedisEnterprise() {
     var response = azureRedisClient->deleteRedisEnterprise("TestRedisEnterpriseCache", "TestRedisConnector");
