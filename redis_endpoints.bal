@@ -91,7 +91,7 @@ public client class Client {
     # + return - If successful, returns RedisCacheInstance. Else returns error. 
     remote function createRedisCache(string redisCacheName, string resourceGroupName, string location, 
                                      CreateCacheProperty properties, string[]? zones = ()) returns @tainted 
-    RedisCacheInstance|error {
+                                     RedisCacheInstance|error {
 
         if (location == EMPTY_STRING || properties.sku.name == EMPTY_STRING || properties.sku.family == EMPTY_STRING || 
         properties.sku.capacity.toString() == EMPTY_STRING) {
