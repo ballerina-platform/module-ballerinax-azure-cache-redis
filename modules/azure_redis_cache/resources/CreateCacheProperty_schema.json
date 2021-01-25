@@ -1,1 +1,0 @@
-{"ballerinax/azure_redis_cache:0.1.0:CreateCacheProperty":{"sku":"ballerinax/azure_redis_cache:0.1.0:SKU","enableNonSslPort":"boolean","shardCount":"int","replicasPerMaster":"int","redisConfiguration":"json","subnetId":"string","staticIP":"string","minimumTlsVersion":"ballerinax/azure_redis_cache:0.1.0:TlsVersion"}}
