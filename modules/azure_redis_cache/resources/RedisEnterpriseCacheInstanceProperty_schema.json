@@ -1,0 +1,1 @@
+{"ballerinax/azure_redis_cache:0.1.0:RedisEnterpriseCacheInstanceProperty":{"provisioningState":"string","resourceState":"string","publicNetworkAccess":"string","privateEndpointConnections":"ballerinax/azure_redis_cache:0.1.0:PrivateEndpointConnection[]","hostName":"string","redisVersion":"string","minimumTlsVersion":"string"}}

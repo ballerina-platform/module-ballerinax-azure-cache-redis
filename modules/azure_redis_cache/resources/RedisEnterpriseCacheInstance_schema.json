@@ -1,0 +1,1 @@
+{"ballerinax/azure_redis_cache:0.1.0:RedisEnterpriseCacheInstance":{"name":"string","type":"string","id":"string","location":"string","sku":"ballerinax/azure_redis_cache:0.1.0:EnterpriseSKU","zones":"string[]","tags":"json","properties":"ballerinax/azure_redis_cache:0.1.0:RedisEnterpriseCacheInstanceProperty"}}
