@@ -6,198 +6,198 @@ public type Auth record {
 };
 
 public type BaseUrlProperty record {|
-   string redisCacheName = "";
-   string resourceGroupName = "";
+    string redisCacheName = "";
+    string resourceGroupName = "";
 |};
- 
+
 public type PatchScheduleProperty record {|
-   ScheduleEntry[] scheduleEntries?;
+    ScheduleEntry[] scheduleEntries?;
 |};
- 
+
 public type CreateCacheProperty record {|
-   SKU sku;
-   boolean enableNonSslPort?;
-   int shardCount?;
-   int replicasPerMaster?;
-   json redisConfiguration?;
-   string subnetId?;
-   string staticIP?;
-   TlsVersion minimumTlsVersion?;
+    SKU sku;
+    boolean enableNonSslPort?;
+    int shardCount?;
+    int replicasPerMaster?;
+    json redisConfiguration?;
+    string subnetId?;
+    string staticIP?;
+    TlsVersion minimumTlsVersion?;
 |};
- 
+
 public type SKU record {|
-   string name = "";
-   string family = "";
-   int capacity = 0;
+    string name = "";
+    string family = "";
+    int capacity = 0;
 |};
- 
+
 public type FirewallRule record {|
-   FirewallRuleProperty firewallProperties;
+    FirewallRuleProperty firewallProperties;
 |};
- 
+
 public type FirewallRuleResponse record {|
-   string id?;
-   string name?;
-   string 'type?;
-   FirewallRuleProperty properties?;
+    string id?;
+    string name?;
+    string 'type?;
+    FirewallRuleProperty properties?;
 |};
- 
+
 public type FirewallRuleProperty record {|
-   string startIP = "";
-   string endIP = "";
+    string startIP = "";
+    string endIP = "";
 |};
 
 public type FirewallRuleListResponse record {|
-   FirewallRuleResponse[] value?;
+    FirewallRuleResponse[] value?;
 |};
 
 public type RedisConfingPolicy record {|
-   string maxmemory_policy?;
+    string maxmemory_policy?;
 |};
- 
+
 public type TlsVersion record {|
-   string minimumTlsVersion;
+    string minimumTlsVersion;
 |};
- 
+
 public type StatusCode record {|
-   string code?;
-   string message?;
+    string code?;
+    string message?;
 |};
- 
+
 public type AzureRedisError distinct error;
- 
+
 public type RedisCacheInstance record {|
-   string id?;
-   string location;
-   string name?;
-   string 'type?;
-   json tags?;
-   RedisCacheInstanceProperty properties;
+    string id?;
+    string location;
+    string name?;
+    string 'type?;
+    json tags?;
+    RedisCacheInstanceProperty properties;
 |};
- 
+
 public type RedisCacheInstanceProperty record {|
-   string provisioningState;
-   string redisVersion?;
-   SKU sku;
-   boolean enableNonSslPort?;
-   Instance[] instances?;
-   string publicNetworkAccess?;
-   PrivateEndpointConnection[] privateEndpointConnections?;
-   json redisConfiguration?;
-   json accessKeys?;
-   string hostName?;
-   int port?;
-   int sslPort?;
-   LinkedServer[] linkedServers?;
+    string provisioningState;
+    string redisVersion?;
+    SKU sku;
+    boolean enableNonSslPort?;
+    Instance[] instances?;
+    string publicNetworkAccess?;
+    PrivateEndpointConnection[] privateEndpointConnections?;
+    json redisConfiguration?;
+    json accessKeys?;
+    string hostName?;
+    int port?;
+    int sslPort?;
+    LinkedServer[] linkedServers?;
 |};
- 
-public type Instance record{|
-   int sslPort?;
-   int nonSslPort?;
-   boolean isMaster?;
+
+public type Instance record {|
+    int sslPort?;
+    int nonSslPort?;
+    boolean isMaster?;
 |};
- 
-public type PrivateEndpointConnection record{|
-   string id?;
-   PrivateEndpointConnectionProperty properties?;
+
+public type PrivateEndpointConnection record {|
+    string id?;
+    PrivateEndpointConnectionProperty properties?;
 |};
- 
-public type PrivateEndpointConnectionProperty record{|
-   PrivateEndpoint privateEndpoint?;
-   PrivateLinkServiceConnectionState privateLinkServiceConnectionState?;
+
+public type PrivateEndpointConnectionProperty record {|
+    PrivateEndpoint privateEndpoint?;
+    PrivateLinkServiceConnectionState privateLinkServiceConnectionState?;
 |};
- 
-public type PrivateEndpoint record{|
-   string id?;
+
+public type PrivateEndpoint record {|
+    string id?;
 |};
- 
-public type PrivateLinkServiceConnectionState record{|
-   string status?;
-   string description?;
-   string actionRequired?;
+
+public type PrivateLinkServiceConnectionState record {|
+    string status?;
+    string description?;
+    string actionRequired?;
 |};
 
 public type RedisEnterpriseCacheInstance record {|
-   string name?;
-   string 'type?;
-   string id?;
-   string location?;
-   EnterpriseSKU sku?;
-   string[] zones?;
-   json tags?;
-   RedisEnterpriseCacheInstanceProperty properties?;
+    string name?;
+    string 'type?;
+    string id?;
+    string location?;
+    EnterpriseSKU sku?;
+    string[] zones?;
+    json tags?;
+    RedisEnterpriseCacheInstanceProperty properties?;
 |};
 
 public type EnterpriseSKU record {|
-   string name?;
-   int capacity?;
+    string name?;
+    int capacity?;
 |};
 
 public type RedisEnterpriseCacheInstanceProperty record {|
-   string provisioningState;
-   string resourceState?;
-   string publicNetworkAccess?;
-   PrivateEndpointConnection[] privateEndpointConnections?;
-   string hostName?;
-   string redisVersion?;
-   string minimumTlsVersion?;
+    string provisioningState;
+    string resourceState?;
+    string publicNetworkAccess?;
+    PrivateEndpointConnection[] privateEndpointConnections?;
+    string hostName?;
+    string redisVersion?;
+    string minimumTlsVersion?;
 |};
- 
+
 public type LinkedServer record {|
-   string id;
-   string name;
-   string 'type;
-   LinkedServerProperty properties;
+    string id;
+    string name;
+    string 'type;
+    LinkedServerProperty properties;
 |};
- 
+
 public type LinkedServerProperty record {|
-   string linkedRedisCacheId;
-   string linkedRedisCacheLocation;
-   string provisioningState;
-   string serverRole;
+    string linkedRedisCacheId;
+    string linkedRedisCacheLocation;
+    string provisioningState;
+    string serverRole;
 |};
- 
+
 public type PatchShedule record {|
-   string id;
-   string location;
-   string name;
-   string 'type;
-   PatchSheduleProperty properties;
+    string id;
+    string location;
+    string name;
+    string 'type;
+    PatchSheduleProperty properties;
 |};
 
 public type ScheduleEntry record {|
-   string dayOfWeek?;
-   int startHourUtc?;
-   string maintenanceWindow?;
+    string dayOfWeek?;
+    int startHourUtc?;
+    string maintenanceWindow?;
 |};
- 
+
 public type PatchSheduleProperty record {|
-   ScheduleEntry[] scheduleEntries;
+    ScheduleEntry[] scheduleEntries;
 |};
 
 public type PatchSheduleList record {|
-   PatchShedule[] value?;
+    PatchShedule[] value?;
 |};
- 
+
 public type RedisEnterpriseDatabase record {|
-   string id;
-   string name;
-   string 'type;
-   RedisEnterpriseDatabaseProperty properties;
+    string id;
+    string name;
+    string 'type;
+    RedisEnterpriseDatabaseProperty properties;
 |};
 
 public type RedisEnterpriseDatabaseProperty record {|
-   string provisioningState;
-   string resourceState;
-   string clientProtocol;
-   string clusteringPolicy;
-   string evictionPolicy;
-   int port;
-   RedisEnterpriseDatabasePropertyModule[] modules;
+    string provisioningState;
+    string resourceState;
+    string clientProtocol;
+    string clusteringPolicy;
+    string evictionPolicy;
+    int port;
+    RedisEnterpriseDatabasePropertyModule[] modules;
 |};
 
 public type RedisEnterpriseDatabasePropertyModule record {|
-   string name;
-   string args;
-   string 'version;
+    string name;
+    string args;
+    string 'version;
 |};
