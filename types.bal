@@ -69,7 +69,6 @@ public type AzureRedisError distinct error;
 public type RedisCacheInstance record {|
    string id?;
    string location;
-   // string[] zones?;
    string name?;
    string 'type?;
    json tags?;

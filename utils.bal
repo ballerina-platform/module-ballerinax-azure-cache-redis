@@ -26,23 +26,6 @@ isolated function jsonToFirewallRule(json payloadResponse) returns FirewallRuleR
     return firewallRuleResponse;
 }
 
-// isolated function jsonToRedisCacheInstance(json payloadResponse) returns RedisCacheInstance {
-//     RedisCacheInstance RedisCacheInstance = {location:""};
-//     RedisCacheInstance.id = payloadResponse.id != ()? payloadResponse.id.toString() : EMPTY_STRING;
-//     RedisCacheInstance.location = payloadResponse.location != ()? payloadResponse.location.toString() : EMPTY_STRING;
-//     // RedisCacheInstance.zones = jsonArrayToStringArray(<json[]>payloadResponse.zones);
-//     RedisCacheInstance.name = payloadResponse.name != ()? payloadResponse.name.toString() : EMPTY_STRING;
-//     RedisCacheInstance.'type = payloadResponse.'type != ()? payloadResponse.'type.toString() : EMPTY_STRING;
-//     RedisCacheInstance.tags = payloadResponse.tags != ()? payloadResponse.tags.toString() : EMPTY_STRING;
-
-//     if(payloadResponse.properties is error) {
-//         return RedisCacheInstance;
-//     } else {
-//         RedisCacheInstance.properties = jsonToRedisInstancePropertyArray(<json[]>payloadResponse.properties);
-//     }
-//     return RedisCacheInstance;
-// }
-
 isolated function createError(string message, error? err = ()) returns error { 
     error redisError;
     if(err is error){
@@ -62,20 +45,6 @@ isolated function jsonArrayToStringArray(json[] jsonArray) returns string[]{
     }
     return stringArray;
 }
-
-// isolated function jsonToRedisInstancePropertyArray(json payloadResponse) returns RedisCacheInstanceProperty{
-//     RedisCacheInstanceProperty redisCacheInstanceProperty = {sku : { name: "", family: "", capacity: 0 }};
-//     redisCacheInstanceProperty.provisioningState = payloadResponse.provisioningState != () ? payloadResponse.provisioningState.toString(): EMPTY_STRING;
-//     redisCacheInstanceProperty.redisVersion = payloadResponse.redisVersion.toString();
-//     redisCacheInstanceProperty.sku = convertToSKU(payloadResponse.sku);
-//     redisCacheInstanceProperty.enableNonSslPort = convertToBoolean(payloadResponse.enableNonSslPort);
-//     // redisCacheInstanceProperty.replicasPerMaster = convertToInt(payloadResponse.replicasPerMaster);
-//     redisCacheInstanceProperty.hostName = payloadResponse.hostName.toString();
-//     redisCacheInstanceProperty.port = convertToInt(payloadResponse.port);
-//     redisCacheInstanceProperty.sslPort = convertToInt(payloadResponse.sslPort);
-
-//     return redisCacheInstanceProperty;
-// }
 
 isolated function jsonToFirewallRulePropertyArray(json payloadResponse) returns FirewallRuleProperty{
     FirewallRuleProperty firewallRuleProperty = {};
