@@ -30,3 +30,6 @@ hs_err_pid*
 
 #resource folder in tests folder
 /tests/resources
+
+#resource folder contain build file
+/modules/azure_redis_cache/*.json
