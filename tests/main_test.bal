@@ -312,7 +312,10 @@ function testUpdateRedisCache() {
                 "capacity": 1
             },
             "enableNonSslPort": false,
-            "instances": [{"sslPort": 15000, "isMaster": true}, {
+            "instances": [{
+                "sslPort": 15000,
+                "isMaster": true
+            }, {
                 "sslPort": 15001,
                 "isMaster": false
             }],
@@ -849,17 +852,19 @@ function testRegenerateRedisEnterpriseCacheDatabaseKey() {
 
 # Update Redis Enterprise Database Test function(This function not available at the moment of development)
 @test:Config {
-    dependsOn: ["testCreateRedisEnterprise","testCreateRedisEnterpriseCacheDatabase"], enable: false
+    dependsOn: ["testCreateRedisEnterprise", "testCreateRedisEnterpriseCacheDatabase"],
+    enable: false
 }
 function testUpdateRedisEnterpriseCacheDatabase() {
-    var response = azureRedisClient->updateRedisEnterpriseCacheDatabase("TestRedisEnterpriseCache", "TestRedisConnector", "default", "Encrypted", "AllKeysLRU", "RediSearch");
+    var response = azureRedisClient->updateRedisEnterpriseCacheDatabase("TestRedisEnterpriseCache", "TestRedisConnector", 
+    "default", "Encrypted", "AllKeysLRU", "RediSearch");
     if (response is StatusCode) {
         StatusCode statusCode = <@untainted>response;
         boolean getSuccess = false;
-        if(statusCode?.code == "200" || statusCode?.code == "202"){
+        if (statusCode?.code == "200" || statusCode?.code == "202") {
             getSuccess = true;
         }
-        test:assertEquals(getSuccess, true, msg = "Error in regenerating Redis Enterprise Cache Key"); 
+        test:assertEquals(getSuccess, true, msg = "Error in regenerating Redis Enterprise Cache Key");
     } else {
         test:assertFail(response.message());
     }
@@ -942,17 +947,18 @@ function testListRedisEnterpriseByResourceGroup() {
 
 # Update Redis Enterprise Test function(This function not available at the moment of development)
 @test:Config {
-    dependsOn: ["testCreateRedisEnterprise"], enable: false
+    dependsOn: ["testCreateRedisEnterprise"],
+    enable: false
 }
 function testUpdateRedisEnterprise() {
     var response = azureRedisClient->updateRedisEnterprise("TestRedisEnterpriseCache", "TestRedisConnector");
     if (response is StatusCode) {
         StatusCode statusCode = <@untainted>response;
         boolean getSuccess = false;
-        if(statusCode?.code == "200"){
+        if (statusCode?.code == "200") {
             getSuccess = true;
         }
-        test:assertEquals(getSuccess, true, msg = "Error in updating RedisEnterpriseCache"); 
+        test:assertEquals(getSuccess, true, msg = "Error in updating RedisEnterpriseCache");
     } else {
         test:assertFail(response.message());
     }
