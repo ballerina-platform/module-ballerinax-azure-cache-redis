@@ -32,4 +32,4 @@ hs_err_pid*
 /tests/resources
 
 #resource folder contain build file
-/modules/azure_redis_cache/*.json
+/modules/azure_redis_cache/resources/*.json
