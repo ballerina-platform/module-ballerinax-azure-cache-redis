@@ -87,8 +87,8 @@ public client class Client {
     #
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
-    # + location - location Parameter Description 
-    # + zones - zones Parameter Description 
+    # + location - location where redis cache instance created
+    # + zones - zones containing if clustering enabled
     # + properties - properties Parameter Description including Pricing tier(Basic, Standard, Premium)
     # + return - If successful, returns RedisCacheInstance. Else returns error. 
     remote function createRedisCache(string redisCacheName, string resourceGroupName, string location, 
@@ -389,7 +389,7 @@ public client class Client {
     # This Function Fetches list of Redis Cache Instance in a resource group
     #
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
-    # + return - If successful, returns RedisCacheInstance[]. Else returns error. 
+    # + return - If successful, returns RedisCacheInstanceList. Else returns error. 
     remote function listByResourceGroup(string resourceGroupName) returns @tainted RedisCacheInstanceList|error {
 
         if (resourceGroupName == EMPTY_STRING) {
@@ -428,7 +428,7 @@ public client class Client {
 
     # This Function Fetches list of Redis Cache Instance in a subscription
     #
-    # + return - If successful, returns RedisCacheInstance[]. Else returns error. 
+    # + return - If successful, returns RedisCacheInstanceList. Else returns error. 
     remote function listBySubscription() returns @tainted RedisCacheInstanceList|error {
 
         var path = "/providers/Microsoft.Cache/redis?api-version=" + API_VERSION;
@@ -464,7 +464,7 @@ public client class Client {
     #
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
-    # + return - Return Value Description
+    # + return - If successful, returns AccessKey. Else returns error.
     remote function listKeys(string redisCacheName, string resourceGroupName) returns @tainted AccessKey|error {
 
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
@@ -505,8 +505,8 @@ public client class Client {
     #
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
-    # + keyType - keyType Parameter Description 
-    # + return - Return Value Description
+    # + keyType - keyType (Primary or Secondary to be regenerated) 
+    # + return - If successful, returns AccessKey. Else returns error.
     remote function regenerateKey(string redisCacheName, string resourceGroupName, string keyType) returns @tainted 
     AccessKey|error {
 
@@ -550,7 +550,7 @@ public client class Client {
     #
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
-    # + properties - properties Parameter Description
+    # + properties - properties Parameter Description including Pricing tier(Basic, Standard, Premium)
     # + return - If successful, returns RedisCacheInstance. Else returns error. 
     remote function updateRedisCache(string redisCacheName, string resourceGroupName, CreateCacheProperty properties) returns @tainted 
     RedisCacheInstance|error {
@@ -698,7 +698,7 @@ public client class Client {
     #
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
-    # + ruleName - Name of Rule Name
+    # + ruleName - Name of FirewallRule Name
     # + return - If successful, returns FirewallRuleResponse. Else returns error. 
     remote function getFirewallRule(string redisCacheName, string resourceGroupName, string ruleName) returns @tainted 
     FirewallRuleResponse|error {
@@ -931,7 +931,7 @@ public client class Client {
     #
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
-    # + return - If successful, returns LinkedServer[]. Else returns error. 
+    # + return - If successful, returns LinkedServerList. Else returns error. 
     remote function listLinkedServers(string redisCacheName, string resourceGroupName) 
     returns @tainted LinkedServerList|error {
 
@@ -1108,7 +1108,7 @@ public client class Client {
     #
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found.
-    # + return - If successful, returns PatchSchedule[]. Else returns error. 
+    # + return - If successful, returns PatchSheduleList. Else returns error. 
     remote function listPatchSchedules(string redisCacheName, string resourceGroupName) returns @tainted 
     PatchSheduleList|error {
 
@@ -1242,7 +1242,7 @@ public client class Client {
     #
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found.
-    # + return - If successful, returns PrivateEndpointConnection[]. Else returns error.
+    # + return - If successful, returns PrivateEndpointConnectionList. Else returns error.
     remote function listPrivateEndpointConnection(string redisCacheName, string resourceGroupName) returns @tainted 
     StatusCode|error {
 
@@ -1742,7 +1742,7 @@ public client class Client {
     # + location - Location specifies Server Location. 
     # + skuName - provide information about Enterprise Allowed Names Only.
     # + skuCapacity - provide information about capacity.
-    # + return - If successful, returns EnterpriseClusterInstance. Else returns error. 
+    # + return - If successful, returns RedisEnterpriseCacheInstance. Else returns error. 
     remote function createRedisEnterpriseCache(string redisEnterpriseClusterName, string resourceGroupName, 
                                                string location, string skuName, int skuCapacity) returns @tainted 
     RedisEnterpriseCacheInstance|error {
@@ -1797,7 +1797,7 @@ public client class Client {
     #
     # + redisEnterpriseClusterName - Redis Enterprise ClusterName 
     # + resourceGroupName - Resource Group Name where Redis Enterprise found.
-    # + return - If successful, returns EnterpriseClusterInstance. Else returns error. 
+    # + return - If successful, returns RedisEnterpriseCacheInstance. Else returns error. 
     remote function getRedisEnterpriseCache(string redisEnterpriseClusterName, string resourceGroupName) returns @tainted 
     RedisEnterpriseCacheInstance|error {
 
@@ -1864,7 +1864,7 @@ public client class Client {
 
     # This Function Fetches a list of Redis Enterprise Cluster in a subscription
     # 
-    # + return - If successful, returns EnterpriseClusterInstance[]. Else returns error. 
+    # + return - If successful, returns RedisEnterpriseCacheInstanceList. Else returns error. 
     remote function listRedisEnterpriseCache() returns @tainted RedisEnterpriseCacheInstanceList|error {
 
         var path = "/providers/Microsoft.Cache/redisEnterprise?api-version=" + config:getAsString(
@@ -1896,7 +1896,7 @@ public client class Client {
     # This Function Fetches a Redis Enterprise Cluster in a subscription within a specific resource group
     # 
     # + resourceGroupName - Resource Group Name where Redis Enterprise found.
-    # + return - If successful, returns EnterpriseClusterInstance[]. Else returns error. 
+    # + return - If successful, returns RedisEnterpriseCacheInstanceList. Else returns error. 
     remote function listRedisEnterpriseCacheByResourceGroup(string resourceGroupName) returns @tainted 
     RedisEnterpriseCacheInstanceList|error {
 
@@ -1936,7 +1936,7 @@ public client class Client {
     #  
     # + redisEnterpriseClusterName - Redis Enterprise ClusterName 
     # + resourceGroupName - Resource Group Name where Redis Enterprise found.
-    # + return - If successful, returns EnterpriseClusterInstance. Else returns error. 
+    # + return - If successful, returns RedisEnterpriseCacheInstance. Else returns error. 
     remote function updateRedisEnterpriseCache(string redisEnterpriseClusterName, string resourceGroupName) returns @tainted 
     StatusCode|error {
 
