@@ -33,7 +33,7 @@ public type PatchScheduleProperty record {|
 
 public type CreateCacheProperty record {|
     SKU sku;
-    boolean enableNonSslPort?;
+    boolean enableNonSslPort;
     int shardCount?;
     int replicasPerMaster?;
     json redisConfiguration?;
@@ -65,7 +65,7 @@ public type FirewallRuleProperty record {|
 |};
 
 public type FirewallRuleListResponse record {|
-    FirewallRuleResponse[] value?;
+    FirewallRuleResponse[] value;
 |};
 
 public type RedisConfingPolicy record {|
@@ -77,18 +77,18 @@ public type TlsVersion record {|
 |};
 
 public type StatusCode record {|
-    string code?;
+    string code;
     string message?;
 |};
 
 public type AzureRedisError distinct error;
 
 public type RedisCacheInstance record {|
-    string id?;
+    string id;
     string location;
-    string name?;
-    string 'type?;
-    json tags?;
+    string name;
+    string 'type;
+    json tags;
     RedisCacheInstanceProperty properties;
 |};
 
@@ -102,10 +102,14 @@ public type RedisCacheInstanceProperty record {|
     PrivateEndpointConnection[] privateEndpointConnections?;
     json redisConfiguration?;
     json accessKeys?;
-    string hostName?;
+    string hostName;
     int port?;
     int sslPort?;
     LinkedServer[] linkedServers?;
+|};
+
+public type RedisCacheInstanceList record {|
+    RedisCacheInstance[] value;
 |};
 
 public type Instance record {|
@@ -135,14 +139,14 @@ public type PrivateLinkServiceConnectionState record {|
 |};
 
 public type RedisEnterpriseCacheInstance record {|
-    string name?;
-    string 'type?;
-    string id?;
-    string location?;
-    EnterpriseSKU sku?;
+    string name;
+    string 'type;
+    string id;
+    string location;
+    EnterpriseSKU sku;
     string[] zones?;
     json tags?;
-    RedisEnterpriseCacheInstanceProperty properties?;
+    RedisEnterpriseCacheInstanceProperty properties;
 |};
 
 public type EnterpriseSKU record {|
@@ -160,6 +164,10 @@ public type RedisEnterpriseCacheInstanceProperty record {|
     string minimumTlsVersion?;
 |};
 
+public type RedisEnterpriseCacheInstanceList record {|
+    RedisEnterpriseCacheInstance[] value;
+|};
+
 public type LinkedServer record {|
     string id;
     string name;
@@ -172,6 +180,10 @@ public type LinkedServerProperty record {|
     string linkedRedisCacheLocation;
     string provisioningState;
     string serverRole;
+|};
+
+public type LinkedServerList record {|
+    LinkedServer[] value;
 |};
 
 public type PatchShedule record {|
@@ -193,7 +205,7 @@ public type PatchSheduleProperty record {|
 |};
 
 public type PatchSheduleList record {|
-    PatchShedule[] value?;
+    PatchShedule[] value;
 |};
 
 public type RedisEnterpriseDatabase record {|
@@ -217,4 +229,15 @@ public type RedisEnterpriseDatabasePropertyModule record {|
     string name;
     string args;
     string 'version;
+|};
+
+public type ErrorDescription record {|
+    string code;
+    string message?;
+    string target?;
+|};
+
+public type AccessKey record {|
+    string primaryKey;
+    string secondaryKey;
 |};

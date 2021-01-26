@@ -65,16 +65,18 @@ public client class Client {
         var response = self.AzureRedisClient->post(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            string payload = response.getJsonPayload().toString();
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
-                io:println("Name Available");
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
+                io:println("Redis cache name is available to create");
                 return jsonToStatusCode(statusCode);
             } else {
-                io:println(
-                "DNS name for the cache instance not available or Temporary not available due to recently deleted");
-                return jsonToStatusCode(statusCode);
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -110,7 +112,7 @@ public client class Client {
                     "family": properties.sku.family,
                     "capacity": properties.sku.capacity
                 },
-                "enableNonSslPort": true
+                "enableNonSslPort": properties.enableNonSslPort
             }
         };
         request.setJsonPayload(createCacheJsonPayload);
@@ -118,33 +120,33 @@ public client class Client {
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
             string payloadtest = response.getJsonPayload().toString();
-            io:println(payloadtest);
             json|error payload = response.getJsonPayload();
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
-                io:println("Existing Azure Redis Cache Updated");
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
                 if (payload is json) {
+                    io:println("Existing Azure Redis Cache Updated");
                     RedisCacheInstance getRedisCacheResponse = check <@untainted>payload.cloneWithType(
                     RedisCacheInstance);
-                    io:println(getRedisCacheResponse.properties.provisioningState);
                     return getRedisCacheResponse;
                 } else {
                     return createError("Error in creating RedisCacheResponse");
                 }
-            } else if (statusCode == "201") {
-                io:println("New Azure Redis Cache Created");
+            } else if (statusCode == CREATED) {
                 if (payload is json) {
-                    io:println(payload.id);
+                    io:println("New Azure Redis Cache Created");
                     RedisCacheInstance getRedisCacheResponse = check <@untainted>payload.cloneWithType(
                     RedisCacheInstance);
-                    io:println(getRedisCacheResponse.properties.provisioningState);
                     return getRedisCacheResponse;
                 } else {
                     return createError("Error in creating RedisCacheResponse");
                 }
             } else {
-                return createError("Error in creating or Updating Azure Redis Cache");
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -169,19 +171,21 @@ public client class Client {
         var response = self.AzureRedisClient->delete(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS || statusCode == NO_CONTENT) {
                 io:println("Redis cache was successfully deleted");
                 return jsonToStatusCode(statusCode);
-            } else if (statusCode == "202") {
+            } else if (statusCode == ACCEPTED) {
                 io:println("Redis cache delete operation was successfully enqueued");
                 return jsonToStatusCode(statusCode);
-            } else if (statusCode == "204") {
-                io:println("Redis cache was successfully deleted");
-                return jsonToStatusCode(statusCode);
             } else {
-                return createError("Error in deleting Azure Redis Cache");
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -222,22 +226,21 @@ public client class Client {
         var response = self.AzureRedisClient->post(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            string getPayload = response.getJsonPayload().toString();
-            io:println(statusCode);
-            io:println(getPayload);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS || statusCode == NO_CONTENT) {
                 io:println("Redis cache was successfully exported");
                 return jsonToStatusCode(statusCode);
-            } else if (statusCode == "202") {
+            } else if (statusCode == ACCEPTED) {
                 io:println("Redis cache export operation was successfully enqueued");
                 return jsonToStatusCode(statusCode);
-            } else if (statusCode == "204") {
-                io:println("Redis cache was successfully exported");
-                return jsonToStatusCode(statusCode);
             } else {
-                return createError("Error in exporting Azure Redis Cache");
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -254,10 +257,10 @@ public client class Client {
     # + files - file name to be imported  
     # + format - file format to be imported
     # + return - If successful, returns StatusCode. Else returns error. 
-    remote function importRedisCache(string redisCacheName, string resourceGroupName, string files, string? format = ()) returns @tainted 
-    StatusCode|error {
+    remote function importRedisCache(string redisCacheName, string resourceGroupName, string[] files, 
+                                     string? format = ()) returns @tainted StatusCode|error {
 
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || files == EMPTY_STRING) {
+        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || files[0] == EMPTY_STRING) {
             return createError("Required values not provided");
         }
 
@@ -267,28 +270,27 @@ public client class Client {
         http:Request request = new;
         json importCacheJsonPayload = {
             "format": format,
-            "files": [files]
+            "files": files
         };
         request.setJsonPayload(importCacheJsonPayload);
         var response = self.AzureRedisClient->post(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            string getPayload = response.getJsonPayload().toString();
-            io:println(statusCode);
-            io:println(getPayload);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS || statusCode == NO_CONTENT) {
                 io:println("Redis cache was successfully imported");
                 return jsonToStatusCode(statusCode);
-            } else if (statusCode == "202") {
+            } else if (statusCode == ACCEPTED) {
                 io:println("Redis cache import operation was successfully enqueued");
                 return jsonToStatusCode(statusCode);
-            } else if (statusCode == "204") {
-                io:println("Redis cache was successfully imported");
-                return jsonToStatusCode(statusCode);
             } else {
-                return createError("Error in importing Azure Redis Cache");
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -315,10 +317,11 @@ public client class Client {
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
             json|error payload = response.getJsonPayload();
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
                 if (payload is json) {
+                    io:println("Redis cache was successfully fetched");
                     RedisCacheInstance getRedisCacheResponse = check <@untainted>payload.cloneWithType(
                     RedisCacheInstance);
                     return getRedisCacheResponse;
@@ -326,7 +329,11 @@ public client class Client {
                     return createError("Error in fetching RedisCacheResponse");
                 }
             } else {
-                return createError("Error in fetching Azure Redis Cache");
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -341,8 +348,8 @@ public client class Client {
     # + rebootType - Nodes type which should be rebooted
     # + ports - ports which are to be rebooted
     # + return - If successful, returns StatusCode. Else returns error. 
-    remote function forceRebootRedisCache(string redisCacheName, string resourceGroupName, int? shardId = (), 
-                                          string? rebootType = (), int[]? ports = ()) returns @tainted StatusCode|error {
+    remote function forceRebootRedisCache(string redisCacheName, string resourceGroupName, int shardId, 
+                                          string rebootType, int[] ports) returns @tainted StatusCode|error {
 
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createError("Required values not provided");
@@ -361,15 +368,18 @@ public client class Client {
         var response = self.AzureRedisClient->post(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            string payload = response.getJsonPayload().toString();
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
                 io:println("Reboot operation successfully enqueued");
                 return jsonToStatusCode(statusCode);
             } else {
-                io:println("Error in Rebooting Azure Redis Cache");
-                return jsonToStatusCode(statusCode);
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -380,7 +390,7 @@ public client class Client {
     #
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + return - If successful, returns RedisCacheInstance[]. Else returns error. 
-    remote function listByResourceGroup(string resourceGroupName) returns @tainted StatusCode|error {
+    remote function listByResourceGroup(string resourceGroupName) returns @tainted RedisCacheInstanceList|error {
 
         if (resourceGroupName == EMPTY_STRING) {
             return createError("Required values not provided");
@@ -393,23 +403,23 @@ public client class Client {
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
             json|error payload = response.getJsonPayload();
-            io:println(statusCode);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
                 if (payload is json) {
-                    //RedisCacheInstance getRedisCacheResponse = check <@untainted>payload.cloneWithType(RedisCacheInstance);
-                    json[] redisCacheList = <json[]>payload.value;
-                    foreach var redisCache in redisCacheList {
-                        io:println(redisCache);
-                    }
-                    return jsonToStatusCode(statusCode);
+                    io:println("Redis cache list successfully fetched in given resource group");
+                    RedisCacheInstanceList listRedisCacheInstance = check <@untainted>payload.cloneWithType(
+                    RedisCacheInstanceList);
+                    return listRedisCacheInstance;
                 } else {
-                    return createError("Error in fetching RedisCacheResponse");
+                    return createError("Error in receiving Payload");
                 }
             } else {
-                io:println("Error in fetching Azure Redis Cache list by resource group");
-                return jsonToStatusCode(statusCode);
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -419,24 +429,31 @@ public client class Client {
     # This Function Fetches list of Redis Cache Instance in a subscription
     #
     # + return - If successful, returns RedisCacheInstance[]. Else returns error. 
-    remote function listBySubscription() returns @tainted StatusCode|error {
+    remote function listBySubscription() returns @tainted RedisCacheInstanceList|error {
 
         var path = "/providers/Microsoft.Cache/redis?api-version=" + API_VERSION;
         http:Request request = new;
         var response = self.AzureRedisClient->get(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            string reason = response.getJsonPayload().toString();
-            io:println(statusCode);
-            io:println(reason);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
-                io:println("Redis cache list under subscription was successfully found");
-                return jsonToStatusCode(statusCode);
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
+                if (payload is json) {
+                    io:println("Redis cache list successfully fetched in given subscription");
+                    RedisCacheInstanceList listRedisCacheInstance = check <@untainted>payload.cloneWithType(
+                    RedisCacheInstanceList);
+                    return listRedisCacheInstance;
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             } else {
-                io:println("Error in fetching Azure Redis Cache list by subscription");
-                return jsonToStatusCode(statusCode);
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -448,7 +465,7 @@ public client class Client {
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + return - Return Value Description
-    remote function listKeys(string redisCacheName, string resourceGroupName) returns @tainted StatusCode|error {
+    remote function listKeys(string redisCacheName, string resourceGroupName) returns @tainted AccessKey|error {
 
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createError("Required values not provided");
@@ -461,54 +478,23 @@ public client class Client {
         var response = self.AzureRedisClient->post(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            string reason = response.getJsonPayload().toString();
-            io:println(statusCode);
-            io:println(reason);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
-                io:println("Keys of Redis cache was successfully found");
-                return jsonToStatusCode(statusCode);
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
+                if (payload is json) {
+                    io:println("Key list for a redis instance is fetched");
+                    AccessKey listKeys = check <@untainted>payload.cloneWithType(AccessKey);
+                    return listKeys;
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             } else {
-                io:println("Error in fetching Keys of Azure Redis Cache");
-                return jsonToStatusCode(statusCode);
-            }
-        } else {
-            return createError("Not an Http Response");
-        }
-    }
-
-    # This Function Fetches list of upgrade notifications for a Redis Cache Instance
-    #
-    # + redisCacheName - Redis Cache Instance Name 
-    # + resourceGroupName - Resource Group Name where Redis Cache found. 
-    # + history - history Parameter Description 
-    # + return - Return Value Description
-    remote function listUpgradeNotifications(string redisCacheName, string resourceGroupName, float history) returns @tainted 
-    StatusCode|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || history.toString() == EMPTY_STRING) {
-            return createError("Required values not provided");
-        }
-
-        var path = 
-        "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "/listUpgradeNotifications?api-version=" + 
-        config:getAsString("API_VERSION") + "&history=" + history.toString();
-        http:Request request = new;
-        var response = self.AzureRedisClient->get(<@untainted>path, request);
-        if (response is http:Response) {
-            string statusCode = response.statusCode.toString();
-            string reason = response.getJsonPayload().toString();
-            io:println(statusCode);
-            io:println(reason);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
-                io:println("Notifications list in given time range was successfully found");
-                return jsonToStatusCode(statusCode);
-            } else {
-                io:println("Error in fetching Notifications list");
-                return jsonToStatusCode(statusCode);
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -522,7 +508,7 @@ public client class Client {
     # + keyType - keyType Parameter Description 
     # + return - Return Value Description
     remote function regenerateKey(string redisCacheName, string resourceGroupName, string keyType) returns @tainted 
-    StatusCode|error {
+    AccessKey|error {
 
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || keyType == EMPTY_STRING) {
             return createError("Required values not provided");
@@ -537,17 +523,23 @@ public client class Client {
         var response = self.AzureRedisClient->post(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            string reason = response.getJsonPayload().toString();
-            io:println(statusCode);
-            io:println(reason);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
-                io:println("Lists the regenerated keys for Redis Cache found");
-                return jsonToStatusCode(statusCode);
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
+                if (payload is json) {
+                    io:println("Keys  for Redis Cache instance the regenerated");
+                    AccessKey listKeys = check <@untainted>payload.cloneWithType(AccessKey);
+                    return listKeys;
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             } else {
-                io:println("Error in regenerating keys for Redis Cache");
-                return jsonToStatusCode(statusCode);
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -560,8 +552,8 @@ public client class Client {
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + properties - properties Parameter Description
     # + return - If successful, returns RedisCacheInstance. Else returns error. 
-    remote function updateRedisCache(string redisCacheName, string resourceGroupName, CreateCacheProperty properties) 
-    returns @tainted json|error {
+    remote function updateRedisCache(string redisCacheName, string resourceGroupName, CreateCacheProperty properties) returns @tainted 
+    RedisCacheInstance|error {
 
         if (properties.sku.name == EMPTY_STRING || properties.sku.family == EMPTY_STRING || properties.sku.capacity.
         toString() == EMPTY_STRING) {
@@ -577,30 +569,37 @@ public client class Client {
         var response = self.AzureRedisClient->patch(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            string reason = response.getJsonPayload().toString();
-            json|error updateRedisCacheResponse = response.getJsonPayload();
-            io:println(statusCode);
-            io:println(reason);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
-                io:println("Existing redis cache was successfully updated.");
-                return updateRedisCacheResponse;
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
+                if (payload is json) {
+                    io:println("Existing redis cache was successfully updated.");
+                    RedisCacheInstance getRedisCacheResponse = check <@untainted>payload.cloneWithType(
+                    RedisCacheInstance);
+                    return getRedisCacheResponse;
+                } else {
+                    return createError("Error in fetching RedisCacheResponse");
+                }
             } else {
-                return createError("Error in Updating Azure Redis Cache");
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
         }
     }
 
-    //Operations related to Firewall Rules (Contiguous range of IP addresses permitted to connect)
+    //Operations related to Firewall Rules (Continuous range of IP addresses permitted to connect)
 
-    # This Function Creates an FireWall rule
+    # This Function creates a FireWall rule or update if exists already
     #
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
-    # + ruleName - Name of Rule Name
+    # + ruleName - Name of Firewall Rule
     # + startIP - Start IP of permitted range
     # + endIP - End IP of permitted range
     # + return - If successful, returns FirewallRuleResponse. Else returns error. 
@@ -624,28 +623,33 @@ public client class Client {
         var response = self.AzureRedisClient->put(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            json|error createFirewallJsonResponse = response.getJsonPayload();
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
-                io:println("Existing Firewall rule Updated");
-                if (createFirewallJsonResponse is json) {
-                    FirewallRuleResponse createFirewallResponse = check <@untainted>createFirewallJsonResponse.
-                    cloneWithType(FirewallRuleResponse);
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
+                if (payload is json) {
+                    io:println("Existing Firewall rule Updated");
+                    FirewallRuleResponse createFirewallResponse = check <@untainted>payload.cloneWithType(
+                    FirewallRuleResponse);
                     return createFirewallResponse;
                 } else {
-                    return createError("Error in creating or updating Firewall rule");
+                    return createError("Error in updating existing Firewall rule");
                 }
-            } else if (statusCode == "201") {
-                if (createFirewallJsonResponse is json) {
-                    FirewallRuleResponse createFirewallResponse = check <@untainted>createFirewallJsonResponse.
-                    cloneWithType(FirewallRuleResponse);
+            } else if (statusCode == CREATED) {
+                if (payload is json) {
+                    io:println("New Firewall rule Created");
+                    FirewallRuleResponse createFirewallResponse = check <@untainted>payload.cloneWithType(
+                    FirewallRuleResponse);
                     return createFirewallResponse;
                 } else {
-                    return createError("Error in creating or updating Firewall rule");
+                    return createError("Error in creating Firewall rule");
                 }
             } else {
-                return createError("Error in creating or updating Firewall rule");
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -672,16 +676,18 @@ public client class Client {
         var response = self.AzureRedisClient->delete(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
-                io:println("Firewall rule deleted");
-                return jsonToStatusCode(statusCode);
-            } else if (statusCode == "204") {
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS || statusCode == NO_CONTENT) {
                 io:println("Firewall rule deleted");
                 return jsonToStatusCode(statusCode);
             } else {
-                return createError("Error in deleting Firewall rule");
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -708,20 +714,24 @@ public client class Client {
         var response = self.AzureRedisClient->get(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            json|error getFirewallJsonResponse = response.getJsonPayload();
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
-                io:println("Firewall rule fetched");
-                if (getFirewallJsonResponse is json) {
-                    FirewallRuleResponse getFirewallResponse = check <@untainted>getFirewallJsonResponse.cloneWithType(
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
+                if (payload is json) {
+                    io:println("Firewall rule fetched");
+                    FirewallRuleResponse getFirewallResponse = check <@untainted>payload.cloneWithType(
                     FirewallRuleResponse);
                     return getFirewallResponse;
                 } else {
                     return createError("Error in fetching Firewall rule");
                 }
             } else {
-                return createError("Error in fetching Firewall rule");
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -747,20 +757,24 @@ public client class Client {
         var response = self.AzureRedisClient->get(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            json|error listFirewallJsonResponse = response.getJsonPayload();
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
-                io:println("Firewall rule list fetched");
-                if (listFirewallJsonResponse is json) {
-                    FirewallRuleListResponse getFirewallResponseArray = check <@untainted>listFirewallJsonResponse.
-                    cloneWithType(FirewallRuleListResponse);
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
+                if (payload is json) {
+                    io:println("Firewall rule list fetched");
+                    FirewallRuleListResponse getFirewallResponseArray = check <@untainted>payload.cloneWithType(
+                    FirewallRuleListResponse);
                     return getFirewallResponseArray;
                 } else {
                     return createError("Error in fetching Firewall rule list");
                 }
             } else {
-                return createError("Error in fetching Firewall rule list");
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -800,35 +814,32 @@ public client class Client {
         var response = self.AzureRedisClient->put(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            json|error createLinkedServer = response.getJsonPayload();
-            io:println(statusCode);
-            io:println(createLinkedServer);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
-                io:println("Existing LinkedServer Updated");
-                if (createLinkedServer is json) {
-                    io:println(createLinkedServer.id);
-                    LinkedServer createLinkedServerResponse = check <@untainted>createLinkedServer.cloneWithType(
-                    LinkedServer);
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
+                if (payload is json) {
+                    io:println("Existing LinkedServer Updated");
+                    LinkedServer createLinkedServerResponse = check <@untainted>payload.cloneWithType(LinkedServer);
                     io:println(createLinkedServerResponse.properties.provisioningState);
                     return createLinkedServerResponse;
                 } else {
                     return createError("Error in creating Linked server");
                 }
-            } else if (statusCode == "201") {
-                io:println("New LinkedServer Created");
-                if (createLinkedServer is json) {
-                    io:println(createLinkedServer.id);
-                    LinkedServer createLinkedServerResponse = check <@untainted>createLinkedServer.cloneWithType(
-                    LinkedServer);
-                    io:println(createLinkedServerResponse.properties.provisioningState);
+            } else if (statusCode == CREATED) {
+                if (payload is json) {
+                    io:println("New LinkedServer Created");
+                    LinkedServer createLinkedServerResponse = check <@untainted>payload.cloneWithType(LinkedServer);
                     return createLinkedServerResponse;
                 } else {
                     return createError("Error in creating Linked server");
                 }
             } else {
-                return createError("Error in creating or Updating LinkedServer");
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -855,20 +866,18 @@ public client class Client {
         var response = self.AzureRedisClient->delete(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            string reason = response.getJsonPayload().toString();
-            io:println(statusCode);
-            io:println(reason);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
-                io:println("LinkedServer deleted");
-                return jsonToStatusCode(statusCode);
-            } else if (statusCode == "204") {
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS || statusCode == NO_CONTENT) {
                 io:println("LinkedServer deleted");
                 return jsonToStatusCode(statusCode);
             } else {
-                io:println("Error in deleting LinkedServer");
-                return jsonToStatusCode(statusCode);
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -896,19 +905,22 @@ public client class Client {
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
             json|error payload = response.getJsonPayload();
-            io:println(statusCode);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
-                io:println("LinkedServer fetched");
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
                 if (payload is json) {
+                    io:println("LinkedServer fetched");
                     LinkedServer getLinkedServerResponse = check <@untainted>payload.cloneWithType(LinkedServer);
                     return getLinkedServerResponse;
                 } else {
                     return createError("Error in fetching RedisCacheResponse");
                 }
             } else {
-                return createError("Error in fetching LinkedServer");
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -921,7 +933,7 @@ public client class Client {
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + return - If successful, returns LinkedServer[]. Else returns error. 
     remote function listLinkedServers(string redisCacheName, string resourceGroupName) 
-    returns @tainted StatusCode|error {
+    returns @tainted LinkedServerList|error {
 
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createError("Required values not provided");
@@ -934,17 +946,23 @@ public client class Client {
         var response = self.AzureRedisClient->get(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            string reason = response.getJsonPayload().toString();
-            io:println(statusCode);
-            io:println(reason);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
-                io:println("LinkedServer list fetched");
-                return jsonToStatusCode(statusCode);
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
+                if (payload is json) {
+                    io:println("LinkedServer list fetched");
+                    LinkedServerList getLinkedServerList = check <@untainted>payload.cloneWithType(LinkedServerList);
+                    return getLinkedServerList;
+                } else {
+                    return createError("Error in fetching LinkedServer list");
+                }
             } else {
-                io:println("Error in fetching LinkedServers");
-                return jsonToStatusCode(statusCode);
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -971,34 +989,36 @@ public client class Client {
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "/patchSchedules/default?api-version=" + 
         config:getAsString("API_VERSION");
         http:Request request = new;
-        json payload = {properties: <json>patchScheduleProperties.cloneWithType(json)};
-        request.setJsonPayload(payload);
+        json createPayload = {properties: <json>patchScheduleProperties.cloneWithType(json)};
+        request.setJsonPayload(createPayload);
         var response = self.AzureRedisClient->put(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            json|error createPatchJsonResponse = response.getJsonPayload();
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
-                io:println("Existing Patch Schedule Updated");
-                if (createPatchJsonResponse is json) {
-                    PatchShedule createPatchResponse = check <@untainted>createPatchJsonResponse.cloneWithType(
-                    PatchShedule);
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
+                if (payload is json) {
+                    io:println("Existing Patch Schedule Updated");
+                    PatchShedule createPatchResponse = check <@untainted>payload.cloneWithType(PatchShedule);
                     return createPatchResponse;
                 } else {
                     return createError("Error in creating or updating Firewall rule");
                 }
-            } else if (statusCode == "201") {
-                io:println("New Patch Schedule Created");
-                if (createPatchJsonResponse is json) {
-                    PatchShedule createPatchResponse = check <@untainted>createPatchJsonResponse.cloneWithType(
-                    PatchShedule);
+            } else if (statusCode == CREATED) {
+                if (payload is json) {
+                    io:println("New Patch Schedule Created");
+                    PatchShedule createPatchResponse = check <@untainted>payload.cloneWithType(PatchShedule);
                     return createPatchResponse;
                 } else {
                     return createError("Error in creating or updating Firewall rule");
                 }
             } else {
-                return createError("Error in creating or updating Patch Schedule");
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -1024,13 +1044,18 @@ public client class Client {
         var response = self.AzureRedisClient->delete(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200" || statusCode == "204") {
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS || statusCode == NO_CONTENT) {
                 io:println("Patch Schedule deleted");
                 return jsonToStatusCode(statusCode);
             } else {
-                return createError("Error in deleting Patch Schedule");
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -1056,19 +1081,23 @@ public client class Client {
         var response = self.AzureRedisClient->get(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            json|error getPatchJsonResponse = response.getJsonPayload();
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
-                io:println("Patch Schedule fetched");
-                if (getPatchJsonResponse is json) {
-                    PatchShedule getPatchResponse = check <@untainted>getPatchJsonResponse.cloneWithType(PatchShedule);
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
+                if (payload is json) {
+                    io:println("Patch Schedule fetched");
+                    PatchShedule getPatchResponse = check <@untainted>payload.cloneWithType(PatchShedule);
                     return getPatchResponse;
                 } else {
                     return createError("Error in fetching Patch Schedule");
                 }
             } else {
-                return createError("Error in fetching Patch Schedule");
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -1094,20 +1123,23 @@ public client class Client {
         var response = self.AzureRedisClient->get(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            json|error PatchSheduleJsonResponse = response.getJsonPayload();
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
-                io:println("Patch Schedule list fetched");
-                if (PatchSheduleJsonResponse is json) {
-                    PatchSheduleList getPatchSheduleArray = check <@untainted>PatchSheduleJsonResponse.cloneWithType(
-                    PatchSheduleList);
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
+                if (payload is json) {
+                    io:println("Patch Schedule list fetched");
+                    PatchSheduleList getPatchSheduleArray = check <@untainted>payload.cloneWithType(PatchSheduleList);
                     return getPatchSheduleArray;
                 } else {
-                    return createError("Error in fetching Patch Schedule");
+                    return createError("Error in fetching Patch Schedule list");
                 }
             } else {
-                return createError("Error in fetching Patch Schedule");
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -1142,23 +1174,23 @@ public client class Client {
         var response = self.AzureRedisClient->put(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            string payload = response.getJsonPayload().toString();
+            json|error payload = response.getJsonPayload();
             io:println(statusCode);
             io:println(payload);
-            json|error privateEndpointConnection = response.getJsonPayload();
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
                 io:println("Existing LinkedServer Updated");
-                //return jsonToStatusCode(statusCode);
-                return privateEndpointConnection;
-            } else if (statusCode == "201") {
+                return payload;
+            } else if (statusCode == CREATED) {
                 io:println("New PrivateEndpointConnection Created");
-                //return jsonToStatusCode(statusCode);
-                return privateEndpointConnection;
+                return payload;
             } else {
-                return createError("Error in creating or Updating PrivateEndpointConnection");
-            //return jsonToStatusCode(statusCode);
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -1186,17 +1218,20 @@ public client class Client {
         var response = self.AzureRedisClient->get(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            json|error privateEndpointConnection = response.getJsonPayload();
+            json|error payload = response.getJsonPayload();
             io:println(statusCode);
-            io:println(privateEndpointConnection);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
+            io:println(payload);
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
                 io:println("PrivateEndpointConnection fetched");
-                //return jsonToStatusCode(statusCode);
-                return privateEndpointConnection;
+                return payload;
             } else {
-                return createError("Error in fetching PrivateEndpointConnection");
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -1222,19 +1257,20 @@ public client class Client {
         var response = self.AzureRedisClient->get(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            json|error privateEndpointConnection = response.getJsonPayload();
+            json|error payload = response.getJsonPayload();
             io:println(statusCode);
-            io:println(privateEndpointConnection);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
+            io:println(payload);
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
                 io:println("Fetching PrivateEndpointConnection list");
-                //return jsonToStatusCode(statusCode);
-                //return privateEndpointConnection;
                 return jsonToStatusCode(statusCode);
             } else {
-                io:println("Error in fetching PrivateEndpointConnection list");
-                return jsonToStatusCode(statusCode);
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -1263,19 +1299,20 @@ public client class Client {
         var response = self.AzureRedisClient->delete(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            json|error privateEndpointConnection = response.getJsonPayload();
+            json|error payload = response.getJsonPayload();
             io:println(statusCode);
-            io:println(privateEndpointConnection);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
-                io:println("PrivateEndpointConnection deleted");
-                return jsonToStatusCode(statusCode);
-            } else if (statusCode == "204") {
+            io:println(payload);
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS || statusCode == NO_CONTENT) {
                 io:println("PrivateEndpointConnection deleted");
                 return jsonToStatusCode(statusCode);
             } else {
-                return createError("Error in deleting PrivateEndpointConnection");
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -1299,17 +1336,20 @@ public client class Client {
         var response = self.AzureRedisClient->get(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            string payload = response.getJsonPayload().toString();
+            json|error payload = response.getJsonPayload();
             io:println(statusCode);
             io:println(payload);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
                 io:println("PrivateLinkResources fetched");
                 return jsonToStatusCode(statusCode);
             } else {
-                io:println("Error in fetching PrivateLinkResources");
-                return jsonToStatusCode(statusCode);
+                if (payload is json) {
+                    return createError(payload.toString());
+                } else {
+                    return createError("Error in receiving Payload");
+                }
             }
         } else {
             return createError("Not an Http Response");
@@ -1345,12 +1385,12 @@ public client class Client {
             string payload = response.getJsonPayload().toString();
             io:println(statusCode);
             io:println(payload);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
                 io:println("Redis Enterprise Cache Database created");
                 return jsonToStatusCode(statusCode);
-            } else if (statusCode == "201") {
+            } else if (statusCode == CREATED) {
                 io:println("Redis Enterprise Cache Database created");
                 return jsonToStatusCode(statusCode);
             } else {
@@ -1385,16 +1425,13 @@ public client class Client {
             string payload = response.getJsonPayload().toString();
             io:println(statusCode);
             io:println(payload);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS || statusCode == NO_CONTENT) {
                 io:println("Redis cache was successfully deleted");
                 return jsonToStatusCode(statusCode);
-            } else if (statusCode == "202") {
+            } else if (statusCode == ACCEPTED) {
                 io:println("Redis cache delete operation was successfully enqueued");
-                return jsonToStatusCode(statusCode);
-            } else if (statusCode == "204") {
-                io:println("Redis cache was successfully deleted");
                 return jsonToStatusCode(statusCode);
             } else {
                 io:println("Error in deleting Azure Redis Cache");
@@ -1434,16 +1471,13 @@ public client class Client {
             string payload = response.getJsonPayload().toString();
             io:println(statusCode);
             io:println(payload);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS || statusCode == NO_CONTENT) {
                 io:println("Redis cache was successfully exported");
                 return jsonToStatusCode(statusCode);
-            } else if (statusCode == "202") {
+            } else if (statusCode == ACCEPTED) {
                 io:println("Redis cache export operation was successfully enqueued");
-                return jsonToStatusCode(statusCode);
-            } else if (statusCode == "204") {
-                io:println("Redis cache was successfully exported");
                 return jsonToStatusCode(statusCode);
             } else {
                 io:println("Error in exporting Azure Redis Cache");
@@ -1482,16 +1516,13 @@ public client class Client {
             string payload = response.getJsonPayload().toString();
             io:println(statusCode);
             io:println(payload);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS || statusCode == NO_CONTENT) {
                 io:println("Redis cache was successfully imported");
                 return jsonToStatusCode(statusCode);
-            } else if (statusCode == "202") {
+            } else if (statusCode == ACCEPTED) {
                 io:println("Redis cache import operation was successfully enqueued");
-                return jsonToStatusCode(statusCode);
-            } else if (statusCode == "204") {
-                io:println("Redis cache was successfully imported");
                 return jsonToStatusCode(statusCode);
             } else {
                 io:println("Error in importing Azure Redis Cache");
@@ -1525,9 +1556,9 @@ public client class Client {
             json|error payload = response.getJsonPayload();
             io:println(statusCode);
             io:println(payload);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
                 io:println("Redis cache was successfully found");
                 return jsonToStatusCode(statusCode);
             } else {
@@ -1559,9 +1590,9 @@ public client class Client {
             string payload = response.getJsonPayload().toString();
             io:println(statusCode);
             io:println(payload);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
                 io:println("Redis cache list under resource group was successfully found");
                 return jsonToStatusCode(statusCode);
             } else {
@@ -1595,9 +1626,9 @@ public client class Client {
             string payload = response.getJsonPayload().toString();
             io:println(statusCode);
             io:println(payload);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
                 io:println("Keys of Redis cache was successfully found");
                 return jsonToStatusCode(statusCode);
             } else {
@@ -1635,12 +1666,12 @@ public client class Client {
             string payload = response.getJsonPayload().toString();
             io:println(statusCode);
             io:println(payload);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
                 io:println("Lists the regenerated keys for Redis Cache");
                 return jsonToStatusCode(statusCode);
-            } else if (statusCode == "202") {
+            } else if (statusCode == ACCEPTED) {
                 io:println("Lists the regenerated keys for Redis Cache");
                 return jsonToStatusCode(statusCode);
             } else {
@@ -1688,9 +1719,9 @@ public client class Client {
             string payload = response.getJsonPayload().toString();
             io:println(statusCode);
             io:println(payload);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
                 io:println("Existing redis cache was successfully updated.");
                 return jsonToStatusCode(statusCode);
             } else {
@@ -1712,8 +1743,9 @@ public client class Client {
     # + skuName - provide information about Enterprise Allowed Names Only.
     # + skuCapacity - provide information about capacity.
     # + return - If successful, returns EnterpriseClusterInstance. Else returns error. 
-    remote function createRedisEnterprise(string redisEnterpriseClusterName, string resourceGroupName, string location, 
-                                          string skuName, int skuCapacity) returns @tainted StatusCode|error {
+    remote function createRedisEnterpriseCache(string redisEnterpriseClusterName, string resourceGroupName, 
+                                               string location, string skuName, int skuCapacity) returns @tainted 
+    RedisEnterpriseCacheInstance|error {
 
         var path = "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
         redisEnterpriseClusterName + "?api-version=" + config:getAsString("ENTERPRISE_API_VERSION");
@@ -1732,23 +1764,29 @@ public client class Client {
         var response = self.AzureRedisClient->put(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            string payload = response.getJsonPayload().toString();
-            io:println(statusCode);
-            io:println(payload);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
-                io:println("Redis Enterprise Cache created or updated");
-                return jsonToStatusCode(statusCode);
-            } else if (statusCode == "201") {
-                io:println("Redis Enterprise Cache created or updated");
-                return jsonToStatusCode(statusCode);
-            } else if (statusCode == "204") {
-                io:println("Redis Enterprise Cache created or updated");
-                return jsonToStatusCode(statusCode);
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
+                if (payload is json) {
+                    io:println("Existing Redis Enterprise Cache Updated");
+                    RedisEnterpriseCacheInstance redisEnterpriseCacheResponse = check <@untainted>payload.cloneWithType(
+                    RedisEnterpriseCacheInstance);
+                    return redisEnterpriseCacheResponse;
+                } else {
+                    return createError("Error in updating Redis Enterprise Cache");
+                }
+            } else if (statusCode == CREATED) {
+                if (payload is json) {
+                    io:println("New Redis Enterprise Cache created");
+                    RedisEnterpriseCacheInstance redisEnterpriseCacheResponse = check <@untainted>payload.cloneWithType(
+                    RedisEnterpriseCacheInstance);
+                    return redisEnterpriseCacheResponse;
+                } else {
+                    return createError("Error in creating Redis Enterprise Cache");
+                }
             } else {
-                io:println("Error in fetching Redis Enterprise Cache");
-                return jsonToStatusCode(statusCode);
+                return createError("Error in creating or updating Redis Enterprise Cache");
             }
         } else {
             return createError("Not an Http Response");
@@ -1760,7 +1798,7 @@ public client class Client {
     # + redisEnterpriseClusterName - Redis Enterprise ClusterName 
     # + resourceGroupName - Resource Group Name where Redis Enterprise found.
     # + return - If successful, returns EnterpriseClusterInstance. Else returns error. 
-    remote function getRedisEnterprise(string redisEnterpriseClusterName, string resourceGroupName) returns @tainted 
+    remote function getRedisEnterpriseCache(string redisEnterpriseClusterName, string resourceGroupName) returns @tainted 
     RedisEnterpriseCacheInstance|error {
 
         var path = "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
@@ -1770,15 +1808,13 @@ public client class Client {
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
             json|error payload = response.getJsonPayload();
-            io:println(statusCode);
-            io:println(payload);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
                 if (payload is json) {
-                    RedisEnterpriseCacheInstance getRedisEnterpriseCacheResponse = check <@untainted>payload.
-                    cloneWithType(RedisEnterpriseCacheInstance);
-                    return getRedisEnterpriseCacheResponse;
+                    RedisEnterpriseCacheInstance getRedisEnterpriseCache = check <@untainted>payload.cloneWithType(
+                    RedisEnterpriseCacheInstance);
+                    return getRedisEnterpriseCache;
                 } else {
                     return createError("Error in fetching Redis Enterprise Cache");
                 }
@@ -1795,7 +1831,7 @@ public client class Client {
     # + redisEnterpriseClusterName - Redis Enterprise ClusterName 
     # + resourceGroupName - Resource Group Name where Redis Enterprise found.
     # + return - If successful, returns StatusCode. Else returns error. 
-    remote function deleteRedisEnterprise(string redisEnterpriseClusterName, string resourceGroupName) returns @tainted 
+    remote function deleteRedisEnterpriseCache(string redisEnterpriseClusterName, string resourceGroupName) returns @tainted 
     StatusCode|error {
 
         if (redisEnterpriseClusterName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
@@ -1809,18 +1845,13 @@ public client class Client {
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
             string payload = response.getJsonPayload().toString();
-            io:println(statusCode);
-            io:println(payload);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS || statusCode == NO_CONTENT) {
                 io:println("Redis Enterprise cache was successfully deleted");
                 return jsonToStatusCode(statusCode);
-            } else if (statusCode == "202") {
+            } else if (statusCode == ACCEPTED) {
                 io:println("Redis Enterprise cache delete operation was successfully enqueued");
-                return jsonToStatusCode(statusCode);
-            } else if (statusCode == "204") {
-                io:println("Redis Enterprise cache was successfully deleted");
                 return jsonToStatusCode(statusCode);
             } else {
                 io:println("Error in deleting Azure Redis Cache");
@@ -1834,7 +1865,7 @@ public client class Client {
     # This Function Fetches a list of Redis Enterprise Cluster in a subscription
     # 
     # + return - If successful, returns EnterpriseClusterInstance[]. Else returns error. 
-    remote function listRedisEnterprise() returns @tainted StatusCode|error {
+    remote function listRedisEnterpriseCache() returns @tainted RedisEnterpriseCacheInstanceList|error {
 
         var path = "/providers/Microsoft.Cache/redisEnterprise?api-version=" + config:getAsString(
         "ENTERPRISE_API_VERSION");
@@ -1842,17 +1873,20 @@ public client class Client {
         var response = self.AzureRedisClient->get(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            string payload = response.getJsonPayload().toString();
-            io:println(statusCode);
-            io:println(payload);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
-                io:println("Redis cache list was successfully found");
-                return jsonToStatusCode(statusCode);
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
+                if (payload is json) {
+                    io:println("RedisEnterprise cache list was successfully found");
+                    RedisEnterpriseCacheInstanceList getRedisEnterpriseCacheList = check <@untainted>payload.
+                    cloneWithType(RedisEnterpriseCacheInstanceList);
+                    return getRedisEnterpriseCacheList;
+                } else {
+                    return createError("Error in fetching RedisEnterprise cache list");
+                }
             } else {
-                io:println("Error in fetching Azure Redis Enterprise Cache list");
-                return jsonToStatusCode(statusCode);
+                return createError("Error in fetching Azure Redis Enterprise Cache list");
             }
         } else {
             return createError("Not an Http Response");
@@ -1863,7 +1897,8 @@ public client class Client {
     # 
     # + resourceGroupName - Resource Group Name where Redis Enterprise found.
     # + return - If successful, returns EnterpriseClusterInstance[]. Else returns error. 
-    remote function listRedisEnterpriseByResourceGroup(string resourceGroupName) returns @tainted StatusCode|error {
+    remote function listRedisEnterpriseCacheByResourceGroup(string resourceGroupName) returns @tainted 
+    RedisEnterpriseCacheInstanceList|error {
 
         if (resourceGroupName == EMPTY_STRING) {
             return createError("Required values not provided");
@@ -1875,17 +1910,20 @@ public client class Client {
         var response = self.AzureRedisClient->get(<@untainted>path, request);
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
-            string payload = response.getJsonPayload().toString();
-            io:println(statusCode);
-            io:println(payload);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
-                io:println("Keys of Redis cache  by resource group was successfully found");
-                return jsonToStatusCode(statusCode);
+            json|error payload = response.getJsonPayload();
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
+                if (payload is json) {
+                    io:println("List of RedisEnterprise cache in resource group was successfully found");
+                    RedisEnterpriseCacheInstanceList getRedisEnterpriseCacheList = check <@untainted>payload.
+                    cloneWithType(RedisEnterpriseCacheInstanceList);
+                    return getRedisEnterpriseCacheList;
+                } else {
+                    return createError("Error in fetching RedisEnterprise cache list in resource group");
+                }
             } else {
-                io:println("Error in fetching of Azure Redis Enterprise Cache by resource group");
-                return jsonToStatusCode(statusCode);
+                return createError("Error in fetching of Azure Redis Enterprise Cache by resource group");
             }
         } else {
             return createError("Not an Http Response");
@@ -1899,7 +1937,7 @@ public client class Client {
     # + redisEnterpriseClusterName - Redis Enterprise ClusterName 
     # + resourceGroupName - Resource Group Name where Redis Enterprise found.
     # + return - If successful, returns EnterpriseClusterInstance. Else returns error. 
-    remote function updateRedisEnterprise(string redisEnterpriseClusterName, string resourceGroupName) returns @tainted 
+    remote function updateRedisEnterpriseCache(string redisEnterpriseClusterName, string resourceGroupName) returns @tainted 
     StatusCode|error {
 
         if (redisEnterpriseClusterName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
@@ -1922,11 +1960,9 @@ public client class Client {
         if (response is http:Response) {
             string statusCode = response.statusCode.toString();
             string payload = response.getJsonPayload().toString();
-            io:println(statusCode);
-            io:println(payload);
-            if (statusCode == "401") {
-                return createError("Authentication failed");
-            } else if (statusCode == "200") {
+            if (statusCode == UNAUTHORIZED) {
+                return createError("Unauthorized");
+            } else if (statusCode == SUCCESS) {
                 io:println("Existing redis cache was successfully updated.");
                 return jsonToStatusCode(statusCode);
             } else {

@@ -27,7 +27,7 @@ isolated function convertToSKU(json|error jsonToSKUValue) returns SKU {
 }
 
 isolated function jsonToStatusCode(string statusCodeResponse) returns StatusCode {
-    StatusCode statusCode = {};
+    StatusCode statusCode = {code: ""};
     statusCode.code = statusCodeResponse != "" ? statusCodeResponse : EMPTY_STRING;
     return statusCode;
 }

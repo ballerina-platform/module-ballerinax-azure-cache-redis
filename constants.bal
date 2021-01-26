@@ -23,3 +23,13 @@ final string API_VERSION = "2020-06-01";
 
 # Constant `EMPTY_STRING`.
 final string EMPTY_STRING = "";
+
+final string UNAUTHORIZED = "401";
+
+final string SUCCESS = "200";
+
+final string CREATED = "201";
+
+final string ACCEPTED = "202";
+
+final string NO_CONTENT = "204";

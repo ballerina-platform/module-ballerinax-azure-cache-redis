@@ -1,4 +1,3 @@
-
 // Copyright (c) 2021 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 //
 // WSO2 Inc. licenses this file to you under the Apache License,
@@ -14,10 +13,10 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
-
 import ballerina/io;
 import ballerina/test;
 import ballerina/config;
+import ballerina/runtime;
 
 string|error token = <@untainted>generateToken(config:getAsString("CLIENT_ID"), config:getAsString("CLIENT_SECRET"), 
 config:getAsString("TENANT_ID"));
@@ -36,7 +35,8 @@ Client azureRedisClient = new (config);
 
 @test:Config {}
 function testCheckeRedisCacheAvailability() {
-    var response = azureRedisClient->checkRedisCacheNameAvailability("TestRedisConnectorfCacheNew");
+    io:println("<---Running Checking RedisCacheName availability Test--->");
+    var response = azureRedisClient->checkRedisCacheNameAvailability("TestRedisConnectorCacheCheck");
     if (response is StatusCode) {
         StatusCode statusCode = <@untainted>response;
         test:assertEquals(statusCode?.code, "200", msg = "Error in Checking");
@@ -65,11 +65,10 @@ function testCreateRedisCache() {
         "staticIP": "192.168.0.5",
         "minimumTlsVersion": minimumTlsVersion
     };
-    io:println("Running CreateRedisCache Test");
+    io:println("<---Running CreateRedisCache Test--->");
     var response = azureRedisClient->createRedisCache("TestRedisConnectorCache", "TestRedisConnector", "South India", 
     properties);
-    io:println(response);
-    if (response is json) {
+    if (response is RedisCacheInstance) {
         boolean createSuccess = true;
         io:println("Deployment in progress...");
         json state = response.properties.provisioningState;
@@ -87,50 +86,11 @@ function testCreateRedisCache() {
 
 @test:Config {dependsOn: ["testCreateRedisCache"]}
 function testGetRedisCache() {
-    io:println("Running GetRedisCache Test");
+    io:println("<---Running GetRedisCache Test--->");
     var response = azureRedisClient->getRedisCache("TestRedisConnectorCache", "TestRedisConnector");
-    if (response is json) {
-        RedisCacheInstance testValue = 
-        {
-            "id": 
-            "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCache",
-            "location": "South India",
-            "name": "TestRedisConnectorCache",
-            "type": "Microsoft.Cache/Redis",
-            "tags": {},
-            "properties": {
-                "provisioningState": "Succeeded",
-                "redisVersion": "4.0.14",
-                "sku": {
-                    "name": "Premium",
-                    "family": "P",
-                    "capacity": 1
-                },
-                "enableNonSslPort": true,
-                "instances": [{
-                    "sslPort": 15000,
-                    "nonSslPort": 13000,
-                    "isMaster": true
-                }, {
-                    "sslPort": 15001,
-                    "nonSslPort": 13001,
-                    "isMaster": false
-                }],
-                "publicNetworkAccess": "Enabled",
-                "redisConfiguration": {
-                    "maxclients": "7500",
-                    "maxmemory-reserved": "200",
-                    "maxfragmentationmemory-reserved": "300",
-                    "maxmemory-delta": "200"
-                },
-                "accessKeys": null,
-                "hostName": "TestRedisConnectorCache.redis.cache.windows.net",
-                "port": 6379,
-                "sslPort": 6380,
-                "linkedServers": []
-            }
-        };
-        test:assertEquals(response, testValue, msg = "Error in fetching Redis Instance");
+    if (response is RedisCacheInstance) {
+        boolean getSuccess = true;
+        test:assertEquals(getSuccess, true, msg = "Error in fetching Redis Instance");
     } else {
         test:assertFail(response.message());
     }
@@ -138,10 +98,10 @@ function testGetRedisCache() {
 
 @test:Config {dependsOn: ["testCreateRedisCache"]}
 function testExportRedisCache() {
-    io:println("Running ExportRedisCache Test");
+    io:println("<---Running ExportRedisCache Test--->");
     var response = azureRedisClient->exportRedisCache("TestRedisConnectorCache", "TestRedisConnector", "datadump1", 
     "https://teststorageredis.blob.core.windows.net/blobstorage", 
-    "?sv=2019-12-12&ss=bf&srt=c&sp=rwdlacx&se=2023-01-25T16:22:57Z&st=2021-01-25T08:22:57Z&spr=https&sig=DqUgEt5Jny0r1YN0PwQ0v3ebc67MB2t5b9fHMcp6px0%3D", 
+    "?sv=2019-12-12&ss=bfqt&srt=sco&sp=rwdlacupx&se=2021-01-31T15:50:18Z&st=2021-01-06T07:50:18Z&spr=https&sig=N1hgjLaGeapkRRWTLk8McG%2BZPa4S6tG0F%2BkyZ5Rh0yw%3D", 
     "RDB");
     if (response is StatusCode) {
         StatusCode statusCode = <@untainted>response;
@@ -153,13 +113,14 @@ function testExportRedisCache() {
     } else {
         test:assertFail(response.message());
     }
+    runtime:sleep(60000);
 }
 
-@test:Config {}
+@test:Config {dependsOn: ["testCreateRedisCache"]}
 function testImportRedisCache() {
-    io:println("Running ImportRedisCache Test");
+    io:println("<---Running ImportRedisCache Test--->");
     var response = azureRedisClient->importRedisCache("TestRedisConnectorCache", "TestRedisConnector", 
-    "https://teststorageredis.blob.core.windows.net/blobstorage/datadump1", "RDB");
+    ["https://teststorageredis.blob.core.windows.net/blobstorage/datadump1"], "RDB");
     if (response is StatusCode) {
         StatusCode statusCode = <@untainted>response;
         boolean importSuccess = false;
@@ -172,11 +133,14 @@ function testImportRedisCache() {
     }
 }
 
-@test:Config {dependsOn: ["testCreateRedisCache"]}
+@test:Config {
+    dependsOn: ["testCreateRedisCache"],
+    enable: false
+}
 function testForceRebootRedisCache() {
-    io:println("Running ForceRebootCache Test");
+    io:println("<---Running ForceRebootCache Test--->");
     var response = azureRedisClient->forceRebootRedisCache("TestRedisConnectorCache", "TestRedisConnector", 0, 
-    "AllNodes", [13000, 15001]);
+    "AllNodes", [13000, 13001]);
     if (response is StatusCode) {
         StatusCode statusCode = <@untainted>response;
         test:assertEquals(statusCode?.code, "200", msg = "Error in Rebooting Redis Instance");
@@ -187,50 +151,11 @@ function testForceRebootRedisCache() {
 
 @test:Config {dependsOn: ["testCreateRedisCache"]}
 function testListByResourceGroup() {
-    io:println("Running ListByResourceGroup Test");
-
-    TlsVersion minimumTlsVersion = {minimumTlsVersion: "1.2"};
-
-    CreateCacheProperty properties = 
-    {
-        "sku": {
-            "name": "Premium",
-            "family": "P",
-            "capacity": 1
-        },
-        "enableNonSslPort": true,
-        "shardCount": 2,
-        "replicasPerMaster": 2,
-        "redisConfiguration": {"maxmemory-policy": "allkeys-lru"},
-        "subnetId": "/subscriptions/subid/resourceGroups/rg2/providers/Microsoft.Network/virtualNetworks/network1/subnets/subnet1",
-        "staticIP": "192.168.0.5",
-        "minimumTlsVersion": minimumTlsVersion
-    };
-    var createResponse = azureRedisClient->createRedisCache("TestRedisConnectorCacheLinkedServer", "TestRedisConnector", 
-    "South India", properties);
-    if (createResponse is json) {
-        io:println(createResponse.properties.provisioningState);
-        boolean createSuccess = true;
-        io:println(createResponse);
-        io:println(createResponse.properties.provisioningState);
-        io:println("Deployment of second cache instance");
-        json state = createResponse.properties.provisioningState;
-        while (state != "Succeeded") {
-            var getresponse = azureRedisClient->getRedisCache("TestRedisConnectorCacheLinkedServer", 
-            "TestRedisConnector");
-            if (getresponse is json) {
-                state = getresponse.properties.provisioningState;
-            }
-        }
-        test:assertEquals(createSuccess, true, msg = "Error in creating RedisCache");
-    } else {
-        test:assertFail(createResponse.message());
-    }
-
+    io:println("<---Running ListByResourceGroup Test--->");
     var response = azureRedisClient->listByResourceGroup("TestRedisConnector");
-    if (response is StatusCode) {
-        StatusCode statusCode = <@untainted>response;
-        test:assertEquals(statusCode?.code, "200", msg = "Error in Listing Redis Instances");
+    if (response is RedisCacheInstanceList) {
+        boolean listSuccess = true;
+        test:assertEquals(listSuccess, true, msg = "Error in Listing Redis Instances");
     } else {
         test:assertFail(response.message());
     }
@@ -238,11 +163,11 @@ function testListByResourceGroup() {
 
 @test:Config {dependsOn: ["testCreateRedisCache"]}
 function testListBySubscription() {
-    io:println("Running ListBySubscription Test");
+    io:println("<---Running ListBySubscription Test--->");
     var response = azureRedisClient->listBySubscription();
-    if (response is StatusCode) {
-        StatusCode statusCode = <@untainted>response;
-        test:assertEquals(statusCode?.code, "200", msg = "Error in Listing Redis Instances");
+    if (response is RedisCacheInstanceList) {
+        boolean listSuccess = true;
+        test:assertEquals(listSuccess, true, msg = "Error in Listing Redis Instances");
     } else {
         test:assertFail(response.message());
     }
@@ -250,29 +175,11 @@ function testListBySubscription() {
 
 @test:Config {dependsOn: ["testCreateRedisCache"]}
 function testListKeys() {
-    io:println("Running ListKeys Test");
+    io:println("<---Running ListKeys Test--->");
     var response = azureRedisClient->listKeys("TestRedisConnectorCache", "TestRedisConnector");
-    if (response is StatusCode) {
-        StatusCode statusCode = <@untainted>response;
-        test:assertEquals(statusCode?.code, "200", msg = "Error in Listing Redis Instance Key");
-    } else {
-        test:assertFail(response.message());
-    }
-}
-
-@test:Config {dependsOn: ["testCreateRedisCache"]}
-function testListUpgradeNotifications() {
-    io:println("Running ListUpgradeNotifications Test");
-    var response = azureRedisClient->listUpgradeNotifications("TestRedisConnectorCache", "TestRedisConnector", 5000.00);
-    if (response is StatusCode) {
-        StatusCode statusCode = <@untainted>response;
-        var result = false;
-        if (statusCode?.code == "200" || statusCode?.code == "404") {
-            result = true;
-        } else {
-            result = false;
-        }
-        test:assertTrue(result, msg = "Error in Listing Redis Update Notifications");
+    if (response is AccessKey) {
+        boolean listKey = true;
+        test:assertEquals(listKey, true, msg = "Error in Listing Redis Instance Key");
     } else {
         test:assertFail(response.message());
     }
@@ -280,11 +187,11 @@ function testListUpgradeNotifications() {
 
 @test:Config {dependsOn: ["testCreateRedisCache"]}
 function testRegenerateKey() {
-    io:println("Running RegenerateKey Test");
-    var response = azureRedisClient->regenerateKey("TestRedisConnectorCacheNew", "TestRedisConnector", "Primary");
-    if (response is StatusCode) {
-        StatusCode statusCode = <@untainted>response;
-        test:assertEquals(statusCode?.code, "200", msg = "Error in regenerating Key");
+    io:println("<---Running RegenerateKey Test--->");
+    var response = azureRedisClient->regenerateKey("TestRedisConnectorCache", "TestRedisConnector", "Primary");
+    if (response is AccessKey) {
+        boolean listKey = true;
+        test:assertEquals(listKey, true, msg = "Error in regenerating Redis Instance Key");
     } else {
         test:assertFail(response.message());
     }
@@ -292,7 +199,7 @@ function testRegenerateKey() {
 
 @test:Config {dependsOn: ["testCreateRedisCache"]}
 function testUpdateRedisCache() {
-    io:println("Running UpdateRedisCache");
+    io:println("<---Running UpdateRedisCache--->");
 
     TlsVersion minimumTlsVersion = {minimumTlsVersion: "1.2"};
 
@@ -312,58 +219,18 @@ function testUpdateRedisCache() {
         "minimumTlsVersion": minimumTlsVersion
     };
 
-    json testValue = 
-    {
-        "id": 
-        "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCache",
-        "location": "South India",
-        "name": "TestRedisConnectorCache",
-        "type": "Microsoft.Cache/Redis",
-        "tags": {},
-        "properties": {
-            "provisioningState": "Succeeded",
-            "redisVersion": "4.0.14",
-            "sku": {
-                "name": "Premium",
-                "family": "P",
-                "capacity": 1
-            },
-            "enableNonSslPort": false,
-            "instances": [{
-                "sslPort": 15000,
-                "isMaster": true
-            }, {
-                "sslPort": 15001,
-                "isMaster": false
-            }],
-            "publicNetworkAccess": "Enabled",
-            "redisConfiguration": {
-                "maxclients": "7500",
-                "maxmemory-reserved": "200",
-                "maxfragmentationmemory-reserved": "300",
-                "maxmemory-delta": "200"
-            },
-            "accessKeys": null,
-            "hostName": "TestRedisConnectorCache.redis.cache.windows.net",
-            "port": 6379,
-            "sslPort": 6380,
-            "linkedServers": []
-        }
-    };
-
     var response = azureRedisClient->updateRedisCache("TestRedisConnectorCache", "TestRedisConnector", properties);
-    if (response is json) {
-        test:assertEquals(response, testValue, msg = "Error in updating redis cache");
+    if (response is RedisCacheInstance) {
+        boolean updateSuccess = true;
+        test:assertEquals(updateSuccess, true, msg = "Error in updating RedisCache");
     } else {
         test:assertFail(response.message());
     }
 }
 
-@test:Config {
-// dependsOn: ["testCreateRedisCache"]
-}
+@test:Config {dependsOn: ["testCreateRedisCache"]}
 function testCreateFirewallRule() {
-    io:println("Running CreateFireWallRule Test");
+    io:println("<---Running CreateFireWallRule Test--->");
     var response = azureRedisClient->createFirewallRule("TestRedisConnectorCache", "TestRedisConnector", 
     "TestFilewallRule", "192.168.1.1", "192.168.1.4");
     if (response is FirewallRuleResponse) {
@@ -387,7 +254,7 @@ function testCreateFirewallRule() {
 
 @test:Config {dependsOn: ["testCreateFirewallRule"]}
 function testGetFireWallRule() {
-    io:println("Running GetFireWallRule Test");
+    io:println("<---Running GetFireWallRule Test--->");
     var response = azureRedisClient->getFirewallRule("TestRedisConnectorCache", "TestRedisConnector", "TestFilewallRule");
     if (response is FirewallRuleResponse) {
         FirewallRuleResponse testValue = 
@@ -409,7 +276,7 @@ function testGetFireWallRule() {
 
 @test:Config {dependsOn: ["testCreateFirewallRule"]}
 function testListFireWallRule() {
-    io:println("Running ListFireWallRule Test");
+    io:println("<---Running ListFireWallRule Test--->");
     var response = azureRedisClient->listFirewallRules("TestRedisConnectorCache", "TestRedisConnector");
     if (response is FirewallRuleListResponse) {
         FirewallRuleListResponse testValue = {"value": [
@@ -431,26 +298,63 @@ function testListFireWallRule() {
 
 @test:Config {dependsOn: ["testCreateFirewallRule"]}
 function testDeleteFireWallRule() {
-    io:println("Running DeleteFireWallRule Test");
+    io:println("<---Running DeleteFireWallRule Test--->");
     var response = azureRedisClient->deleteFirewallRule("TestRedisConnectorCache", "TestRedisConnector", 
     "TestFilewallRule");
     if (response is StatusCode) {
         StatusCode statusCode = <@untainted>response;
-        test:assertEquals(statusCode?.code, "200", msg = "Error in deleting firewall rule");
+        boolean deleteSuccess = false;
+        if (statusCode?.code == "200" || statusCode?.code == "204") {
+            deleteSuccess = true;
+        }
+        test:assertEquals(deleteSuccess, true, msg = "Error in deleting firewall rule");
     } else {
         test:assertFail(response.message());
     }
 }
 
-@test:Config {}
+@test:Config {dependsOn: ["testCreateRedisCache"]}
 function testCreateLinkedServer() {
-    io:println("Running CreateLinkedServer Test");
+    io:println("<---Running CreateLinkedServer Test--->");
+
+    TlsVersion minimumTlsVersion = {minimumTlsVersion: "1.2"};
+
+    CreateCacheProperty properties = 
+    {
+        "sku": {
+            "name": "Premium",
+            "family": "P",
+            "capacity": 1
+        },
+        "enableNonSslPort": true,
+        "shardCount": 2,
+        "replicasPerMaster": 2,
+        "redisConfiguration": {"maxmemory-policy": "allkeys-lru"},
+        "subnetId": "/subscriptions/subid/resourceGroups/rg2/providers/Microsoft.Network/virtualNetworks/network1/subnets/subnet1",
+        "staticIP": "192.168.0.5",
+        "minimumTlsVersion": minimumTlsVersion
+    };
+    var createResponse = azureRedisClient->createRedisCache("TestRedisConnectorCacheLinkedServer", "TestRedisConnector", 
+    "South India", properties);
+    if (createResponse is json) {
+        io:println("Deployment of second cache instance");
+        json state = createResponse.properties.provisioningState;
+        while (state != "Succeeded") {
+            var getresponse = azureRedisClient->getRedisCache("TestRedisConnectorCacheLinkedServer", 
+            "TestRedisConnector");
+            if (getresponse is json) {
+                state = getresponse.properties.provisioningState;
+            }
+        }
+    } else {
+        test:assertFail(createResponse.message());
+    }
     var response = azureRedisClient->createLinkedServer("TestRedisConnectorCache", "TestRedisConnector", 
     "TestRedisConnectorCacheLinkedServer", 
     "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCacheLinkedServer", 
     "South India", "Secondary");
-    if (response is json) {
-        json testValue = {
+    if (response is LinkedServer) {
+        LinkedServer testValue = {
             "id": 
             "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCache/linkedServers/TestRedisConnectorCacheLinkedServer",
             "name": "TestRedisConnectorCacheLinkedServer",
@@ -464,7 +368,6 @@ function testCreateLinkedServer() {
                 "serverRole": "Secondary"
             }
         };
-        io:println(response.properties.provisioningState);
         io:println("Linking");
         json state = response.properties.provisioningState;
         while (state != "Succeeded") {
@@ -482,13 +385,11 @@ function testCreateLinkedServer() {
 
 @test:Config {dependsOn: ["testCreateLinkedServer"]}
 function testGetLinkedServer() {
-    io:println("Running GetLinkedServer Test");
+    io:println("<---Running GetLinkedServer Test--->");
     var response = azureRedisClient->getLinkedServer("TestRedisConnectorCache", "TestRedisConnector", 
     "TestRedisConnectorCacheLinkedServer");
-    if (response is json) {
-        LinkedServer cacheResponse = <@untainted>response;
-        io:println(cacheResponse);
-        json testValue = {
+    if (response is LinkedServer) {
+        LinkedServer testValue = {
             "id": 
             "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCache/linkedServers/TestRedisConnectorCacheLinkedServer",
             "name": "TestRedisConnectorCacheLinkedServer",
@@ -502,7 +403,7 @@ function testGetLinkedServer() {
                 "serverRole": "Secondary"
             }
         };
-        test:assertEquals(cacheResponse, testValue, msg = "Error in fetching linked server");
+        test:assertEquals(response, testValue, msg = "Error in fetching linked server");
     } else {
         test:assertFail(response.message());
     }
@@ -510,12 +411,22 @@ function testGetLinkedServer() {
 
 @test:Config {dependsOn: ["testCreateLinkedServer"]}
 function testListLinkedServer() {
-    io:println("Running ListLinkedServer Test");
+    io:println("<---Running ListLinkedServer Test--->");
     var response = azureRedisClient->listLinkedServers("TestRedisConnectorCacheLinkedServer", "TestRedisConnector");
-    if (response is StatusCode) {
-        StatusCode cacheResponse = <@untainted>response;
-        io:println(cacheResponse);
-    // test:assertEquals(cacheResponse, "200" , msg = "Error in listing linked server");      
+    if (response is LinkedServerList) {
+        LinkedServerList testValue = {"value": [{
+                "id": "/subscriptions/7241b7fa-c310-4b99-a53e-c5048cf0ec25/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCacheLinkedServer/linkedServers/TestRedisConnectorCache",
+                "name": "TestRedisConnectorCache",
+                "type": "Microsoft.Cache/Redis/linkedServers",
+                "properties": 
+                {
+                    "linkedRedisCacheId": "/subscriptions/7241b7fa-c310-4b99-a53e-c5048cf0ec25/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCache",
+                    "linkedRedisCacheLocation": "South India",
+                    "serverRole": "Primary",
+                    "provisioningState": "Succeeded"
+                }
+            }]};
+        test:assertEquals(response, testValue, msg = "Error in listing linked server");
     } else {
         test:assertFail(response.message());
     }
@@ -523,7 +434,7 @@ function testListLinkedServer() {
 
 @test:Config {dependsOn: ["testCreateLinkedServer"]}
 function testDeleteLinkedServer() {
-    io:println("Running DeleteLinkedServer Test");
+    io:println("<---Running DeleteLinkedServer Test--->");
     var response = azureRedisClient->deleteLinkedServer("TestRedisConnectorCache", "TestRedisConnector", 
     "TestRedisConnectorCacheLinkedServer");
     if (response is StatusCode) {
@@ -538,7 +449,7 @@ function testDeleteLinkedServer() {
     }
 }
 
-@test:Config {}
+@test:Config {dependsOn: ["testCreateRedisCache"]}
 function testCreatePatchSchedule() {
     PatchScheduleProperty properties = {scheduleEntries: [{
             dayOfWeek: "Monday",
@@ -549,7 +460,7 @@ function testCreatePatchSchedule() {
             startHourUtc: 12
         }]};
 
-    io:println("Running CreatePatchSchedule Test");
+    io:println("<---Running CreatePatchSchedule Test--->");
     var response = azureRedisClient->createPatchSchedule("TestRedisConnectorCache", "TestRedisConnector", properties);
     if (response is PatchShedule) {
         PatchShedule testValue = 
@@ -577,7 +488,7 @@ function testCreatePatchSchedule() {
 
 @test:Config {dependsOn: ["testCreatePatchSchedule"]}
 function testGetPatchSchedule() {
-    io:println("Running GetPatchSchedule Test");
+    io:println("<---Running GetPatchSchedule Test--->");
     var response = azureRedisClient->getPatchSchedule("TestRedisConnectorCache", "TestRedisConnector");
     if (response is PatchShedule) {
         PatchShedule testValue = 
@@ -604,7 +515,7 @@ function testGetPatchSchedule() {
 
 @test:Config {dependsOn: ["testCreatePatchSchedule"]}
 function testListPatchSchedule() {
-    io:println("Running ListPatchSchedule Test");
+    io:println("<---Running ListPatchSchedule Test--->");
     var response = azureRedisClient->listPatchSchedules("TestRedisConnectorCache", "TestRedisConnector");
     if (response is PatchSheduleList) {
         PatchSheduleList testValue = {"value": [
@@ -631,7 +542,7 @@ function testListPatchSchedule() {
 
 @test:Config {dependsOn: ["testCreatePatchSchedule"]}
 function testDeletePatchSchedule() {
-    io:println("Running DeletePatchSchedule Test");
+    io:println("<---Running DeletePatchSchedule Test--->");
     var response = azureRedisClient->deletePatchSchedule("TestRedisConnectorCache", "TestRedisConnector");
     if (response is StatusCode) {
         StatusCode statusCode = <@untainted>response;
@@ -645,9 +556,9 @@ function testDeletePatchSchedule() {
     }
 }
 
-@test:Config {}
+@test:Config {enable: false}
 function testPutPrivateEndpointConnection() {
-    io:println("Running PutPrivateEndpointConnection Test");
+    io:println("<---Running PutPrivateEndpointConnection Test--->");
     var response = azureRedisClient->putPrivateEndpointConnection("TestRedisConnectorCache", "TestRedisConnector", 
     "testPrivateEndpoint");
     if (response is json) {
@@ -675,8 +586,12 @@ function testPutPrivateEndpointConnection() {
     }
 }
 
-@test:Config {dependsOn: ["testPutPrivateEndpointConnection"]}
+@test:Config {
+    dependsOn: ["testPutPrivateEndpointConnection"],
+    enable: false
+}
 function testgetPrivateEndpointConnection() {
+    io:println("<---Running GetPrivateEndpointConnection Test--->");
     var response = azureRedisClient->getPrivateEndpointConnection("TestRedisConnectorCache", "TestRedisConnector", 
     "TestPrivateEndpoint");
     if (response is json) {
@@ -704,8 +619,12 @@ function testgetPrivateEndpointConnection() {
     }
 }
 
-@test:Config {dependsOn: ["testPutPrivateEndpointConnection"]}
+@test:Config {
+    dependsOn: ["testPutPrivateEndpointConnection"],
+    enable: false
+}
 function testListPrivateEndpointConnection() {
+    io:println("<---Running ListPrivateEndpointConnection Test--->");
     var response = azureRedisClient->listPrivateEndpointConnection("TestRedisConnectorCache", "TestRedisConnector");
     if (response is StatusCode) {
         StatusCode statusCode = <@untainted>response;
@@ -715,8 +634,12 @@ function testListPrivateEndpointConnection() {
     }
 }
 
-@test:Config {dependsOn: ["testPutPrivateEndpointConnection"]}
+@test:Config {
+    dependsOn: ["testPutPrivateEndpointConnection"],
+    enable: false
+}
 function testDeletePrivateEndpointConnection() {
+    io:println("<---Running DeletePrivateEndpointConnection Test--->");
     var response = azureRedisClient->deletePrivateEndpointConnection("TestRedisConnectorCache", "TestRedisConnector", 
     "TestPrivateEndpoint");
     if (response is StatusCode) {
@@ -727,12 +650,12 @@ function testDeletePrivateEndpointConnection() {
     }
 }
 
-@test:Config {}
+@test:Config {enable: false}
 function testGetPrivateLinkResources() {
+    io:println("<---Running GetPrivateLinkResources Test--->");
     var response = azureRedisClient->getPrivateLinkResources("TestRedisConnectorCache", "TestRedisConnector");
     if (response is StatusCode) {
         StatusCode statusCode = <@untainted>response;
-        // FirewallRuleResponse firewallResponse = <@untainted>response;
         test:assertEquals(statusCode?.code, "200", msg = "Error in getting PrivateLinkResources");
     } else {
         test:assertFail(response.message());
@@ -741,7 +664,7 @@ function testGetPrivateLinkResources() {
 
 @test:Config {}
 function testDeleteRedisCache() {
-    io:println("Running Delete Redis Cache Test");
+    io:println("<---Running Delete Redis Cache Test--->");
     var response = azureRedisClient->deleteRedisCache("TestRedisConnectorCache", "TestRedisConnector");
     if (response is StatusCode) {
         StatusCode statusCode = <@untainted>response;
@@ -756,7 +679,6 @@ function testDeleteRedisCache() {
         }
         while (state == "Deleting") {
             var getresponse1 = azureRedisClient->getRedisCache("TestRedisConnectorCache", "TestRedisConnector");
-            io:println(getresponse1);
             if (getresponse1 is json) {
                 state = getresponse1.properties.provisioningState;
                 io:println(getresponse1.properties.provisioningState);
@@ -769,23 +691,38 @@ function testDeleteRedisCache() {
 }
 
 @test:Config {}
-function testCreateRedisEnterprise() {
-    var response = azureRedisClient->createRedisEnterprise("TestRedisEnterpriseCache", "TestRedisConnector", 
+function testCreateRedisEnterpriseCache() {
+    io:println("<---Running CreateRedisEnterpriseCache Test--->");
+    var response = azureRedisClient->createRedisEnterpriseCache("TestRedisEnterpriseCache", "TestRedisConnector", 
     "southeastasia", "EnterpriseFlash_F300", 3);
-    if (response is StatusCode) {
-        StatusCode statusCode = <@untainted>response;
-        boolean createSuccess = false;
-        if (statusCode?.code == "200" || statusCode?.code == "201" || statusCode?.code == "204") {
-            createSuccess = true;
-        }
-        RedisEnterpriseCacheInstance testValue = {};
-        test:assertEquals(createSuccess, true, msg = "Error in creating RedisEnterpriseCache");
+    if (response is RedisEnterpriseCacheInstance) {
+        RedisEnterpriseCacheInstance testValue = 
+        {
+            "location": "Southeast Asia",
+            "name": "TestRedisEnterpriseCache",
+            "id": "/subscriptions/7241b7fa-c310-4b99-a53e-c5048cf0ec25/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/redisEnterprise/TestRedisEnterpriseCache",
+            "type": "Microsoft.Cache/redisEnterprise",
+            "tags": {"tag1": "value1"},
+            "sku": {
+                "name": "EnterpriseFlash_F300",
+                "capacity": 3
+            },
+            "properties": {
+                "provisioningState": "Creating",
+                "resourceState": "Creating"
+            },
+            "zones": ["1", "2", "3"]
+        };
+        test:assertEquals(response, testValue, msg = "Error in creating RedisEnterpriseCache");
     } else {
         test:assertFail(response.message());
     }
 }
 
-@test:Config {dependsOn: ["testCreateRedisEnterprise"]}
+@test:Config {
+    dependsOn: ["testCreateRedisEnterpriseCache"],
+    enable: false
+}
 function testCreateRedisEnterpriseCacheDatabase() {
     var response = azureRedisClient->createRedisEnterpriseCacheDatabase("TestRedisEnterpriseCache", "TestRedisConnector", 
     "default");
@@ -801,7 +738,10 @@ function testCreateRedisEnterpriseCacheDatabase() {
     }
 }
 
-@test:Config {dependsOn: ["testCreateRedisEnterprise", "testCreateRedisEnterpriseCacheDatabase"]}
+@test:Config {
+    dependsOn: ["testCreateRedisEnterpriseCache", "testCreateRedisEnterpriseCacheDatabase"],
+    enable: false
+}
 function testGetRedisEnterpriseCacheDatabase() {
     var response = azureRedisClient->getRedisEnterpriseCacheDatabase("TestRedisEnterpriseCache", "TestRedisConnector", 
     "default");
@@ -817,7 +757,10 @@ function testGetRedisEnterpriseCacheDatabase() {
     }
 }
 
-@test:Config {dependsOn: ["testCreateRedisEnterprise", "testCreateRedisEnterpriseCacheDatabase"]}
+@test:Config {
+    dependsOn: ["testCreateRedisEnterpriseCache", "testCreateRedisEnterpriseCacheDatabase"],
+    enable: false
+}
 function testListRedisEnterpriseCacheDatabaseByCluster() {
     var response = azureRedisClient->listRedisEnterpriseCacheDatabaseByCluster("TestRedisEnterpriseCache", 
     "TestRedisConnector");
@@ -833,7 +776,10 @@ function testListRedisEnterpriseCacheDatabaseByCluster() {
     }
 }
 
-@test:Config {dependsOn: ["testCreateRedisEnterprise", "testCreateRedisEnterpriseCacheDatabase"]}
+@test:Config {
+    dependsOn: ["testCreateRedisEnterpriseCache", "testCreateRedisEnterpriseCacheDatabase"],
+    enable: false
+}
 function testListRedisEnterpriseCacheDatabaseKeys() {
     io:println("Running List Redis Enterprise Cache Database Keys Test");
     var response = azureRedisClient->listRedisEnterpriseCacheDatabaseKeys("TestRedisEnterpriseCache", 
@@ -850,7 +796,10 @@ function testListRedisEnterpriseCacheDatabaseKeys() {
     }
 }
 
-@test:Config {dependsOn: ["testCreateRedisEnterprise", "testCreateRedisEnterpriseCacheDatabase"]}
+@test:Config {
+    dependsOn: ["testCreateRedisEnterpriseCache", "testCreateRedisEnterpriseCacheDatabase"],
+    enable: false
+}
 function testRegenerateRedisEnterpriseCacheDatabaseKey() {
     io:println("Running Regenerate Redis Enterprise Cache Database Key Test");
     var response = azureRedisClient->regenerateRedisEnterpriseCacheDatabaseKey("TestRedisEnterpriseCache", 
@@ -869,7 +818,7 @@ function testRegenerateRedisEnterpriseCacheDatabaseKey() {
 
 # Update Redis Enterprise Database Test function(This function not available at the moment of development)
 @test:Config {
-    dependsOn: ["testCreateRedisEnterprise", "testCreateRedisEnterpriseCacheDatabase"],
+    dependsOn: ["testCreateRedisEnterpriseCache", "testCreateRedisEnterpriseCacheDatabase"],
     enable: false
 }
 function testUpdateRedisEnterpriseCacheDatabase() {
@@ -887,7 +836,10 @@ function testUpdateRedisEnterpriseCacheDatabase() {
     }
 }
 
-@test:Config {dependsOn: ["testCreateRedisEnterprise", "testCreateRedisEnterpriseCacheDatabase"]}
+@test:Config {
+    dependsOn: ["testCreateRedisEnterpriseCache", "testCreateRedisEnterpriseCacheDatabase"],
+    enable: false
+}
 function testDeleteRedisEnterpriseCacheDatabase() {
     var response = azureRedisClient->deleteRedisEnterpriseCacheDatabase("TestRedisEnterpriseCache", "TestRedisConnector", 
     "default");
@@ -903,10 +855,10 @@ function testDeleteRedisEnterpriseCacheDatabase() {
     }
 }
 
-@test:Config {dependsOn: ["testCreateRedisEnterprise"]}
-function testGetRedisEnterprise() {
+@test:Config {dependsOn: ["testCreateRedisEnterpriseCache"]}
+function testGetRedisEnterpriseCache() {
     io:println("Running Get Redis Enterprise Cache Test");
-    var response = azureRedisClient->getRedisEnterprise("TestRedisEnterpriseCache", "TestRedisConnector");
+    var response = azureRedisClient->getRedisEnterpriseCache("TestRedisEnterpriseCache", "TestRedisConnector");
     if (response is RedisEnterpriseCacheInstance) {
         RedisEnterpriseCacheInstance testValue = 
         {
@@ -932,31 +884,57 @@ function testGetRedisEnterprise() {
     }
 }
 
-@test:Config {dependsOn: ["testCreateRedisEnterprise"]}
-function testListRedisEnterprise() {
-    var response = azureRedisClient->listRedisEnterprise();
-    if (response is StatusCode) {
-        StatusCode statusCode = <@untainted>response;
-        boolean getSuccess = false;
-        if (statusCode?.code == "200") {
-            getSuccess = true;
-        }
-        test:assertEquals(getSuccess, true, msg = "Error in fetching RedisEnterpriseCache");
+@test:Config {dependsOn: ["testCreateRedisEnterpriseCache"]}
+function testListRedisEnterpriseCache() {
+    var response = azureRedisClient->listRedisEnterpriseCache();
+    if (response is RedisEnterpriseCacheInstanceList) {
+        RedisEnterpriseCacheInstanceList testValue = {"value": [
+            {
+                "location": "Southeast Asia",
+                "name": "TestRedisEnterpriseCache",
+                "id": "/subscriptions/7241b7fa-c310-4b99-a53e-c5048cf0ec25/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/redisEnterprise/TestRedisEnterpriseCache",
+                "type": "Microsoft.Cache/redisEnterprise",
+                "tags": {"tag1": "value1"},
+                "sku": {
+                    "name": "EnterpriseFlash_F300",
+                    "capacity": 3
+                },
+                "properties": {
+                    "provisioningState": "Creating",
+                    "resourceState": "Creating",
+                    "privateEndpointConnections": []
+                },
+                "zones": ["1", "2", "3"]
+            }]};
+        test:assertEquals(response, testValue, msg = "Error in fetching RedisEnterpriseCache List");
     } else {
         test:assertFail(response.message());
     }
 }
 
-@test:Config {dependsOn: ["testCreateRedisEnterprise"]}
-function testListRedisEnterpriseByResourceGroup() {
-    var response = azureRedisClient->listRedisEnterpriseByResourceGroup("TestRedisConnector");
-    if (response is StatusCode) {
-        StatusCode statusCode = <@untainted>response;
-        boolean getSuccess = false;
-        if (statusCode?.code == "200") {
-            getSuccess = true;
-        }
-        test:assertEquals(getSuccess, true, msg = "Error in fetching RedisEnterpriseCache");
+@test:Config {dependsOn: ["testCreateRedisEnterpriseCache"]}
+function testListRedisEnterpriseCacheByResourceGroup() {
+    var response = azureRedisClient->listRedisEnterpriseCacheByResourceGroup("TestRedisConnector");
+    if (response is RedisEnterpriseCacheInstanceList) {
+        RedisEnterpriseCacheInstanceList testValue = {"value": [
+            {
+                "location": "Southeast Asia",
+                "name": "TestRedisEnterpriseCache",
+                "id": "/subscriptions/7241b7fa-c310-4b99-a53e-c5048cf0ec25/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/redisEnterprise/TestRedisEnterpriseCache",
+                "type": "Microsoft.Cache/redisEnterprise",
+                "tags": {"tag1": "value1"},
+                "sku": {
+                    "name": "EnterpriseFlash_F300",
+                    "capacity": 3
+                },
+                "properties": {
+                    "provisioningState": "Creating",
+                    "resourceState": "Creating",
+                    "privateEndpointConnections": []
+                },
+                "zones": ["1", "2", "3"]
+            }]};
+        test:assertEquals(response, testValue, msg = "Error in fetching RedisEnterpriseCache List");
     } else {
         test:assertFail(response.message());
     }
@@ -964,11 +942,11 @@ function testListRedisEnterpriseByResourceGroup() {
 
 # Update Redis Enterprise Test function(This function not available at the moment of development)
 @test:Config {
-    dependsOn: ["testCreateRedisEnterprise"],
+    dependsOn: ["testCreateRedisEnterpriseCache"],
     enable: false
 }
-function testUpdateRedisEnterprise() {
-    var response = azureRedisClient->updateRedisEnterprise("TestRedisEnterpriseCache", "TestRedisConnector");
+function testUpdateRedisEnterpriseCache() {
+    var response = azureRedisClient->updateRedisEnterpriseCache("TestRedisEnterpriseCache", "TestRedisConnector");
     if (response is StatusCode) {
         StatusCode statusCode = <@untainted>response;
         boolean getSuccess = false;
@@ -981,9 +959,9 @@ function testUpdateRedisEnterprise() {
     }
 }
 
-@test:Config {dependsOn: ["testCreateRedisEnterprise"]}
-function testDeleteRedisEnterprise() {
-    var response = azureRedisClient->deleteRedisEnterprise("TestRedisEnterpriseCache", "TestRedisConnector");
+@test:Config {dependsOn: ["testCreateRedisEnterpriseCache"]}
+function testDeleteRedisEnterpriseCache() {
+    var response = azureRedisClient->deleteRedisEnterpriseCache("TestRedisEnterpriseCache", "TestRedisConnector");
     if (response is StatusCode) {
         StatusCode statusCode = <@untainted>response;
         boolean deleteSuccess = false;
