@@ -40,6 +40,7 @@ There is only one client provided by Ballerina to interact with Azure Redis Cach
 1. **azure_redis_cache:Client** - This creates a Azure Redis Client instance and perform different actions related to creating managing that Redis cache Instance, Firewall Rules, Patch Schedules and Linked Servers.
 
 # Prerequisites
+
 * .[Create Azure Account to access azure portal].(https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account/)
 
 * .[Create Resource Group].(https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/manage-resource-groups-portal#create-resource-groups)
