@@ -41,7 +41,7 @@ There is only one client provided by Ballerina to interact with Azure Redis Cach
 
 # Prerequisites
 
-* .[Create Azure Account to access azure portal].(https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account/)
+* Create Azure Account to access azure portal, .[sign up for a free Azure account].(https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account/)
 
 * .[Create Resource Group].(https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/manage-resource-groups-portal#create-resource-groups)
 
