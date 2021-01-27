@@ -21,15 +21,46 @@
 |      Ballerina Language       |         Swan Lake Preview 8 	       |
 | Azure Redis Cache API Version |   2020-06-01 or 2020-10-01-preview   |
 
+# Supported Operations
+
+## Operations regarding creating and managing Redis Cache Instances
+The `ballerinax/azure_redis_cache` module contains operations regarding
+
+## Operations regarding creating and managing Firewall Rules
+
+## Operations regarding creating and managing Patch Schedules
+
+## Operations regarding creating and managing Linked Servers
+
+
 ## Azure Redis Cache Client
 
 There is only one client provided by Ballerina to interact with Azure Redis Cache.
 
-1. **azure_redis_cache:Client** - This creates a Azure Redis Cache instance and perform different actions related to managing that instance created
+1. **azure_redis_cache:Client** - This creates a Azure Redis Client instance and perform different actions related to creating managing that Redis cache Instance, Firewall Rules, Patch Schedules and Linked Servers.
 
+# Prerequisites
+* Azure Account to access azure portal.
+https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account/
+* Create Resource Group.
+https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/
+manage-resource-groups-portal#create-resource-groups
+* Access to Azure Active Directory.
+Application has to be created under Active Directory under same tenant.
+Client ID and Client Secret can be obtained from Certificates & secrets section in azure Active Directory which is used in getting access token. Azure Active Directory OAuth2 Implicit Flow approach is used to obtain access token.
+* Java 11 Installed
+Java Development Kit (JDK) with version 11 is required.
+
+* Ballerina SLP8 Installed
+Ballerina Swan Lake Preview Version 8 is required.
 
 
 ## Sample
 
 First, import the `ballerinax/azure_redis_cache` module into the Ballerina project.
 
+# Configuration
+Instantiate the connector by giving authorization credentials that a client application can use.
+
+## Getting the authorization credentials
+Have to create an app in azure active directory
