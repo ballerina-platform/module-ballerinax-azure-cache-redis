@@ -41,9 +41,9 @@ There is only one client provided by Ballerina to interact with Azure Redis Cach
 
 # Prerequisites
 
-* Create Azure Account to access azure portal, .[sign up for a free Azure account].(https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account/)
+* [Create Azure Account to access azure portal](https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account)
 
-* .[Create Resource Group].(https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/manage-resource-groups-portal#create-resource-groups)
+* [Create Resource Group](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/manage-resource-groups-portal#create-resource-groups)
 
 * Access to Azure Active Directory.
 Application has to be created under Active Directory under same tenant.
@@ -92,4 +92,5 @@ azure_redis_cache:AzureRedisConfiguration config = {oauth2Config: {
 }};
 Client azureRedisClient = new (config);
 ```
+
 
