@@ -19,7 +19,7 @@ import ballerina/oauth2;
 import ballerina/config;
 
 public type AzureRedisConfiguration record {
-    oauth2:DirectTokenConfig oauth2Config;
+    oauth2:ClientCredentialsGrantConfig oauth2Config;
     http:ClientSecureSocket secureSocketConfig?;
 };
 
