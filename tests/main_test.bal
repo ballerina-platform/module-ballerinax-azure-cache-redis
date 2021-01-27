@@ -16,14 +16,14 @@
 import ballerina/io;
 import ballerina/test;
 import ballerina/config;
-//import ballerina/runtime;
+import ballerina/runtime;
 
 AzureRedisConfiguration config = {oauth2Config: {
         tokenUrl: "https://login.microsoftonline.com/" + config:getAsString("TENANT_ID") + "/oauth2/v2.0/token",
         clientId: config:getAsString("CLIENT_ID"),
         clientSecret: config:getAsString("CLIENT_SECRET"),
         scopes: ["https://management.azure.com/.default"]
-    }};
+}};
 
 Client azureRedisClient = new (config);
 

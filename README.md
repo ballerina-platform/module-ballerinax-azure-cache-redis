@@ -40,14 +40,14 @@ There is only one client provided by Ballerina to interact with Azure Redis Cach
 1. **azure_redis_cache:Client** - This creates a Azure Redis Client instance and perform different actions related to creating managing that Redis cache Instance, Firewall Rules, Patch Schedules and Linked Servers.
 
 # Prerequisites
-* Azure Account to access azure portal.
-https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account/
-* Create Resource Group.
-https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/
-manage-resource-groups-portal#create-resource-groups
+* [Create Azure Account to access azure portal].(https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account/)
+
+* [Create Resource Group].(https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/manage-resource-groups-portal#create-resource-groups)
+
 * Access to Azure Active Directory.
 Application has to be created under Active Directory under same tenant.
 Client ID and Client Secret can be obtained from Certificates & secrets section in azure Active Directory which is used in getting access token. Azure Active Directory OAuth2 Implicit Flow approach is used to obtain access token.
+
 * Java 11 Installed
 Java Development Kit (JDK) with version 11 is required.
 
@@ -55,12 +55,40 @@ Java Development Kit (JDK) with version 11 is required.
 Ballerina Swan Lake Preview Version 8 is required.
 
 
-## Sample
-
-First, import the `ballerinax/azure_redis_cache` module into the Ballerina project.
-
 # Configuration
 Instantiate the connector by giving authorization credentials that a client application can use.
 
 ## Getting the authorization credentials
 Have to create an app in azure active directory
+
+
+## Azure Redis Cache Client
+
+You can now make the connection configuration using the connection string and entity path.
+```ballerina
+azure_redis_cache:AzureRedisConfiguration config = {oauth2Config: {
+        tokenUrl: <TOKEN_URL>,
+        clientId: <CLIENT_ID>,
+        clientSecret: <CLIENT_SECRET>,
+        scopes: <SCOPES_ARRAY>
+}};
+Client azureRedisClient = new (config);
+```
+
+# Sample
+First, import the `ballerinax/azure_redis_cache` module into the Ballerina project.
+```ballerina
+import ballerinax/azure_redis_cache;
+```
+
+You can now make the connection configuration using the connection string and entity path.
+```ballerina
+azure_redis_cache:AzureRedisConfiguration config = {oauth2Config: {
+        tokenUrl: "https://login.microsoftonline.com/" + config:getAsString("TENANT_ID") + "/oauth2/v2.0/token",
+        clientId: config:getAsString("CLIENT_ID"),
+        clientSecret: config:getAsString("CLIENT_SECRET"),
+        scopes: ["https://management.azure.com/.default"]
+}};
+Client azureRedisClient = new (config);
+```
+
