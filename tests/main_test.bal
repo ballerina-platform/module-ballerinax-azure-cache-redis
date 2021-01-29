@@ -41,9 +41,7 @@ function testCheckeRedisCacheAvailability() {
 
 @test:Config {}
 function testCreateRedisCache() {
-
     TlsVersion minimumTlsVersion = {minimumTlsVersion: "1.2"};
-
     CreateCacheProperty properties = 
     {
         "sku": {
