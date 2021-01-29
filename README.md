@@ -54,12 +54,6 @@ The `ballerinax/azure_redis_cache` module contains operations regarding
 * listLinkedServer
 * deleteLinkedServer
 
-## Azure Redis Cache Client
-
-There is only one client provided by Ballerina to interact with Azure Redis Cache.
-
-1. **azure_redis_cache:Client** - This creates a Azure Redis Client instance and perform different actions related to creating managing that Redis cache Instance, Firewall Rules, Patch Schedules and Linked Servers.
-
 # Prerequisites
 
 * You'll need an Azure subscription before you begin. If you don't have one, create a free account first. [Create Azure Account to access azure portal](https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account)
@@ -76,6 +70,11 @@ Java Development Kit (JDK) with version 11 is required.
 * Ballerina SLP8 Installed
 Ballerina Swan Lake Preview Version 8 is required.
 
+## Limitations
+* Only Management operations are supported from the connector. (Cache related operations are not supported as they are not provided by Azure cache for redis REST API).
+* Redis Enterprise Cluster supports only after version 2020-10-01-preview.
+* Some Redis Enterprise Cluster operations are still not supported at the moment as they are not supported by Azure Redis Cache REST API yet.
+
 
 # Configuration
 Instantiate the connector by giving authorization credentials that a client application can use.
@@ -86,7 +85,12 @@ Have to create an app in azure active directory
 
 ## Azure Redis Cache Client
 
+There is only one client provided by Ballerina to interact with Azure Redis Cache.
+
+**azure_redis_cache:Client** - This creates a Azure Redis Client instance and perform different actions related to creating managing that Redis cache Instance, Firewall Rules, Patch Schedules and Linked Servers.
+
 You can now make the connection configuration using the connection string and entity path.
+
 ```ballerina
 azure_redis_cache:AzureRedisConfiguration config = {oauth2Config: {
         tokenUrl: <TOKEN_URL>,
@@ -149,9 +153,35 @@ Client azureRedisClient = new (config);
 ```
 
 ```ballerina
-    var response = azureRedisClient->getRedisCache("TestRedisConnectorCache", "TestRedisConnector");
+    RedisCacheInstance|error response = azureRedisClient->getRedisCache("TestRedisConnectorCache", "TestRedisConnector");
     if (response is RedisCacheInstance) {
-        string   hostName = response.properties.hostName;
+        io:println("Redis cache instance fetched");
+        string hostName = response.properties.hostName;
+    } else {
+        io:println(response);
+    }
+```
+
+FireWall Rule can be created to allow particular ranges of IP addresses only connect to redis cache instance. This can be done by specifing statring and ending IP address of the range.
+
+```ballerina
+    FirewallRuleResponse|error response = azureRedisClient->createFirewallRule("TestRedisConnectorCache", "TestRedisConnector", "TestFilewallRule", "192.168.1.1", "192.168.1.4");
+    if (response is FirewallRuleResponse) {
+        io:println("Firewall Rule created");
+    } else {
+        io:println(response);
+    }
+```
+
+Linked Servers can be created to achieve Geo-Replication of redis cache instance. This can be done by specifing another redis cache instance to be linked and server role.
+
+```ballerina
+     var response = azureRedisClient->createLinkedServer("TestRedisConnectorCache", "TestRedisConnector", 
+     "TestRedisConnectorCacheLinkedServer", 
+     "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCacheLinkedServer", 
+     "South India", "Secondary");
+    if (response is LinkedServer) {
+        io:println("LinkedServer created");
     } else {
         io:println(response);
     }
