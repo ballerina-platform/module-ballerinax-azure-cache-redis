@@ -25,13 +25,34 @@
 
 ## Operations regarding creating and managing Redis Cache Instances
 The `ballerinax/azure_redis_cache` module contains operations regarding
+* checkeRedisCacheAvailability
+* createRedisCache
+* getRedisCache
+* importRedisCache
+* exportRedisCache
+* listByResourceGroup
+* listBySubscription
+* listKeys
+* regenerateKey
+* updateRedisCache
 
 ## Operations regarding creating and managing Firewall Rules
+* createFirewallRule
+* getFireWallRule
+* listFireWallRule
+* deleteFireWallRule
 
 ## Operations regarding creating and managing Patch Schedules
+* createPatchSchedule
+* getPatchSchedule
+* listPatchSchedule
+* deletePatchSchedule
 
 ## Operations regarding creating and managing Linked Servers
-
+* createLinkedServer
+* getLinkedServer
+* listLinkedServer
+* deleteLinkedServer
 
 ## Azure Redis Cache Client
 
