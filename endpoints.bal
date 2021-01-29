@@ -54,7 +54,6 @@ public client class Client {
         if (cacheName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = "/providers/Microsoft.Cache/CheckNameAvailability?api-version=" + config:getAsString(
         "API_VERSION");
         http:Request request = new;
@@ -86,7 +85,6 @@ public client class Client {
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || location == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + 
         redisCacheName + "?api-version=" + config:getAsString("API_VERSION");
         http:Request request = new;
@@ -129,7 +127,6 @@ public client class Client {
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + 
         redisCacheName + "?api-version=" + config:getAsString("API_VERSION");
         http:Request request = new;
@@ -166,7 +163,6 @@ public client class Client {
         blobContainerUrl == EMPTY_STRING) {
             return createAzureError("Required values not provided");
         }
-
         string requestPath = "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + 
         redisCacheName + "/export?api-version=" + config:getAsString("API_VERSION");
         http:Request request = new;
@@ -206,7 +202,6 @@ public client class Client {
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || files[0] == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = 
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "/import?api-version=" + 
         config:getAsString("API_VERSION");
@@ -241,7 +236,6 @@ public client class Client {
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = 
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "?api-version=" + 
         config:getAsString("API_VERSION");
@@ -272,7 +266,6 @@ public client class Client {
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createAzureError("Required values not provided");
         }
-
         string requestPath = 
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "/forceReboot?api-version=" + 
         config:getAsString("API_VERSION");
@@ -303,7 +296,6 @@ public client class Client {
         if (resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis?api-version=" + 
         config:getAsString("API_VERSION");
         http:Request request = new;
@@ -348,7 +340,6 @@ public client class Client {
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = 
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "/listKeys?api-version=" + 
         config:getAsString("API_VERSION");
@@ -377,7 +368,6 @@ public client class Client {
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || keyType == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = 
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "/regenerateKey?api-version=" + 
         config:getAsString("API_VERSION");
@@ -409,7 +399,6 @@ public client class Client {
         toString() == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = 
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "?api-version=" + 
         config:getAsString("API_VERSION");
@@ -445,7 +434,6 @@ public client class Client {
         EMPTY_STRING || endIP == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = 
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "/firewallRules/" + 
         ruleName + "?api-version=" + config:getAsString("API_VERSION");
@@ -483,7 +471,6 @@ public client class Client {
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || ruleName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = 
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "/firewallRules/" + 
         ruleName + "?api-version=" + config:getAsString("API_VERSION");
@@ -510,7 +497,6 @@ public client class Client {
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || ruleName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = 
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "/firewallRules/" + 
         ruleName + "?api-version=" + config:getAsString("API_VERSION");
@@ -538,7 +524,6 @@ public client class Client {
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = 
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "/firewallRules?api-version=" + 
         config:getAsString("API_VERSION");
@@ -575,7 +560,6 @@ public client class Client {
         linkedRedisCacheId == EMPTY_STRING || linkedRedisCacheLocation == EMPTY_STRING || serverRole == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = 
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "/linkedServers/" + 
         linkedServerName + "?api-version=" + config:getAsString("API_VERSION");
@@ -615,7 +599,6 @@ public client class Client {
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || linkedServerName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = 
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "/linkedServers/" + 
         linkedServerName + "?api-version=" + config:getAsString("API_VERSION");
@@ -642,7 +625,6 @@ public client class Client {
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || linkedServerName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = 
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "/linkedServers/" + 
         linkedServerName + "?api-version=" + config:getAsString("API_VERSION");
@@ -670,7 +652,6 @@ public client class Client {
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = 
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "/linkedServers?api-version=" + 
         config:getAsString("API_VERSION");
@@ -702,7 +683,6 @@ public client class Client {
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = 
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "/patchSchedules/default?api-version=" + 
         config:getAsString("API_VERSION");
@@ -736,7 +716,6 @@ public client class Client {
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + 
         redisCacheName + "/patchSchedules/default?api-version=" + config:getAsString("API_VERSION");
         http:Request request = new;
@@ -762,7 +741,6 @@ public client class Client {
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = 
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "/patchSchedules/default?api-version=" + 
         config:getAsString("API_VERSION");
@@ -790,7 +768,6 @@ public client class Client {
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = 
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "/patchSchedules?api-version=" + 
         config:getAsString("API_VERSION");
@@ -822,7 +799,6 @@ public client class Client {
         EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = 
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "/privateEndpointConnections/" + 
         privateEndpointConnectionName + "?api-version=" + config:getAsString("API_VERSION");
@@ -861,7 +837,6 @@ public client class Client {
         EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = 
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "/privateEndpointConnections/" + 
         privateEndpointConnectionName + "?api-version=" + config:getAsString("API_VERSION");
@@ -890,7 +865,6 @@ public client class Client {
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = 
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "/privateEndpointConnections?api-version=" + 
         config:getAsString("API_VERSION");
@@ -922,7 +896,6 @@ public client class Client {
         EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = 
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redis/" + redisCacheName + "/privateEndpointConnections/" + 
         privateEndpointConnectionName + "?api-version=" + config:getAsString("API_VERSION");
@@ -1018,7 +991,6 @@ public client class Client {
         if (redisEnterpriseName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
         redisEnterpriseName + "/databases/" + databaseName + "?api-version=" + config:getAsString(
         "ENTERPRISE_API_VERSION");
@@ -1055,7 +1027,6 @@ public client class Client {
         EMPTY_STRING || blobContainerUrl == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
         redisEnterpriseName + "/databases/" + databaseName + "/export?api-version=" + config:getAsString(
         "ENTERPRISE_API_VERSION");
@@ -1093,7 +1064,6 @@ public client class Client {
         if (redisEnterpriseName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
         redisEnterpriseName + "/databases/" + databaseName + "/import?api-version=" + config:getAsString(
         "ENTERPRISE_API_VERSION");
@@ -1128,7 +1098,6 @@ public client class Client {
         if (redisEnterpriseName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
         redisEnterpriseName + "/databases/" + databaseName + "?api-version=" + config:getAsString(
         "ENTERPRISE_API_VERSION");
@@ -1157,7 +1126,6 @@ public client class Client {
         if (redisEnterpriseName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
         redisEnterpriseName + "/databases?api-version=" + config:getAsString("ENTERPRISE_API_VERSION");
         http:Request request = new;
@@ -1185,7 +1153,6 @@ public client class Client {
         if (redisEnterpriseName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
         redisEnterpriseName + "/databases/" + databaseName + "/listKeys?api-version=" + config:getAsString(
         "ENTERPRISE_API_VERSION");
@@ -1216,7 +1183,6 @@ public client class Client {
         if (redisEnterpriseName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || keyType == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
         redisEnterpriseName + "/databases/" + databaseName + "/regenerateKey?api-version=" + config:getAsString(
         "ENTERPRISE_API_VERSION");
@@ -1258,7 +1224,6 @@ public client class Client {
         if (redisEnterpriseName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
         redisEnterpriseName + "/databases/" + databaseName + "?api-version=" + config:getAsString(
         "ENTERPRISE_API_VERSION");
@@ -1362,7 +1327,6 @@ public client class Client {
         if (redisEnterpriseClusterName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createAzureError("Required values not provided");
         }
-
         string requestPath = "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
         redisEnterpriseClusterName + "?api-version=" + config:getAsString("ENTERPRISE_API_VERSION");
         http:Request request = new;
@@ -1412,7 +1376,6 @@ public client class Client {
         if (resourceGroupName == EMPTY_STRING) {
             return createAzureError("Required values not provided");
         }
-
         string requestPath = 
         "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise?api-version=" + 
         config:getAsString("ENTERPRISE_API_VERSION");
@@ -1443,7 +1406,6 @@ public client class Client {
         if (redisEnterpriseClusterName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
         }
-
         string requestPath = "/resourceGroups/" + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
         redisEnterpriseClusterName + "?api-version=" + config:getAsString("ENTERPRISE_API_VERSION");
         http:Request request = new;
