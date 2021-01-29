@@ -16,7 +16,7 @@
 // under the License.
 
 isolated function convertToSKU(json|error jsonToSKUValue) returns SKU {
-    SKU sku = {};
+    SKU sku = { name : "Premium", family : "P", capacity : 0 };
     if (jsonToSKUValue is json) {
         sku.name = jsonToSKUValue.name != () ? jsonToSKUValue.name.toString() : EMPTY_STRING;
         sku.family = jsonToSKUValue.family != () ? jsonToSKUValue.family.toString() : EMPTY_STRING;
@@ -27,7 +27,7 @@ isolated function convertToSKU(json|error jsonToSKUValue) returns SKU {
 }
 
 isolated function jsonToStatusCode(string statusCodeResponse) returns StatusCode {
-    StatusCode statusCode = {code: ""};
+    StatusCode statusCode = { code : ""};
     statusCode.code = statusCodeResponse != "" ? statusCodeResponse : EMPTY_STRING;
     return statusCode;
 }
@@ -43,7 +43,7 @@ isolated function jsonToFirewallRule(json payloadResponse) returns FirewallRuleR
     return firewallRuleResponse;
 }
 
-isolated function createError(string message, error? err = ()) returns error {
+isolated function createAzureError(string message, error? err = ()) returns error {
     error redisError;
     if (err is error) {
         redisError = AzureRedisError(message, err);
@@ -51,6 +51,16 @@ isolated function createError(string message, error? err = ()) returns error {
         redisError = AzureRedisError(message);
     }
     return redisError;
+}
+
+isolated function createCustomError(string message, error? err = ()) returns error {
+    error customError;
+    if (err is error) {
+        customError = CustomError(message, err);
+    } else {
+        customError = CustomError(message);
+    }
+    return customError;
 }
 
 isolated function jsonArrayToStringArray(json[] jsonArray) returns string[] {

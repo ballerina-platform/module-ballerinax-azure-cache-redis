@@ -1,7 +1,7 @@
  ## Connector Overview
  
- Azure Cache for Redis Ballerina connector is a connector for connecting to Azure Cache for
- Redis via Ballerina language easily. It provides capability to connect to Azure Cache for Redis and to perform operations related to managing redis cache like Create, Read, Update and delete Redis cache instances, firewall rules, patch schedules and private endpoint connections. Apart from this it allows the special features provided by Azure Cache for Redis
+ Azure Cache for Redis Ballerina connector is a connector for managing to Azure Cache for
+ Redis via Ballerina language easily. It provides capability to perform operations related to managing redis cache like Create, Read, Update and delete Redis cache instances, firewall rules, patch schedules and private endpoint connections. Apart from this it allows the special features provided by Azure Cache for Redis
  like operations on Redis Enterprise Cluster and Redis Enterprise Cluster Databases. This
  connector promotes easy integration and access to Azure Cache for Redis via ballerina by
  handling most of the burden on ballerina developers in configuring a new connection to the
@@ -41,7 +41,7 @@ There is only one client provided by Ballerina to interact with Azure Redis Cach
 
 # Prerequisites
 
-* [Create Azure Account to access azure portal](https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account)
+* You'll need an Azure subscription before you begin. If you don't have one, create a free account first. [Create Azure Account to access azure portal](https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account)
 
 * [Create Resource Group](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/manage-resource-groups-portal#create-resource-groups)
 
@@ -93,4 +93,45 @@ azure_redis_cache:AzureRedisConfiguration config = {oauth2Config: {
 Client azureRedisClient = new (config);
 ```
 
+```ballerina
+    CreateCacheProperty properties = 
+    {
+        "sku": {
+            "name": "Premium",
+            "family": "P",
+            "capacity": 1
+        },
+        "enableNonSslPort": true,
+        "shardCount": 2,
+        "replicasPerMaster": 2,
+        "redisConfiguration": {"maxmemory-policy": "allkeys-lru"},
+        "subnetId": "/subscriptions/subid/resourceGroups/rg2/providers/Microsoft.Network/virtualNetworks/network1/subnets/subnet1",
+        "staticIP": "192.168.0.5",
+        "minimumTlsVersion": minimumTlsVersion
+    };
 
+    var response = azureRedisClient->createRedisCache("TestRedisConnectorCache", "TestRedisConnector", "South India", properties);
+    if (response is RedisCacheInstance) {
+        boolean createSuccess = true;
+        io:println("Redis cache instance created and deployment in progress");
+        json state = response.properties.provisioningState;
+        while (state != "Succeeded") {
+            var getresponse = azureRedisClient->getRedisCache("TestRedisConnectorCache", "TestRedisConnector");
+            if (getresponse is json) {
+                state = getresponse.properties.provisioningState;
+            }
+        }
+        io:println("Redis cache instance deployed and running");
+    } else {
+        io:println(response);
+    }
+```
+
+```ballerina
+    var response = azureRedisClient->getRedisCache("TestRedisConnectorCache", "TestRedisConnector");
+    if (response is RedisCacheInstance) {
+        string   hostName = response.properties.hostName;
+    } else {
+        io:println(response);
+    }
+```

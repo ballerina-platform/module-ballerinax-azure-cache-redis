@@ -15,22 +15,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public type Auth record {
-    string token_type;
-    int expires_in;
-    int ext_expires_in;
-    string access_token;
-};
-
-public type BaseUrlProperty record {|
-    string redisCacheName = "";
-    string resourceGroupName = "";
-|};
-
-public type PatchScheduleProperty record {|
-    ScheduleEntry[] scheduleEntries?;
-|};
-
 public type CreateCacheProperty record {|
     SKU sku;
     boolean enableNonSslPort;
@@ -43,9 +27,9 @@ public type CreateCacheProperty record {|
 |};
 
 public type SKU record {|
-    string name = "";
-    string family = "";
-    int capacity = 0;
+    string name;
+    string family;
+    int capacity;
 |};
 
 public type FirewallRule record {|
@@ -82,6 +66,8 @@ public type StatusCode record {|
 |};
 
 public type AzureRedisError distinct error;
+
+public type CustomError distinct error;
 
 public type RedisCacheInstance record {|
     string id;
@@ -186,12 +172,12 @@ public type LinkedServerList record {|
     LinkedServer[] value;
 |};
 
-public type PatchShedule record {|
+public type PatchSchedule record {|
     string id;
     string location;
     string name;
     string 'type;
-    PatchSheduleProperty properties;
+    PatchScheduleProperty properties;
 |};
 
 public type ScheduleEntry record {|
@@ -200,12 +186,12 @@ public type ScheduleEntry record {|
     string maintenanceWindow?;
 |};
 
-public type PatchSheduleProperty record {|
-    ScheduleEntry[] scheduleEntries;
+public type PatchScheduleProperty record {|
+    ScheduleEntry[] scheduleEntries?;
 |};
 
-public type PatchSheduleList record {|
-    PatchShedule[] value;
+public type PatchScheduleList record {|
+    PatchSchedule[] value;
 |};
 
 public type RedisEnterpriseDatabase record {|
