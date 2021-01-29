@@ -54,6 +54,11 @@ The `ballerinax/azure_redis_cache` module contains operations regarding
 * listLinkedServer
 * deleteLinkedServer
 
+## Limitations
+* Only Management operations are supported from the connector. (Cache related operations are not supported as they are not provided by Azure cache for redis REST API).
+* Redis Enterprise Cluster supports only after version 2020-10-01-preview.
+* Some Redis Enterprise Cluster operations are still not supported at the moment as they are not supported by Azure Redis Cache REST API yet.
+
 # Prerequisites
 
 * You'll need an Azure subscription before you begin. If you don't have one, create a free account first. [Create Azure Account to access azure portal](https://docs.microsoft.com/en-us/learn/modules/create-an-azure-account)
@@ -69,12 +74,6 @@ Java Development Kit (JDK) with version 11 is required.
 
 * Ballerina SLP8 Installed
 Ballerina Swan Lake Preview Version 8 is required.
-
-## Limitations
-* Only Management operations are supported from the connector. (Cache related operations are not supported as they are not provided by Azure cache for redis REST API).
-* Redis Enterprise Cluster supports only after version 2020-10-01-preview.
-* Some Redis Enterprise Cluster operations are still not supported at the moment as they are not supported by Azure Redis Cache REST API yet.
-
 
 # Configuration
 Instantiate the connector by giving authorization credentials that a client application can use.
@@ -176,7 +175,7 @@ FireWall Rule can be created to allow particular ranges of IP addresses only con
 Linked Servers can be created to achieve Geo-Replication of redis cache instance. This can be done by specifing another redis cache instance to be linked and server role.
 
 ```ballerina
-     var response = azureRedisClient->createLinkedServer("TestRedisConnectorCache", "TestRedisConnector", 
+     LinkedServer|error response = azureRedisClient->createLinkedServer("TestRedisConnectorCache", "TestRedisConnector", 
      "TestRedisConnectorCacheLinkedServer", 
      "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCacheLinkedServer", 
      "South India", "Secondary");

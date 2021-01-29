@@ -124,7 +124,7 @@ public type PrivateLinkServiceConnectionState record {|
     string actionRequired?;
 |};
 
-public type RedisEnterpriseCacheInstance record {|
+public type RedisEnterpriseInstance record {|
     string name;
     string 'type;
     string id;
@@ -132,7 +132,7 @@ public type RedisEnterpriseCacheInstance record {|
     EnterpriseSKU sku;
     string[] zones?;
     json tags?;
-    RedisEnterpriseCacheInstanceProperty properties;
+    RedisEnterpriseInstanceProperty properties;
 |};
 
 public type EnterpriseSKU record {|
@@ -140,7 +140,7 @@ public type EnterpriseSKU record {|
     int capacity?;
 |};
 
-public type RedisEnterpriseCacheInstanceProperty record {|
+public type RedisEnterpriseInstanceProperty record {|
     string provisioningState;
     string resourceState?;
     string publicNetworkAccess?;
@@ -150,8 +150,8 @@ public type RedisEnterpriseCacheInstanceProperty record {|
     string minimumTlsVersion?;
 |};
 
-public type RedisEnterpriseCacheInstanceList record {|
-    RedisEnterpriseCacheInstance[] value;
+public type RedisEnterpriseInstanceList record {|
+    RedisEnterpriseInstance[] value;
 |};
 
 public type LinkedServer record {|

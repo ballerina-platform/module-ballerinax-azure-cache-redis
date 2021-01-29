@@ -72,7 +72,7 @@ function testCreateRedisCache() {
                 state = getresponse.properties.provisioningState;
             }
         }
-        test:assertEquals(createSuccess, true, msg = "Error in creating RedisCache");
+        test:assertEquals(createSuccess, true, msg = "Error in creating Redis Cache");
     } else {
         test:assertFail(response.message());
     }
@@ -678,16 +678,16 @@ function testDeletePatchSchedule() {
 //     }
 // }
 // @test:Config {}
-// function testCreateRedisEnterpriseCache() {
-//     io:println("<---Running CreateRedisEnterpriseCache Test--->");
-//     var response = azureRedisClient->createRedisEnterpriseCache("TestRedisEnterpriseCache", "TestRedisConnector", 
+// function testCreateRedisEnterprise() {
+//     io:println("<---Running CreateRedisEnterprise Test--->");
+//     var response = azureRedisClient->createRedisEnterprise("TestRedisEnterprise", "TestRedisConnector", 
 //     "southeastasia", "EnterpriseFlash_F300", 3);
-//     if (response is RedisEnterpriseCacheInstance) {
-//         RedisEnterpriseCacheInstance testValue = 
+//     if (response is RedisEnterpriseInstance) {
+//         RedisEnterpriseInstance testValue = 
 //         {
 //             "location": "Southeast Asia",
-//             "name": "TestRedisEnterpriseCache",
-//             "id": "/subscriptions/7241b7fa-c310-4b99-a53e-c5048cf0ec25/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/redisEnterprise/TestRedisEnterpriseCache",
+//             "name": "TestRedisEnterprise",
+//             "id": "/subscriptions/7241b7fa-c310-4b99-a53e-c5048cf0ec25/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/redisEnterprise/TestRedisEnterprise",
 //             "type": "Microsoft.Cache/redisEnterprise",
 //             "tags": {"tag1": "value1"},
 //             "sku": {
@@ -700,17 +700,17 @@ function testDeletePatchSchedule() {
 //             },
 //             "zones": ["1", "2", "3"]
 //         };
-//         test:assertEquals(response, testValue, msg = "Error in creating RedisEnterpriseCache");
+//         test:assertEquals(response, testValue, msg = "Error in creating RedisEnterprise");
 //     } else {
 //         test:assertFail(response.message());
 //     }
 // }
 // @test:Config {
-//     dependsOn: ["testCreateRedisEnterpriseCache"],
+//     dependsOn: ["testCreateRedisEnterprise"],
 //     enable: false
 // }
-// function testCreateRedisEnterpriseCacheDatabase() {
-//     var response = azureRedisClient->createRedisEnterpriseCacheDatabase("TestRedisEnterpriseCache", "TestRedisConnector", 
+// function testCreateRedisEnterpriseDatabase() {
+//     var response = azureRedisClient->createRedisEnterpriseDatabase("TestRedisEnterprise", "TestRedisConnector", 
 //     "default");
 //     if (response is StatusCode) {
 //         StatusCode statusCode = <@untainted>response;
@@ -718,17 +718,17 @@ function testDeletePatchSchedule() {
 //         if (statusCode?.code == "200" || statusCode?.code == "201") {
 //             createSuccess = true;
 //         }
-//         test:assertEquals(createSuccess, true, msg = "Error in creating RedisEnterpriseCache");
+//         test:assertEquals(createSuccess, true, msg = "Error in creating RedisEnterprise");
 //     } else {
 //         test:assertFail(response.message());
 //     }
 // }
 // @test:Config {
-//     dependsOn: ["testCreateRedisEnterpriseCache", "testCreateRedisEnterpriseCacheDatabase"],
+//     dependsOn: ["testCreateRedisEnterprise", "testCreateRedisEnterpriseDatabase"],
 //     enable: false
 // }
-// function testGetRedisEnterpriseCacheDatabase() {
-//     var response = azureRedisClient->getRedisEnterpriseCacheDatabase("TestRedisEnterpriseCache", "TestRedisConnector", 
+// function testGetRedisEnterpriseDatabase() {
+//     var response = azureRedisClient->getRedisEnterpriseDatabase("TestRedisEnterprise", "TestRedisConnector", 
 //     "default");
 //     if (response is StatusCode) {
 //         StatusCode statusCode = <@untainted>response;
@@ -736,17 +736,17 @@ function testDeletePatchSchedule() {
 //         if (statusCode?.code == "200") {
 //             getSuccess = true;
 //         }
-//         test:assertEquals(getSuccess, true, msg = "Error in fetching RedisEnterpriseCache");
+//         test:assertEquals(getSuccess, true, msg = "Error in fetching RedisEnterprise");
 //     } else {
 //         test:assertFail(response.message());
 //     }
 // }
 // @test:Config {
-//     dependsOn: ["testCreateRedisEnterpriseCache", "testCreateRedisEnterpriseCacheDatabase"],
+//     dependsOn: ["testCreateRedisEnterprise", "testCreateRedisEnterpriseDatabase"],
 //     enable: false
 // }
-// function testListRedisEnterpriseCacheDatabaseByCluster() {
-//     var response = azureRedisClient->listRedisEnterpriseCacheDatabaseByCluster("TestRedisEnterpriseCache", 
+// function testListRedisEnterpriseDatabaseByCluster() {
+//     var response = azureRedisClient->listRedisEnterpriseDatabaseByCluster("TestRedisEnterprise", 
 //     "TestRedisConnector");
 //     if (response is StatusCode) {
 //         StatusCode statusCode = <@untainted>response;
@@ -754,18 +754,18 @@ function testDeletePatchSchedule() {
 //         if (statusCode?.code == "200") {
 //             getSuccess = true;
 //         }
-//         test:assertEquals(getSuccess, true, msg = "Error in fetching RedisEnterpriseCache by cluster");
+//         test:assertEquals(getSuccess, true, msg = "Error in fetching RedisEnterprise by cluster");
 //     } else {
 //         test:assertFail(response.message());
 //     }
 // }
 // @test:Config {
-//     dependsOn: ["testCreateRedisEnterpriseCache", "testCreateRedisEnterpriseCacheDatabase"],
+//     dependsOn: ["testCreateRedisEnterprise", "testCreateRedisEnterpriseDatabase"],
 //     enable: false
 // }
-// function testListRedisEnterpriseCacheDatabaseKeys() {
+// function testListRedisEnterpriseDatabaseKeys() {
 //     io:println("Running List Redis Enterprise Cache Database Keys Test");
-//     var response = azureRedisClient->listRedisEnterpriseCacheDatabaseKeys("TestRedisEnterpriseCache", 
+//     var response = azureRedisClient->listRedisEnterpriseDatabaseKeys("TestRedisEnterprise", 
 //     "TestRedisConnector", "default");
 //     if (response is StatusCode) {
 //         StatusCode statusCode = <@untainted>response;
@@ -779,12 +779,12 @@ function testDeletePatchSchedule() {
 //     }
 // }
 // @test:Config {
-//     dependsOn: ["testCreateRedisEnterpriseCache", "testCreateRedisEnterpriseCacheDatabase"],
+//     dependsOn: ["testCreateRedisEnterprise", "testCreateRedisEnterpriseDatabase"],
 //     enable: false
 // }
-// function testRegenerateRedisEnterpriseCacheDatabaseKey() {
+// function testRegenerateRedisEnterpriseDatabaseKey() {
 //     io:println("Running Regenerate Redis Enterprise Cache Database Key Test");
-//     var response = azureRedisClient->regenerateRedisEnterpriseCacheDatabaseKey("TestRedisEnterpriseCache", 
+//     var response = azureRedisClient->regenerateRedisEnterpriseDatabaseKey("TestRedisEnterprise", 
 //     "TestRedisConnector", "default", "Primary");
 //     if (response is StatusCode) {
 //         StatusCode statusCode = <@untainted>response;
@@ -799,11 +799,11 @@ function testDeletePatchSchedule() {
 // }
 // # Update Redis Enterprise Database Test function(This function not available at the moment of development)
 // @test:Config {
-//     dependsOn: ["testCreateRedisEnterpriseCache", "testCreateRedisEnterpriseCacheDatabase"],
+//     dependsOn: ["testCreateRedisEnterprise", "testCreateRedisEnterpriseDatabase"],
 //     enable: false
 // }
-// function testUpdateRedisEnterpriseCacheDatabase() {
-//     var response = azureRedisClient->updateRedisEnterpriseCacheDatabase("TestRedisEnterpriseCache", "TestRedisConnector", 
+// function testUpdateRedisEnterpriseDatabase() {
+//     var response = azureRedisClient->updateRedisEnterpriseDatabase("TestRedisEnterprise", "TestRedisConnector", 
 //     "default", "Encrypted", "AllKeysLRU", "RediSearch");
 //     if (response is StatusCode) {
 //         StatusCode statusCode = <@untainted>response;
@@ -817,11 +817,11 @@ function testDeletePatchSchedule() {
 //     }
 // }
 // @test:Config {
-//     dependsOn: ["testCreateRedisEnterpriseCache", "testCreateRedisEnterpriseCacheDatabase"],
+//     dependsOn: ["testCreateRedisEnterprise", "testCreateRedisEnterpriseDatabase"],
 //     enable: false
 // }
-// function testDeleteRedisEnterpriseCacheDatabase() {
-//     var response = azureRedisClient->deleteRedisEnterpriseCacheDatabase("TestRedisEnterpriseCache", "TestRedisConnector", 
+// function testDeleteRedisEnterpriseDatabase() {
+//     var response = azureRedisClient->deleteRedisEnterpriseDatabase("TestRedisEnterprise", "TestRedisConnector", 
 //     "default");
 //     if (response is StatusCode) {
 //         StatusCode statusCode = <@untainted>response;
@@ -829,21 +829,21 @@ function testDeletePatchSchedule() {
 //         if (statusCode?.code == "200" || statusCode?.code == "201" || statusCode?.code == "204") {
 //             deleteSuccess = true;
 //         }
-//         test:assertEquals(deleteSuccess, true, msg = "Error in deleting RedisEnterpriseCache");
+//         test:assertEquals(deleteSuccess, true, msg = "Error in deleting RedisEnterprise");
 //     } else {
 //         test:assertFail(response.message());
 //     }
 // }
-// @test:Config {dependsOn: ["testCreateRedisEnterpriseCache"]}
-// function testGetRedisEnterpriseCache() {
+// @test:Config {dependsOn: ["testCreateRedisEnterprise"]}
+// function testGetRedisEnterprise() {
 //     io:println("Running Get Redis Enterprise Cache Test");
-//     var response = azureRedisClient->getRedisEnterpriseCache("TestRedisEnterpriseCache", "TestRedisConnector");
-//     if (response is RedisEnterpriseCacheInstance) {
-//         RedisEnterpriseCacheInstance testValue = 
+//     var response = azureRedisClient->getRedisEnterprise("TestRedisEnterprise", "TestRedisConnector");
+//     if (response is RedisEnterpriseInstance) {
+//         RedisEnterpriseInstance testValue = 
 //         {
 //             "location": "Southeast Asia",
-//             "name": "TestRedisEnterpriseCache",
-//             "id": "/subscriptions/7241b7fa-c310-4b99-a53e-c5048cf0ec25/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/redisEnterprise/TestRedisEnterpriseCache",
+//             "name": "TestRedisEnterprise",
+//             "id": "/subscriptions/7241b7fa-c310-4b99-a53e-c5048cf0ec25/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/redisEnterprise/TestRedisEnterprise",
 //             "type": "Microsoft.Cache/redisEnterprise",
 //             "tags": {"tag1": "value1"},
 //             "sku": {
@@ -857,20 +857,20 @@ function testDeletePatchSchedule() {
 //             },
 //             "zones": ["1", "2", "3"]
 //         };
-//         test:assertEquals(response, testValue, msg = "Error in creating RedisEnterpriseCache");
+//         test:assertEquals(response, testValue, msg = "Error in creating RedisEnterprise");
 //     } else {
 //         test:assertFail(response.message());
 //     }
 // }
-// @test:Config {dependsOn: ["testCreateRedisEnterpriseCache"]}
-// function testListRedisEnterpriseCache() {
-//     var response = azureRedisClient->listRedisEnterpriseCache();
-//     if (response is RedisEnterpriseCacheInstanceList) {
-//         RedisEnterpriseCacheInstanceList testValue = {"value": [
+// @test:Config {dependsOn: ["testCreateRedisEnterprise"]}
+// function testListRedisEnterprise() {
+//     var response = azureRedisClient->listRedisEnterprise();
+//     if (response is RedisEnterpriseInstanceList) {
+//         RedisEnterpriseInstanceList testValue = {"value": [
 //             {
 //                 "location": "Southeast Asia",
-//                 "name": "TestRedisEnterpriseCache",
-//                 "id": "/subscriptions/7241b7fa-c310-4b99-a53e-c5048cf0ec25/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/redisEnterprise/TestRedisEnterpriseCache",
+//                 "name": "TestRedisEnterprise",
+//                 "id": "/subscriptions/7241b7fa-c310-4b99-a53e-c5048cf0ec25/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/redisEnterprise/TestRedisEnterprise",
 //                 "type": "Microsoft.Cache/redisEnterprise",
 //                 "tags": {"tag1": "value1"},
 //                 "sku": {
@@ -884,20 +884,20 @@ function testDeletePatchSchedule() {
 //                 },
 //                 "zones": ["1", "2", "3"]
 //             }]};
-//         test:assertEquals(response, testValue, msg = "Error in fetching RedisEnterpriseCache List");
+//         test:assertEquals(response, testValue, msg = "Error in fetching RedisEnterprise List");
 //     } else {
 //         test:assertFail(response.message());
 //     }
 // }
-// @test:Config {dependsOn: ["testCreateRedisEnterpriseCache"]}
-// function testListRedisEnterpriseCacheByResourceGroup() {
-//     var response = azureRedisClient->listRedisEnterpriseCacheByResourceGroup("TestRedisConnector");
-//     if (response is RedisEnterpriseCacheInstanceList) {
-//         RedisEnterpriseCacheInstanceList testValue = {"value": [
+// @test:Config {dependsOn: ["testCreateRedisEnterprise"]}
+// function testListRedisEnterpriseByResourceGroup() {
+//     var response = azureRedisClient->listRedisEnterpriseByResourceGroup("TestRedisConnector");
+//     if (response is RedisEnterpriseInstanceList) {
+//         RedisEnterpriseInstanceList testValue = {"value": [
 //             {
 //                 "location": "Southeast Asia",
-//                 "name": "TestRedisEnterpriseCache",
-//                 "id": "/subscriptions/7241b7fa-c310-4b99-a53e-c5048cf0ec25/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/redisEnterprise/TestRedisEnterpriseCache",
+//                 "name": "TestRedisEnterprise",
+//                 "id": "/subscriptions/7241b7fa-c310-4b99-a53e-c5048cf0ec25/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/redisEnterprise/TestRedisEnterprise",
 //                 "type": "Microsoft.Cache/redisEnterprise",
 //                 "tags": {"tag1": "value1"},
 //                 "sku": {
@@ -911,39 +911,39 @@ function testDeletePatchSchedule() {
 //                 },
 //                 "zones": ["1", "2", "3"]
 //             }]};
-//         test:assertEquals(response, testValue, msg = "Error in fetching RedisEnterpriseCache List");
+//         test:assertEquals(response, testValue, msg = "Error in fetching RedisEnterprise List");
 //     } else {
 //         test:assertFail(response.message());
 //     }
 // }
 // # Update Redis Enterprise Test function(This function not available at the moment of development)
 // @test:Config {
-//     dependsOn: ["testCreateRedisEnterpriseCache"],
+//     dependsOn: ["testCreateRedisEnterprise"],
 //     enable: false
 // }
-// function testUpdateRedisEnterpriseCache() {
-//     var response = azureRedisClient->updateRedisEnterpriseCache("TestRedisEnterpriseCache", "TestRedisConnector");
+// function testUpdateRedisEnterprise() {
+//     var response = azureRedisClient->updateRedisEnterprise("TestRedisEnterprise", "TestRedisConnector");
 //     if (response is StatusCode) {
 //         StatusCode statusCode = <@untainted>response;
 //         boolean getSuccess = false;
 //         if (statusCode?.code == "200") {
 //             getSuccess = true;
 //         }
-//         test:assertEquals(getSuccess, true, msg = "Error in updating RedisEnterpriseCache");
+//         test:assertEquals(getSuccess, true, msg = "Error in updating RedisEnterprise");
 //     } else {
 //         test:assertFail(response.message());
 //     }
 // }
-// @test:Config {dependsOn: ["testCreateRedisEnterpriseCache"]}
-// function testDeleteRedisEnterpriseCache() {
-//     var response = azureRedisClient->deleteRedisEnterpriseCache("TestRedisEnterpriseCache", "TestRedisConnector");
+// @test:Config {dependsOn: ["testCreateRedisEnterprise"]}
+// function testDeleteRedisEnterprise() {
+//     var response = azureRedisClient->deleteRedisEnterprise("TestRedisEnterprise", "TestRedisConnector");
 //     if (response is StatusCode) {
 //         StatusCode statusCode = <@untainted>response;
 //         boolean deleteSuccess = false;
 //         if (statusCode?.code == "200" || statusCode?.code == "202" || statusCode?.code == "204") {
 //             deleteSuccess = true;
 //         }
-//         test:assertEquals(deleteSuccess, true, msg = "Error in deleting RedisEnterpriseCache");
+//         test:assertEquals(deleteSuccess, true, msg = "Error in deleting RedisEnterprise");
 //     } else {
 //         test:assertFail(response.message());
 //     }
