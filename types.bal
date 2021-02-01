@@ -24,6 +24,7 @@ public type CreateCacheProperty record {|
     string subnetId?;
     string staticIP?;
     TlsVersion minimumTlsVersion?;
+    string publicNetworkAccess;
 |};
 
 public type SKU record {|
@@ -61,7 +62,7 @@ public type TlsVersion record {|
 |};
 
 public type StatusCode record {|
-    string code;
+    int code;
     string message?;
 |};
 

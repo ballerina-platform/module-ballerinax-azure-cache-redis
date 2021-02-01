@@ -16,14 +16,17 @@
 // under the License.
 
 # Azure Redis Cache REST API version
-final string BASE_URL = "https://management.azure.com/subscriptions/";
+const string BASE_URL = "https://management.azure.com/subscriptions/";
 # Azure Redis Cache REST API version
-final string API_VERSION = "2020-06-01";
+const string API_VERSION = "2020-06-01";
 # Constant `EMPTY_STRING`.
-final string EMPTY_STRING = "";
+const string EMPTY_STRING = "";
 # Response code constants
-final string UNAUTHORIZED = "401";
-final string OK = "200";
-final string CREATED = "201";
-final string ACCEPTED = "202";
-final string NO_CONTENT = "204";
+const int UNAUTHORIZED = 401;
+const int OK = 200;
+const int CREATED = 201;
+const int ACCEPTED = 202;
+const int NO_CONTENT = 204;
+# Request path constants
+const string RESOURCE_GROUP_PATH = "/resourceGroups/";
+const string PROVIDER_PATH = "/providers/Microsoft.Cache/redis/";

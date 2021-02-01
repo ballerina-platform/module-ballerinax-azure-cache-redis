@@ -16,7 +16,11 @@
 // under the License.
 
 isolated function convertToSKU(json|error jsonToSKUValue) returns SKU {
-    SKU sku = { name : "Premium", family : "P", capacity : 0 };
+    SKU sku = {
+        name: "Premium",
+        family: "P",
+        capacity: 0
+    };
     if (jsonToSKUValue is json) {
         sku.name = jsonToSKUValue.name != () ? jsonToSKUValue.name.toString() : EMPTY_STRING;
         sku.family = jsonToSKUValue.family != () ? jsonToSKUValue.family.toString() : EMPTY_STRING;
@@ -26,9 +30,9 @@ isolated function convertToSKU(json|error jsonToSKUValue) returns SKU {
     return sku;
 }
 
-isolated function jsonToStatusCode(string statusCodeResponse) returns StatusCode {
-    StatusCode statusCode = { code : ""};
-    statusCode.code = statusCodeResponse != "" ? statusCodeResponse : EMPTY_STRING;
+isolated function jsonToStatusCode(int statusCodeResponse) returns StatusCode {
+    StatusCode statusCode = {code: 0};
+    statusCode.code = statusCodeResponse != 0 ? statusCodeResponse : 0;
     return statusCode;
 }
 
