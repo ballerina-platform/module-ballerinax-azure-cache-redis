@@ -16,7 +16,7 @@
 // under the License.
 
 public type CreateCacheProperty record {|
-    SKU sku;
+    StockKeepingUnit sku;
     boolean enableNonSslPort;
     int shardCount?;
     int replicasPerMaster?;
@@ -27,7 +27,7 @@ public type CreateCacheProperty record {|
     string publicNetworkAccess;
 |};
 
-public type SKU record {|
+public type StockKeepingUnit record {|
     string name;
     string family;
     int capacity;
@@ -82,7 +82,7 @@ public type RedisCacheInstance record {|
 public type RedisCacheInstanceProperty record {|
     string provisioningState;
     string redisVersion?;
-    SKU sku;
+    StockKeepingUnit sku;
     boolean enableNonSslPort?;
     Instance[] instances?;
     string publicNetworkAccess?;
@@ -130,13 +130,13 @@ public type RedisEnterpriseInstance record {|
     string 'type;
     string id;
     string location;
-    EnterpriseSKU sku;
+    EnterpriseStockKeepingUnit sku;
     string[] zones?;
     json tags?;
     RedisEnterpriseInstanceProperty properties;
 |};
 
-public type EnterpriseSKU record {|
+public type EnterpriseStockKeepingUnit record {|
     string name?;
     int capacity?;
 |};
