@@ -34,10 +34,6 @@ public type StockKeepingUnit record {|
 |};
 
 public type FirewallRule record {|
-    FirewallRuleProperty firewallProperties;
-|};
-
-public type FirewallRuleResponse record {|
     string id?;
     string name?;
     string 'type?;
@@ -49,8 +45,8 @@ public type FirewallRuleProperty record {|
     string endIP = "";
 |};
 
-public type FirewallRuleListResponse record {|
-    FirewallRuleResponse[] value;
+public type FirewallRuleList record {|
+    FirewallRule[] value;
 |};
 
 public type RedisConfingPolicy record {|

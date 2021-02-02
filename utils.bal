@@ -15,8 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-isolated function convertToSKU(json|error jsonToSKUValue) returns SKU {
-    SKU sku = {
+isolated function convertToStockKeepingUnit(json|error jsonToSKUValue) returns StockKeepingUnit {
+    StockKeepingUnit sku = {
         name: "Premium",
         family: "P",
         capacity: 0
@@ -36,15 +36,15 @@ isolated function jsonToStatusCode(int statusCodeResponse) returns StatusCode {
     return statusCode;
 }
 
-isolated function jsonToFirewallRule(json payloadResponse) returns FirewallRuleResponse {
-    FirewallRuleResponse firewallRuleResponse = {};
-    firewallRuleResponse.id = payloadResponse.id != () ? payloadResponse.id.toString() : EMPTY_STRING;
+isolated function jsonToFirewallRule(json payloadResponse) returns FirewallRule {
+    FirewallRule firewallRule = {};
+    firewallRule.id = payloadResponse.id != () ? payloadResponse.id.toString() : EMPTY_STRING;
     if (payloadResponse.properties is error) {
-        return firewallRuleResponse;
+        return firewallRule;
     } else {
-        firewallRuleResponse.properties = jsonToFirewallRulePropertyArray(<json[]>payloadResponse.properties);
+        firewallRule.properties = jsonToFirewallRulePropertyArray(<json[]>payloadResponse.properties);
     }
-    return firewallRuleResponse;
+    return firewallRule;
 }
 
 isolated function createAzureError(string message, error? err = ()) returns error {
