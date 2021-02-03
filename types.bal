@@ -252,7 +252,7 @@ public type LinkedServerList record {|
 # + location - Location where Patch Schedule is to be created
 # + name - Patch Schedule Name
 # + type - Type of Patch Schedule
-# + properties - Properties of Patch Schedule
+# + properties - Properties of Patch Schedule such as day and time window
 public type PatchSchedule record {|
     string id;
     string location;

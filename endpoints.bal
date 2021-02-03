@@ -1124,7 +1124,7 @@ public client class Client {
     # + resourceGroupName - Resource Group Name where Redis Cache found.
     # + databaseName - Name of Database Name
     # + blobContainerUrl - path to bolb container 
-    # + sasKeyParameters - SAS key
+    # + sasKeyParameters - SAS key of storage resource
     # + return - If successful, returns boolean. Else returns error. 
     remote function exportRedisEnterpriseDatabase(string redisEnterpriseName, string resourceGroupName, 
                                                   string databaseName, string blobContainerUrl, string sasKeyParameters) returns @tainted 

@@ -157,7 +157,7 @@ Client azureRedisClient = new (config);
 FireWall Rule can be created to allow particular ranges of IP addresses only connect to redis cache instance. This can be done by specifing statring and ending IP address of the range.
 
 ```ballerina
-    FirewallRuleResponse|error response = azureRedisClient->createFirewallRule("TestRedisConnectorCache", "TestRedisConnector", "TestFilewallRule", "192.168.1.1", "192.168.1.4");
+    FirewallRule|error response = azureRedisClient->createFirewallRule("TestRedisConnectorCache", "TestRedisConnector", "TestFilewallRule", "192.168.1.1", "192.168.1.4");
     if (response is FirewallRuleResponse) {
         log:print("Firewall Rule created");
     } else {
