@@ -48,7 +48,7 @@ public client class Client {
     # This Function checks a Redis Cache Instance with input name already exist or not
     #
     # + cacheName - Redis Cache Instance Name 
-    # + return - If successful, returns StatusCode. Else returns error. 
+    # + return - If successful, returns boolean. Else returns error. 
     remote function checkRedisCacheNameAvailability(string cacheName) returns @tainted boolean|error {
 
         if (cacheName == EMPTY_STRING) {
@@ -63,7 +63,7 @@ public client class Client {
         };
         request.setJsonPayload(checkPayload);
         http:Response checkResponse = <http:Response>check self.AzureRedisClient->post(requestPath, request);
-        if (checkResponse.statusCode == OK) {
+        if (checkResponse.statusCode == http:STATUS_OK) {
             return true;
         } else {
             json responsePayload = check checkResponse.getJsonPayload();
@@ -103,10 +103,10 @@ public client class Client {
         http:Response createResponse = <http:Response>check self.AzureRedisClient->put(requestPath, request);
         string responsePayloadtest = createResponse.getJsonPayload().toString();
         json responsePayload = check createResponse.getJsonPayload();
-        if (createResponse.statusCode == OK) {
+        if (createResponse.statusCode == http:STATUS_OK) {
             RedisCacheInstance getRedisCacheResponse = check responsePayload.cloneWithType(RedisCacheInstance);
             return getRedisCacheResponse;
-        } else if (createResponse.statusCode == CREATED) {
+        } else if (createResponse.statusCode == http:STATUS_CREATED) {
             RedisCacheInstance getRedisCacheResponse = check responsePayload.cloneWithType(RedisCacheInstance);
             return getRedisCacheResponse;
         } else {
@@ -118,7 +118,7 @@ public client class Client {
     #
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
-    # + return - If successful, returns StatusCode. Else returns error. 
+    # + return - If successful, returns boolean. Else returns error. 
     remote function deleteRedisCache(string redisCacheName, string resourceGroupName) returns @tainted boolean|error {
 
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
@@ -128,7 +128,7 @@ public client class Client {
         config:getAsString("API_VERSION");
         http:Request request = new;
         http:Response deleteResponse = <http:Response>check self.AzureRedisClient->delete(requestPath, request);
-        if (deleteResponse.statusCode == OK || deleteResponse.statusCode == NO_CONTENT || deleteResponse.statusCode == 
+        if (deleteResponse.statusCode == http:STATUS_OK || deleteResponse.statusCode == http:STATUS_NO_CONTENT || deleteResponse.statusCode == 
         ACCEPTED) {
             return true;
         } else {
@@ -147,7 +147,7 @@ public client class Client {
     # + blobContainerUrl - path to bolb storage 
     # + sasKeyParameters - SAS key
     # + format - file format to which exported
-    # + return - If successful, returns StatusCode. Else returns error. 
+    # + return - If successful, returns boolean. Else returns error. 
     remote function exportRedisCache(string redisCacheName, string resourceGroupName, string prefix, 
                                      string blobContainerUrl, string sasKeyParameters, string? format = ()) 
     returns @tainted boolean|error {
@@ -167,7 +167,7 @@ public client class Client {
         };
         request.setJsonPayload(exportCacheJsonPayload);
         http:Response exportResponse = <http:Response>check self.AzureRedisClient->post(requestPath, request);
-        if (exportResponse.statusCode == OK || exportResponse.statusCode == NO_CONTENT) {
+        if (exportResponse.statusCode == http:STATUS_OK || exportResponse.statusCode == http:STATUS_NO_CONTENT) {
             return true;
         } else if (exportResponse.statusCode == ACCEPTED) {
             return true;
@@ -186,7 +186,7 @@ public client class Client {
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + files - file name to be imported  
     # + format - file format to be imported
-    # + return - If successful, returns StatusCode. Else returns error. 
+    # + return - If successful, returns boolean. Else returns error. 
     remote function importRedisCache(string redisCacheName, string resourceGroupName, string[] files, 
                                      string? format = ()) returns @tainted boolean|error {
 
@@ -203,7 +203,7 @@ public client class Client {
         };
         request.setJsonPayload(importCacheJsonPayload);
         http:Response importResponse = <http:Response>check self.AzureRedisClient->post(requestPath, request);
-        if (importResponse.statusCode == OK || importResponse.statusCode == NO_CONTENT) {
+        if (importResponse.statusCode == http:STATUS_OK || importResponse.statusCode == http:STATUS_NO_CONTENT) {
             return true;
         } else if (importResponse.statusCode == ACCEPTED) {
             return true;
@@ -229,7 +229,7 @@ public client class Client {
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check getResponse.getJsonPayload();
-        if (getResponse.statusCode == OK) {
+        if (getResponse.statusCode == http:STATUS_OK) {
             RedisCacheInstance getRedisCacheResponse = check responsePayload.cloneWithType(RedisCacheInstance);
             return getRedisCacheResponse;
         } else {
@@ -263,7 +263,7 @@ public client class Client {
         request.setJsonPayload(rebootCacheJsonPayload);
         http:Response rebootResponse = <http:Response>check self.AzureRedisClient->post(requestPath, request);
         json responsePayload = check rebootResponse.getJsonPayload();
-        if (rebootResponse.statusCode == OK) {
+        if (rebootResponse.statusCode == http:STATUS_OK) {
             return jsonToStatusCode(rebootResponse.statusCode);
         } else {
             return createAzureError(responsePayload.toString());
@@ -284,7 +284,7 @@ public client class Client {
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check listResponse.getJsonPayload();
-        if (listResponse.statusCode == OK) {
+        if (listResponse.statusCode == http:STATUS_OK) {
             RedisCacheInstanceList listRedisCacheInstance = check responsePayload.cloneWithType(RedisCacheInstanceList);
             RedisCacheInstance[] listRedisCacheInstanceArray = listRedisCacheInstance.value;
             return listRedisCacheInstanceArray;
@@ -302,7 +302,7 @@ public client class Client {
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check listResponse.getJsonPayload();
-        if (listResponse.statusCode == OK) {
+        if (listResponse.statusCode == http:STATUS_OK) {
             RedisCacheInstanceList listRedisCacheInstance = check responsePayload.cloneWithType(RedisCacheInstanceList);
             RedisCacheInstance[] listRedisCacheInstanceArray = listRedisCacheInstance.value;
             return listRedisCacheInstanceArray;
@@ -327,7 +327,7 @@ public client class Client {
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->post(requestPath, request);
         json responsePayload = check listResponse.getJsonPayload();
-        if (listResponse.statusCode == OK) {
+        if (listResponse.statusCode == http:STATUS_OK) {
             AccessKey listKeys = check responsePayload.cloneWithType(AccessKey);
             return listKeys;
         } else {
@@ -355,7 +355,7 @@ public client class Client {
         request.setJsonPayload(regenerateKeyJsonPayload);
         http:Response regenerateResponse = <http:Response>check self.AzureRedisClient->post(requestPath, request);
         json responsePayload = check regenerateResponse.getJsonPayload();
-        if (regenerateResponse.statusCode == OK) {
+        if (regenerateResponse.statusCode == http:STATUS_OK) {
             AccessKey listKeys = check responsePayload.cloneWithType(AccessKey);
             return listKeys;
         } else {
@@ -394,7 +394,7 @@ public client class Client {
         request.setJsonPayload(updateCacheJsonPayload);
         http:Response updateResponse = <http:Response>check self.AzureRedisClient->patch(requestPath, request);
         json responsePayload = check updateResponse.getJsonPayload();
-        if (updateResponse.statusCode == OK) {
+        if (updateResponse.statusCode == http:STATUS_OK) {
             RedisCacheInstance getRedisCacheResponse = check responsePayload.cloneWithType(RedisCacheInstance);
             return getRedisCacheResponse;
         } else {
@@ -430,10 +430,10 @@ public client class Client {
         request.setJsonPayload(createFilewallRuleJsonPayload);
         http:Response createResponse = <http:Response>check self.AzureRedisClient->put(requestPath, request);
         json responsePayload = check createResponse.getJsonPayload();
-        if (createResponse.statusCode == OK) {
+        if (createResponse.statusCode == http:STATUS_OK) {
             FirewallRule createFirewallResponse = check responsePayload.cloneWithType(FirewallRule);
             return createFirewallResponse;
-        } else if (createResponse.statusCode == CREATED) {
+        } else if (createResponse.statusCode == http:STATUS_CREATED) {
             FirewallRule createFirewallResponse = check responsePayload.cloneWithType(FirewallRule);
             return createFirewallResponse;
         } else {
@@ -446,7 +446,7 @@ public client class Client {
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + ruleName - Name of Firewall Rule Name
-    # + return - If successful, returns StatusCode. Else returns error. 
+    # + return - If successful, returns boolean. Else returns error. 
     remote function deleteFirewallRule(string redisCacheName, string resourceGroupName, string ruleName) 
     returns @tainted boolean|error {
 
@@ -458,7 +458,7 @@ public client class Client {
         config:getAsString("API_VERSION");
         http:Request request = new;
         http:Response deleteResponse = <http:Response>check self.AzureRedisClient->delete(requestPath, request);
-        if (deleteResponse.statusCode == OK || deleteResponse.statusCode == NO_CONTENT) {
+        if (deleteResponse.statusCode == http:STATUS_OK || deleteResponse.statusCode == http:STATUS_NO_CONTENT) {
             return true;
         } else {
             return createAzureError(deleteResponse.toString());
@@ -483,7 +483,7 @@ public client class Client {
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check getResponse.getJsonPayload();
-        if (getResponse.statusCode == OK) {
+        if (getResponse.statusCode == http:STATUS_OK) {
             FirewallRule getFirewallResponse = check responsePayload.cloneWithType(FirewallRule);
             return getFirewallResponse;
         } else {
@@ -508,7 +508,7 @@ public client class Client {
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check listResponse.getJsonPayload();
-        if (listResponse.statusCode == OK) {
+        if (listResponse.statusCode == http:STATUS_OK) {
             FirewallRuleList getFirewallRuleList = check responsePayload.cloneWithType(
             FirewallRuleList);
             FirewallRule[] getFirewallRuleArray = getFirewallRuleList.value;
@@ -550,10 +550,10 @@ public client class Client {
         http:Response createResponse = <http:Response>check self.AzureRedisClient->put(requestPath, request);
         string statusCode = createResponse.statusCode.toString();
         json responsePayload = check createResponse.getJsonPayload();
-        if (createResponse.statusCode == OK) {
+        if (createResponse.statusCode == http:STATUS_OK) {
             LinkedServer createLinkedServerResponse = check responsePayload.cloneWithType(LinkedServer);
             return createLinkedServerResponse;
-        } else if (createResponse.statusCode == CREATED) {
+        } else if (createResponse.statusCode == http:STATUS_CREATED) {
             LinkedServer createLinkedServerResponse = check responsePayload.cloneWithType(LinkedServer);
             return createLinkedServerResponse;
         } else {
@@ -566,7 +566,7 @@ public client class Client {
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + linkedServerName - Name of Linked Server Name
-    # + return - If successful, returns StatusCode. Else returns error. 
+    # + return - If successful, returns boolean. Else returns error. 
     remote function deleteLinkedServer(string redisCacheName, string resourceGroupName, string linkedServerName) 
     returns @tainted boolean|error {
 
@@ -579,7 +579,7 @@ public client class Client {
         http:Request request = new;
         http:Response deleteResponse = <http:Response>check self.AzureRedisClient->delete(requestPath, request);
         string statusCode = deleteResponse.statusCode.toString();
-        if (deleteResponse.statusCode == OK || deleteResponse.statusCode == NO_CONTENT) {
+        if (deleteResponse.statusCode == http:STATUS_OK || deleteResponse.statusCode == http:STATUS_NO_CONTENT) {
             return true;
         } else {
             return createAzureError(deleteResponse.toString());
@@ -604,7 +604,7 @@ public client class Client {
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check getResponse.getJsonPayload();
-        if (getResponse.statusCode == OK) {
+        if (getResponse.statusCode == http:STATUS_OK) {
             LinkedServer getLinkedServerResponse = check responsePayload.cloneWithType(LinkedServer);
             return getLinkedServerResponse;
         } else {
@@ -629,7 +629,7 @@ public client class Client {
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check listResponse.getJsonPayload();
-        if (listResponse.statusCode == OK) {
+        if (listResponse.statusCode == http:STATUS_OK) {
             LinkedServerList getLinkedServerList = check responsePayload.cloneWithType(LinkedServerList);
             LinkedServer[] getLinkedServerArray = getLinkedServerList.value;
             return getLinkedServerArray;
@@ -661,10 +661,10 @@ public client class Client {
         request.setJsonPayload(createPayload);
         http:Response createResponse = <http:Response>check self.AzureRedisClient->put(requestPath, request);
         json responsePayload = check createResponse.getJsonPayload();
-        if (createResponse.statusCode == OK) {
+        if (createResponse.statusCode == http:STATUS_OK) {
             PatchSchedule createPatchResponse = check responsePayload.cloneWithType(PatchSchedule);
             return createPatchResponse;
-        } else if (createResponse.statusCode == CREATED) {
+        } else if (createResponse.statusCode == http:STATUS_CREATED) {
             PatchSchedule createPatchResponse = check responsePayload.cloneWithType(PatchSchedule);
             return createPatchResponse;
         } else {
@@ -676,7 +676,7 @@ public client class Client {
     #
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
-    # + return - If successful, returns StatusCode. Else returns error. 
+    # + return - If successful, returns boolean. Else returns error. 
     remote function deletePatchSchedule(string redisCacheName, string resourceGroupName) returns @tainted boolean|error {
 
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
@@ -687,7 +687,7 @@ public client class Client {
         config:getAsString("API_VERSION");
         http:Request request = new;
         http:Response deleteResponse = <http:Response>check self.AzureRedisClient->delete(requestPath, request);
-        if (deleteResponse.statusCode == OK || deleteResponse.statusCode == NO_CONTENT) {
+        if (deleteResponse.statusCode == http:STATUS_OK || deleteResponse.statusCode == http:STATUS_NO_CONTENT) {
             return true;
         } else {
             return createAzureError(deleteResponse.toString());
@@ -711,7 +711,7 @@ public client class Client {
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check getResponse.getJsonPayload();
-        if (getResponse.statusCode == OK) {
+        if (getResponse.statusCode == http:STATUS_OK) {
             PatchSchedule getPatchResponse = check responsePayload.cloneWithType(PatchSchedule);
             return getPatchResponse;
         } else {
@@ -736,7 +736,7 @@ public client class Client {
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check listResponse.getJsonPayload();
-        if (listResponse.statusCode == OK) {
+        if (listResponse.statusCode == http:STATUS_OK) {
             PatchScheduleList getPatchSheduleList = check responsePayload.cloneWithType(PatchScheduleList);
             PatchSchedule[] getPatchSheduleArray = getPatchSheduleList.value;
             return getPatchSheduleArray;
@@ -772,9 +772,9 @@ public client class Client {
         http:Response putResponse = <http:Response>check self.AzureRedisClient->put(requestPath, request);
         json responsePayload = check putResponse.getJsonPayload();
         log:print(responsePayload.toString());
-        if (putResponse.statusCode == CREATED) {
-            log:print(responsePayload.toString());
-            return responsePayload;
+        if (putResponse.statusCode == http:STATUS_CREATED) {
+            PrivateEndpointConnection getPrivateEndpointConnection = check responsePayload.cloneWithType(PrivateEndpointConnection);
+            return getPrivateEndpointConnection;
         } else {
             return createAzureError(responsePayload.toString());
         }
@@ -799,8 +799,9 @@ public client class Client {
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check getResponse.getJsonPayload();
-        if (getResponse.statusCode == OK) {
-            return responsePayload;
+        if (getResponse.statusCode == http:STATUS_OK) {
+            PrivateEndpointConnection getPrivateEndpointConnection = check responsePayload.cloneWithType(PrivateEndpointConnection);
+            return getPrivateEndpointConnection;
         } else {
             return createAzureError(responsePayload.toString());
         }
@@ -810,9 +811,9 @@ public client class Client {
     #
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found.
-    # + return - If successful, returns PrivateEndpointConnectionList. Else returns error.
+    # + return - If successful, returns PrivateEndpointConnection[]. Else returns error.
     remote function listPrivateEndpointConnection(string redisCacheName, string resourceGroupName) returns @tainted 
-    PrivateEndpointConnectionList|error {
+    PrivateEndpointConnection[]|error {
 
         if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
@@ -823,8 +824,10 @@ public client class Client {
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check listResponse.getJsonPayload();
-        if (listResponse.statusCode == OK) {
-            return jsonToStatusCode(listResponse.statusCode);
+        if (listResponse.statusCode == http:STATUS_OK) {
+            PrivateEndpointConnectionList getPrivateEndpointConnection = check responsePayload.cloneWithType(PrivateEndpointConnectionList);
+            PrivateEndpointConnection[] getPrivateEndpointConnectionArray = getPrivateEndpointConnection.value;
+            return getPrivateEndpointConnectionArray;
         } else {
             return createAzureError(responsePayload.toString());
         }
@@ -835,7 +838,7 @@ public client class Client {
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found.
     # + privateEndpointConnectionName - Name of Private Endpoint Connection
-    # + return - If successful, returns StatusCode. Else returns error.
+    # + return - If successful, returns boolean. Else returns error.
     remote function deletePrivateEndpointConnection(string redisCacheName, string resourceGroupName, 
                                                     string privateEndpointConnectionName) 
                                                     returns @tainted boolean|error {
@@ -850,7 +853,7 @@ public client class Client {
         http:Request request = new;
         http:Response deleteResponse = <http:Response>check self.AzureRedisClient->delete(requestPath, request);
         json responsePayload = check deleteResponse.getJsonPayload();
-        if (deleteResponse.statusCode == OK || deleteResponse.statusCode == NO_CONTENT) {
+        if (deleteResponse.statusCode == http:STATUS_OK || deleteResponse.statusCode == http:STATUS_NO_CONTENT) {
             return true;
         } else {
             return createAzureError(responsePayload.toString());
@@ -873,8 +876,10 @@ public client class Client {
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check getResponse.getJsonPayload();
-        if (getResponse.statusCode == OK) {
-            return jsonToStatusCode(getResponse.statusCode);
+        if (getResponse.statusCode == http:STATUS_OK) {
+            PrivateLinkResource getPrivateLinkResource = check responsePayload.cloneWithType(
+            PrivateLinkResource);
+            return getPrivateLinkResource;
         } else {
             return createAzureError(responsePayload.toString());
         }
@@ -910,11 +915,11 @@ public client class Client {
         request.setJsonPayload(createEnterpriseCacheJsonPayload);
         http:Response createResponse = <http:Response>check self.AzureRedisClient->put(requestPath, request);
         json responsePayload = check createResponse.getJsonPayload();
-        if (createResponse.statusCode == OK) {
+        if (createResponse.statusCode == http:STATUS_OK) {
             RedisEnterpriseInstance redisEnterpriseResponse = check responsePayload.cloneWithType(
             RedisEnterpriseInstance);
             return redisEnterpriseResponse;
-        } else if (createResponse.statusCode == CREATED) {
+        } else if (createResponse.statusCode == http:STATUS_CREATED) {
             RedisEnterpriseInstance redisEnterpriseResponse = check responsePayload.cloneWithType(
             RedisEnterpriseInstance);
             return redisEnterpriseResponse;
@@ -936,7 +941,7 @@ public client class Client {
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check getResponse.getJsonPayload();
-        if (getResponse.statusCode == OK) {
+        if (getResponse.statusCode == http:STATUS_OK) {
             RedisEnterpriseInstance getRedisEnterprise = check responsePayload.cloneWithType(RedisEnterpriseInstance);
             return getRedisEnterprise;
         } else {
@@ -948,7 +953,7 @@ public client class Client {
     #
     # + redisEnterpriseClusterName - Redis Enterprise ClusterName 
     # + resourceGroupName - Resource Group Name where Redis Enterprise found.
-    # + return - If successful, returns StatusCode. Else returns error. 
+    # + return - If successful, returns boolean. Else returns error. 
     remote function deleteRedisEnterprise(string redisEnterpriseClusterName, string resourceGroupName) 
     returns @tainted boolean|error {
 
@@ -960,7 +965,7 @@ public client class Client {
         http:Request request = new;
         http:Response deleteResponse = <http:Response>check self.AzureRedisClient->delete(requestPath, request);
         string responsePayload = deleteResponse.getJsonPayload().toString();
-        if (deleteResponse.statusCode == OK || deleteResponse.statusCode == NO_CONTENT) {
+        if (deleteResponse.statusCode == http:STATUS_OK || deleteResponse.statusCode == http:STATUS_NO_CONTENT) {
             return true;
         } else if (deleteResponse.statusCode == ACCEPTED) {
             return true;
@@ -979,7 +984,7 @@ public client class Client {
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check listResponse.getJsonPayload();
-        if (listResponse.statusCode == OK) {
+        if (listResponse.statusCode == http:STATUS_OK) {
             RedisEnterpriseInstanceList getRedisEnterpriseList = check responsePayload.cloneWithType(
             RedisEnterpriseInstanceList);
             RedisEnterpriseInstance[] getRedisEnterpriseArray = getRedisEnterpriseList.value;
@@ -1005,7 +1010,7 @@ public client class Client {
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check listResponse.getJsonPayload();
-        if (listResponse.statusCode == OK) {
+        if (listResponse.statusCode == http:STATUS_OK) {
             RedisEnterpriseInstanceList getRedisEnterpriseList = check responsePayload.cloneWithType(
             RedisEnterpriseInstanceList);
             RedisEnterpriseInstance[] getRedisEnterpriseArray = getRedisEnterpriseList.value;
@@ -1044,8 +1049,8 @@ public client class Client {
         };
         request.setJsonPayload(updateCacheJsonPayload);
         http:Response updateResponse = <http:Response>check self.AzureRedisClient->patch(requestPath, request);
-        json responsePayload = updateResponse.getJsonPayload();
-        if (updateResponse.statusCode == OK) {
+        json responsePayload = check updateResponse.getJsonPayload();
+        if (updateResponse.statusCode == http:STATUS_OK) {
             RedisEnterpriseInstance updatedRedisEnterprise = check responsePayload.cloneWithType(RedisEnterpriseInstance);
             return updatedRedisEnterprise;
         } else {
@@ -1062,26 +1067,25 @@ public client class Client {
     # + databaseName - Name of Database Name
     # + return - If successful, returns RedisEnterpriseDatabase. Else returns error 
     remote function createRedisEnterpriseDatabase(string redisEnterpriseName, string resourceGroupName, 
-                                                  string databaseName) returns @tainted StatusCode|error {
+                                                  string databaseName, CreateEnterpriseDBProperty properties) returns @tainted RedisEnterpriseDatabase|error {
 
         string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
         redisEnterpriseName + "/databases/" + databaseName + "?api-version=" + config:getAsString(
         "ENTERPRISE_API_VERSION");
         http:Request request = new;
         json createEnterpriseCacheDBJsonPayload = {"properties": {
-                "clientProtocol": "Encrypted",
-                "clusteringPolicy": "EnterpriseCluster",
-                "evictionPolicy": "AllKeysLRU",
-                "port": 10000,
-                "modules": []
+                "clientProtocol": properties.clientProtocol,
+                "clusteringPolicy": properties.clusteringPolicy,
+                "evictionPolicy": properties.evictionPolicy,
+                "port": properties.port,
+                "modules": properties.modules
             }};
         request.setJsonPayload(createEnterpriseCacheDBJsonPayload);
         http:Response createResponse = <http:Response>check self.AzureRedisClient->put(requestPath, request);
-        string responsePayload = createResponse.getJsonPayload().toString();
-        if (createResponse.statusCode == OK) {
-            return jsonToStatusCode(createResponse.statusCode);
-        } else if (createResponse.statusCode == CREATED) {
-            return jsonToStatusCode(createResponse.statusCode);
+        json responsePayload = check createResponse.getJsonPayload();
+        if (createResponse.statusCode == http:STATUS_OK || createResponse.statusCode == http:STATUS_CREATED) {
+            RedisEnterpriseDatabase getRedisEnterpriseDatabase = check responsePayload.cloneWithType(RedisEnterpriseDatabase);
+            return getRedisEnterpriseDatabase;
         } else {
             return createAzureError(responsePayload.toString());
         }
@@ -1092,7 +1096,7 @@ public client class Client {
     # + redisEnterpriseName - Redis Enterprise Cache Database Name. 
     # + resourceGroupName - Resource Group Name where Redis Cache found.
     # + databaseName - Name of Database Name
-    # + return - If successful, returns StatusCode. Else returns error. 
+    # + return - If successful, returns boolean. Else returns error. 
     remote function deleteRedisEnterpriseDatabase(string redisEnterpriseName, string resourceGroupName, 
                                                   string databaseName) returns @tainted boolean|error {
 
@@ -1104,8 +1108,8 @@ public client class Client {
         "ENTERPRISE_API_VERSION");
         http:Request request = new;
         http:Response deleteResponse = <http:Response>check self.AzureRedisClient->delete(requestPath, request);
-        string responsePayload = deleteResponse.getJsonPayload().toString();
-        if (deleteResponse.statusCode == OK || deleteResponse.statusCode == NO_CONTENT) {
+        json responsePayload = check deleteResponse.getJsonPayload();
+        if (deleteResponse.statusCode == http:STATUS_OK || deleteResponse.statusCode == http:STATUS_NO_CONTENT) {
             return true;
         } else if (deleteResponse.statusCode == ACCEPTED) {
             return true;
@@ -1121,7 +1125,7 @@ public client class Client {
     # + databaseName - Name of Database Name
     # + blobContainerUrl - path to bolb container 
     # + sasKeyParameters - SAS key
-    # + return - If successful, returns StatusCode. Else returns error. 
+    # + return - If successful, returns boolean. Else returns error. 
     remote function exportRedisEnterpriseDatabase(string redisEnterpriseName, string resourceGroupName, 
                                                   string databaseName, string blobContainerUrl, string sasKeyParameters) returns @tainted 
                                                   boolean|error {
@@ -1137,8 +1141,8 @@ public client class Client {
         json exportCacheJsonPayload = {"sasUri": blobContainerUrl + "?" + sasKeyParameters};
         request.setJsonPayload(exportCacheJsonPayload);
         http:Response exportResponse = <http:Response>check self.AzureRedisClient->post(requestPath, request);
-        string responsePayload = exportResponse.getJsonPayload().toString();
-        if (exportResponse.statusCode == OK || exportResponse.statusCode == NO_CONTENT || exportResponse.statusCode == ACCEPTED) {
+        json responsePayload = check exportResponse.getJsonPayload();
+        if (exportResponse.statusCode == http:STATUS_OK || exportResponse.statusCode == http:STATUS_NO_CONTENT || exportResponse.statusCode == ACCEPTED) {
             return true;
         } else {
             return createAzureError(responsePayload.toString());
@@ -1152,7 +1156,7 @@ public client class Client {
     # + databaseName - Name of Database Name
     # + blobFileUrl - path to bolb file storage 
     # + sasKeyParameters - SAS key
-    # + return - If successful, returns StatusCode. Else returns error. 
+    # + return - If successful, returns boolean. Else returns error. 
     remote function importRedisEnterpriseDatabase(string redisEnterpriseName, string resourceGroupName, 
                                                   string databaseName, string blobFileUrl, string sasKeyParameters) returns @tainted 
                                                   boolean|error {
@@ -1167,8 +1171,8 @@ public client class Client {
         json importCacheJsonPayload = {"sasUri": blobFileUrl + "?" + sasKeyParameters};
         request.setJsonPayload(importCacheJsonPayload);
         http:Response importResponse = <http:Response>check self.AzureRedisClient->post(requestPath, request);
-        string responsePayload = importResponse.getJsonPayload().toString();
-        if (importResponse.statusCode == OK || importResponse.statusCode == NO_CONTENT || exportResponse.statusCode == ACCEPTED) {
+        json responsePayload = check importResponse.getJsonPayload();
+        if (importResponse.statusCode == http:STATUS_OK || importResponse.statusCode == http:STATUS_NO_CONTENT || importResponse.statusCode == ACCEPTED) {
             return true;
         } else {
             return createAzureError(responsePayload.toString());
@@ -1193,7 +1197,7 @@ public client class Client {
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check getResponse.getJsonPayload();
-        if (getResponse.statusCode == OK) {
+        if (getResponse.statusCode == http:STATUS_OK) {
             RedisEnterpriseDatabase getRedisEnterpriseDatabase = check responsePayload.cloneWithType(RedisEnterpriseDatabase);
             return getRedisEnterpriseDatabase;
         } else {
@@ -1207,7 +1211,7 @@ public client class Client {
     # + resourceGroupName - Resource Group Name where Redis Cache found.
     # + return - If successful, returns RedisEnterpriseDatabase[]. Else returns error. 
     remote function listRedisEnterpriseDatabaseByCluster(string redisEnterpriseName, string resourceGroupName) returns @tainted 
-    StatusCode|error {
+    RedisEnterpriseDatabase[]|error {
 
         if (redisEnterpriseName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
@@ -1216,10 +1220,10 @@ public client class Client {
         redisEnterpriseName + "/databases?api-version=" + config:getAsString("ENTERPRISE_API_VERSION");
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
-        string responsePayload = listResponse.getJsonPayload().toString();
-        if (listResponse.statusCode == OK) {
+        json responsePayload = check listResponse.getJsonPayload();
+        if (listResponse.statusCode == http:STATUS_OK) {
             RedisEnterpriseDatabaseList getRedisEnterpriseDatabaseList = check responsePayload.cloneWithType(RedisEnterpriseDatabaseList);
-            RedisEnterpriseInstanceDatabase[] getRedisEnterpriseDatabaseArray = getRedisEnterpriseDatabaseList.value;
+            RedisEnterpriseDatabase[] getRedisEnterpriseDatabaseArray = getRedisEnterpriseDatabaseList.value;
             return getRedisEnterpriseDatabaseArray;
         } else {
             return createAzureError(responsePayload.toString());
@@ -1230,9 +1234,9 @@ public client class Client {
     #
     # + redisEnterpriseName - Redis Enterprise Cache Database Name. 
     # + resourceGroupName - Resource Group Name where Redis Cache found.
-    # + return - If successful, returns RedisEnterpriseDatabaseKeys. Else returns error. 
+    # + return - If successful, returns AccessKey. Else returns error. 
     remote function listRedisEnterpriseDatabaseKeys(string redisEnterpriseName, string resourceGroupName, 
-                                                    string databaseName) returns @tainted StatusCode|error {
+                                                    string databaseName) returns @tainted AccessKey|error {
 
         if (redisEnterpriseName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
@@ -1242,9 +1246,10 @@ public client class Client {
         "ENTERPRISE_API_VERSION");
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->post(requestPath, request);
-        string responsePayload = listResponse.getJsonPayload().toString();
-        if (listResponse.statusCode == OK) {
-            return jsonToStatusCode(listResponse.statusCode);
+        json responsePayload = check listResponse.getJsonPayload();
+        if (listResponse.statusCode == http:STATUS_OK) {
+            AccessKey listKeys = check responsePayload.cloneWithType(AccessKey);
+            return listKeys;
         } else {
             return createAzureError(responsePayload.toString());
         }
@@ -1255,10 +1260,10 @@ public client class Client {
     # + redisEnterpriseName - Redis Enterprise Cache Database Name. 
     # + resourceGroupName - Resource Group Name where Redis Cache found.
     # + databaseName - Name of Database Name
-    # + return - If successful, returns StatusCode. Else returns error. 
+    # + return - If successful, returns AccessKey. Else returns error. 
     remote function regenerateRedisEnterpriseDatabaseKey(string redisEnterpriseName, string resourceGroupName, 
                                                          string databaseName, string keyType) returns @tainted 
-    StatusCode|error {
+                                                         AccessKey|error {
 
         if (redisEnterpriseName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || keyType == EMPTY_STRING) {
             return createCustomError("Required values not provided");
@@ -1270,11 +1275,10 @@ public client class Client {
         json regenerateKeyJsonPayload = {"keyType": keyType};
         request.setJsonPayload(regenerateKeyJsonPayload);
         http:Response regenerateResponse = <http:Response>check self.AzureRedisClient->post(requestPath, request);
-        string responsePayload = regenerateResponse.getJsonPayload().toString();
-        if (regenerateResponse.statusCode == OK) {
-            return jsonToStatusCode(regenerateResponse.statusCode);
-        } else if (regenerateResponse.statusCode == ACCEPTED) {
-            return jsonToStatusCode(regenerateResponse.statusCode);
+        json responsePayload = check regenerateResponse.getJsonPayload();
+        if (regenerateResponse.statusCode == http:STATUS_OK || regenerateResponse.statusCode == ACCEPTED) {
+            AccessKey listKeys = check responsePayload.cloneWithType(AccessKey);
+            return listKeys;
         } else {
             return createAzureError(responsePayload.toString());
         }
@@ -1294,7 +1298,7 @@ public client class Client {
     # + return - If successful, returns RedisEnterpriseDatabase. Else returns error. 
     remote function updateRedisEnterpriseDatabase(string redisEnterpriseName, string resourceGroupName, 
                                                   string databaseName, string clientProtocol, string evictionPolicy, 
-                                                  string moduleName) returns @tainted StatusCode|error {
+                                                  string moduleName) returns @tainted RedisEnterpriseDatabase|error {
 
         if (redisEnterpriseName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
@@ -1310,9 +1314,10 @@ public client class Client {
             }};
         request.setJsonPayload(updateCacheJsonPayload);
         http:Response updateResponse = <http:Response>check self.AzureRedisClient->patch(requestPath, request);
-        string responsePayload = updateResponse.getJsonPayload().toString();
-        if (updateResponse.statusCode == OK) {
-            return jsonToStatusCode(updateResponse.statusCode);
+        json responsePayload = check updateResponse.getJsonPayload();
+        if (updateResponse.statusCode == http:STATUS_OK) {
+            RedisEnterpriseDatabase updateRedisEnterpriseDatabase = check responsePayload.cloneWithType(RedisEnterpriseDatabase);
+            return updateRedisEnterpriseDatabase;
         } else {
             return createAzureError(responsePayload.toString());
         }
@@ -1346,9 +1351,10 @@ public client class Client {
         http:Response putResponse = <http:Response>check self.AzureRedisClient->put(requestPath, request);
         json responsePayload = check putResponse.getJsonPayload();
         log:print(responsePayload.toString());
-        if (putResponse.statusCode == CREATED) {
+        if (putResponse.statusCode == http:STATUS_CREATED) {
             log:print(responsePayload.toString());
-            return responsePayload;
+            PrivateEndpointConnection getPrivateEndpointConnection = check responsePayload.cloneWithType(PrivateEndpointConnection);
+            return getPrivateEndpointConnection;
         } else {
             return createAzureError(responsePayload.toString());
         }
@@ -1374,8 +1380,9 @@ public client class Client {
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check getResponse.getJsonPayload();
-        if (getResponse.statusCode == OK) {
-            return responsePayload;
+        if (getResponse.statusCode == http:STATUS_OK) {
+            PrivateEndpointConnection getPrivateEndpointConnection = check responsePayload.cloneWithType(PrivateEndpointConnection);
+            return getPrivateEndpointConnection;
         } else {
             return createAzureError(responsePayload.toString());
         }
@@ -1385,9 +1392,9 @@ public client class Client {
     #
     # + redisEnterpriseCacheName - Redis Enterprise Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Enterprise Cache found.
-    # + return - If successful, returns PrivateEndpointConnectionList. Else returns error.
+    # + return - If successful, returns PrivateEndpointConnection[]. Else returns error.
     remote function listPrivateEndpointConnectionEnterprise(string redisEnterpriseCacheName, string resourceGroupName) returns @tainted 
-    PrivateEndpointConnectionList|error {
+    PrivateEndpointConnection[]|error {
 
         if (redisEnterpriseCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
             return createCustomError("Required values not provided");
@@ -1398,8 +1405,10 @@ public client class Client {
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check listResponse.getJsonPayload();
-        if (listResponse.statusCode == OK) {
-            return responsePayload;
+        if (listResponse.statusCode == http:STATUS_OK) {
+            PrivateEndpointConnectionList getPrivateEndpointConnection = check responsePayload.cloneWithType(PrivateEndpointConnectionList);
+            PrivateEndpointConnection[] getPrivateEndpointConnectionArray = getPrivateEndpointConnection.value;
+            return getPrivateEndpointConnectionArray;
         } else {
             return createAzureError(responsePayload.toString());
         }
@@ -1425,7 +1434,7 @@ public client class Client {
         http:Request request = new;
         http:Response deleteResponse = <http:Response>check self.AzureRedisClient->delete(requestPath, request);
         json responsePayload = check deleteResponse.getJsonPayload();
-        if (deleteResponse.statusCode == OK || deleteResponse.statusCode == NO_CONTENT) {
+        if (deleteResponse.statusCode == http:STATUS_OK || deleteResponse.statusCode == http:STATUS_NO_CONTENT) {
             return true;
         } else {
             return createAzureError(responsePayload.toString());
