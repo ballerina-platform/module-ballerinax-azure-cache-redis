@@ -1,4 +1,3 @@
-
 // Copyright (c) 2021 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 //
 // WSO2 Inc. licenses this file to you under the Apache License,
@@ -17,10 +16,10 @@
 
 # Azure Redis Cache REST API version
 const string BASE_URL = "https://management.azure.com/subscriptions/";
-# Azure Redis Cache REST API version
-const string API_VERSION = "2020-06-01";
 # Constant `EMPTY_STRING`.
 const string EMPTY_STRING = "";
+# Constant `SPACE`.
+const string SPACE = " ";
 # Response code constants
 const int UNAUTHORIZED = 401;
 const int OK = 200;
@@ -30,3 +29,4 @@ const int NO_CONTENT = 204;
 # Request path constants
 const string RESOURCE_GROUP_PATH = "/resourceGroups/";
 const string PROVIDER_PATH = "/providers/Microsoft.Cache/redis/";
+const string API_VERSION = "?api-version=";

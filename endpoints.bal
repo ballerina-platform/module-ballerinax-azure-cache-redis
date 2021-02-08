@@ -50,11 +50,7 @@ public client class Client {
     # + cacheName - Redis Cache Instance Name 
     # + return - If successful, returns boolean. Else returns error. 
     remote function checkRedisCacheNameAvailability(string cacheName) returns @tainted boolean|error {
-
-        if (cacheName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
-        string requestPath = "/providers/Microsoft.Cache/CheckNameAvailability?api-version=" + config:getAsString(
+        string requestPath = "/providers/Microsoft.Cache/CheckNameAvailability" + API_VERSION + config:getAsString(
         "API_VERSION");
         http:Request request = new;
         json checkPayload = {
@@ -67,7 +63,7 @@ public client class Client {
             return true;
         } else {
             json responsePayload = check checkResponse.getJsonPayload();
-            return createAzureError(responsePayload.toString());
+            return getAzureError(checkResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -80,11 +76,7 @@ public client class Client {
     # + return - If successful, returns RedisCacheInstance. Else returns error. 
     remote function createRedisCache(string redisCacheName, string resourceGroupName, string location, 
                                      CreateCacheProperty properties) returns @tainted RedisCacheInstance|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || location == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
-        string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "?api-version=" + 
+        string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         json createCachePayload = {
@@ -101,7 +93,6 @@ public client class Client {
         };
         request.setJsonPayload(createCachePayload);
         http:Response createResponse = <http:Response>check self.AzureRedisClient->put(requestPath, request);
-        string responsePayloadtest = createResponse.getJsonPayload().toString();
         json responsePayload = check createResponse.getJsonPayload();
         if (createResponse.statusCode == http:STATUS_OK) {
             RedisCacheInstance getRedisCacheResponse = check responsePayload.cloneWithType(RedisCacheInstance);
@@ -110,7 +101,7 @@ public client class Client {
             RedisCacheInstance getRedisCacheResponse = check responsePayload.cloneWithType(RedisCacheInstance);
             return getRedisCacheResponse;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(createResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -120,11 +111,7 @@ public client class Client {
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + return - If successful, returns boolean. Else returns error. 
     remote function deleteRedisCache(string redisCacheName, string resourceGroupName) returns @tainted boolean|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
-        string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "?api-version=" + 
+        string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         http:Response deleteResponse = <http:Response>check self.AzureRedisClient->delete(requestPath, request);
@@ -132,7 +119,8 @@ public client class Client {
         ACCEPTED) {
             return true;
         } else {
-            return createAzureError(deleteResponse.toString());
+            json responsePayload = check deleteResponse.getJsonPayload();
+            return getAzureError(deleteResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -150,14 +138,9 @@ public client class Client {
     # + return - If successful, returns boolean. Else returns error. 
     remote function exportRedisCache(string redisCacheName, string resourceGroupName, string prefix, 
                                      string blobContainerUrl, string sasKeyParameters, string? format = ()) 
-    returns @tainted boolean|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || prefix == EMPTY_STRING || 
-        blobContainerUrl == EMPTY_STRING) {
-            return createAzureError("Required values not provided");
-        }
+                                     returns @tainted boolean|error {
         string requestPath = 
-        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/export?api-version=" + 
+        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/export" + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         json exportCacheJsonPayload = {
@@ -173,7 +156,7 @@ public client class Client {
             return true;
         } else {
             json responsePayload = check exportResponse.getJsonPayload();
-            return createAzureError(responsePayload.toString());
+            return getAzureError(exportResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -189,12 +172,8 @@ public client class Client {
     # + return - If successful, returns boolean. Else returns error. 
     remote function importRedisCache(string redisCacheName, string resourceGroupName, string[] files, 
                                      string? format = ()) returns @tainted boolean|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || files[0] == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = 
-        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/import?api-version=" + 
+        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/import" + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         json importCacheJsonPayload = {
@@ -209,7 +188,7 @@ public client class Client {
             return true;
         } else {
             json responsePayload = check importResponse.getJsonPayload();
-            return createAzureError(responsePayload.toString());
+            return getAzureError(importResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -220,11 +199,7 @@ public client class Client {
     # + return - If successful, returns RedisCacheInstance. Else returns error. 
     remote function getRedisCache(string redisCacheName, string resourceGroupName) 
     returns @tainted RedisCacheInstance|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
-        string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "?api-version=" + 
+        string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
@@ -233,7 +208,7 @@ public client class Client {
             RedisCacheInstance getRedisCacheResponse = check responsePayload.cloneWithType(RedisCacheInstance);
             return getRedisCacheResponse;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(getResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -247,12 +222,8 @@ public client class Client {
     # + return - If successful, returns StatusCode. Else returns error. 
     remote function forceRebootRedisCache(string redisCacheName, string resourceGroupName, int shardId, 
                                           string rebootType, int[] ports) returns @tainted StatusCode|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
-            return createAzureError("Required values not provided");
-        }
         string requestPath = 
-        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/forceReboot?api-version=" + 
+        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/forceReboot" + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         json rebootCacheJsonPayload = {
@@ -266,7 +237,7 @@ public client class Client {
         if (rebootResponse.statusCode == http:STATUS_OK) {
             return jsonToStatusCode(rebootResponse.statusCode);
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(rebootResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -275,11 +246,7 @@ public client class Client {
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + return - If successful, returns RedisCacheInstance[]. Else returns error. 
     remote function listByResourceGroup(string resourceGroupName) returns @tainted RedisCacheInstance[]|error {
-
-        if (resourceGroupName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
-        string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + "/providers/Microsoft.Cache/redis?api-version=" + 
+        string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + "/providers/Microsoft.Cache/redis" + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
@@ -289,7 +256,7 @@ public client class Client {
             RedisCacheInstance[] listRedisCacheInstanceArray = listRedisCacheInstance.value;
             return listRedisCacheInstanceArray;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(listResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -297,8 +264,7 @@ public client class Client {
     #
     # + return - If successful, returns RedisCacheInstance[]. Else returns error. 
     remote function listBySubscription() returns @tainted RedisCacheInstance[]|error {
-
-        string requestPath = "/providers/Microsoft.Cache/redis?api-version=" + API_VERSION;
+        string requestPath = "/providers/Microsoft.Cache/redis" + API_VERSION + config:getAsString("API_VERSION");
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check listResponse.getJsonPayload();
@@ -307,7 +273,7 @@ public client class Client {
             RedisCacheInstance[] listRedisCacheInstanceArray = listRedisCacheInstance.value;
             return listRedisCacheInstanceArray;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(listResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -317,12 +283,8 @@ public client class Client {
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + return - If successful, returns AccessKey. Else returns error.
     remote function listKeys(string redisCacheName, string resourceGroupName) returns @tainted AccessKey|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = 
-        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/listKeys?api-version=" + 
+        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/listKeys" + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->post(requestPath, request);
@@ -331,7 +293,7 @@ public client class Client {
             AccessKey listKeys = check responsePayload.cloneWithType(AccessKey);
             return listKeys;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(listResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -343,12 +305,8 @@ public client class Client {
     # + return - If successful, returns AccessKey. Else returns error.
     remote function regenerateKey(string redisCacheName, string resourceGroupName, string keyType) returns @tainted 
     AccessKey|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || keyType == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = 
-        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/regenerateKey?api-version=" + 
+        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/regenerateKey" + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         json regenerateKeyJsonPayload = {"keyType": keyType};
@@ -359,7 +317,7 @@ public client class Client {
             AccessKey listKeys = check responsePayload.cloneWithType(AccessKey);
             return listKeys;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(regenerateResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -371,12 +329,7 @@ public client class Client {
     # + return - If successful, returns RedisCacheInstance. Else returns error. 
     remote function updateRedisCache(string redisCacheName, string resourceGroupName, string location, CreateCacheProperty properties) returns @tainted 
     RedisCacheInstance|error {
-
-        if (properties.sku.name == EMPTY_STRING || properties.sku.family == EMPTY_STRING || properties.sku.capacity.
-        toString() == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
-        string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "?api-version=" + 
+        string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         json updateCacheJsonPayload = {
@@ -398,7 +351,7 @@ public client class Client {
             RedisCacheInstance getRedisCacheResponse = check responsePayload.cloneWithType(RedisCacheInstance);
             return getRedisCacheResponse;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(updateResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -414,13 +367,8 @@ public client class Client {
     # + return - If successful, returns FirewallRule. Else returns error. 
     remote function createFirewallRule(string redisCacheName, string resourceGroupName, string ruleName, string startIP, 
                                        string endIP) returns @tainted FirewallRule|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || ruleName == EMPTY_STRING || startIP == 
-        EMPTY_STRING || endIP == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = 
-        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/firewallRules/" + ruleName + "?api-version=" + 
+        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/firewallRules/" + ruleName + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         json createFilewallRuleJsonPayload = {"properties": {
@@ -437,7 +385,7 @@ public client class Client {
             FirewallRule createFirewallResponse = check responsePayload.cloneWithType(FirewallRule);
             return createFirewallResponse;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(createResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -449,19 +397,16 @@ public client class Client {
     # + return - If successful, returns boolean. Else returns error. 
     remote function deleteFirewallRule(string redisCacheName, string resourceGroupName, string ruleName) 
     returns @tainted boolean|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || ruleName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = 
-        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/firewallRules/" + ruleName + "?api-version=" + 
+        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/firewallRules/" + ruleName + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         http:Response deleteResponse = <http:Response>check self.AzureRedisClient->delete(requestPath, request);
         if (deleteResponse.statusCode == http:STATUS_OK || deleteResponse.statusCode == http:STATUS_NO_CONTENT) {
             return true;
         } else {
-            return createAzureError(deleteResponse.toString());
+            json responsePayload = check deleteResponse.getJsonPayload();
+            return getAzureError(deleteResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -473,12 +418,8 @@ public client class Client {
     # + return - If successful, returns FirewallRule. Else returns error. 
     remote function getFirewallRule(string redisCacheName, string resourceGroupName, string ruleName) returns @tainted 
     FirewallRule|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || ruleName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = 
-        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/firewallRules/" + ruleName + "?api-version=" + 
+        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/firewallRules/" + ruleName + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
@@ -487,7 +428,7 @@ public client class Client {
             FirewallRule getFirewallResponse = check responsePayload.cloneWithType(FirewallRule);
             return getFirewallResponse;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(getResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -498,12 +439,8 @@ public client class Client {
     # + return - If successful, returns FirewallRule[]. Else returns error. 
     remote function listFirewallRules(string redisCacheName, string resourceGroupName) returns @tainted 
     FirewallRule[]|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = 
-        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/firewallRules?api-version=" + 
+        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/firewallRules" + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
@@ -514,7 +451,7 @@ public client class Client {
             FirewallRule[] getFirewallRuleArray = getFirewallRuleList.value;
             return getFirewallRuleArray;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(listResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -531,14 +468,9 @@ public client class Client {
     # + return - If successful, returns LinkedServer. Else returns error. 
     remote function createLinkedServer(string redisCacheName, string resourceGroupName, string linkedServerName, 
                                        string linkedRedisCacheId, string linkedRedisCacheLocation, string serverRole) returns @tainted 
-    LinkedServer|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || linkedServerName == EMPTY_STRING || 
-        linkedRedisCacheId == EMPTY_STRING || linkedRedisCacheLocation == EMPTY_STRING || serverRole == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
+                                       LinkedServer|error {
         string requestPath = 
-        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/linkedServers/" + linkedServerName + "?api-version=" + 
+        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/linkedServers/" + linkedServerName + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         json createLinkedServerJsonPayload = {"properties": {
@@ -557,7 +489,7 @@ public client class Client {
             LinkedServer createLinkedServerResponse = check responsePayload.cloneWithType(LinkedServer);
             return createLinkedServerResponse;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(createResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -569,12 +501,8 @@ public client class Client {
     # + return - If successful, returns boolean. Else returns error. 
     remote function deleteLinkedServer(string redisCacheName, string resourceGroupName, string linkedServerName) 
     returns @tainted boolean|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || linkedServerName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = 
-        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/linkedServers/" + linkedServerName + "?api-version=" + 
+        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/linkedServers/" + linkedServerName + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         http:Response deleteResponse = <http:Response>check self.AzureRedisClient->delete(requestPath, request);
@@ -582,7 +510,8 @@ public client class Client {
         if (deleteResponse.statusCode == http:STATUS_OK || deleteResponse.statusCode == http:STATUS_NO_CONTENT) {
             return true;
         } else {
-            return createAzureError(deleteResponse.toString());
+            json responsePayload = check deleteResponse.getJsonPayload();
+            return getAzureError(deleteResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -594,12 +523,8 @@ public client class Client {
     # + return - If successful, returns LinkedServer. Else returns error. 
     remote function getLinkedServer(string redisCacheName, string resourceGroupName, string linkedServerName) returns @tainted 
     LinkedServer|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || linkedServerName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = 
-        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/linkedServers/" + linkedServerName + "?api-version=" + 
+        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/linkedServers/" + linkedServerName + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
@@ -608,7 +533,7 @@ public client class Client {
             LinkedServer getLinkedServerResponse = check responsePayload.cloneWithType(LinkedServer);
             return getLinkedServerResponse;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(getResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -619,12 +544,8 @@ public client class Client {
     # + return - If successful, returns LinkedServer[]. Else returns error. 
     remote function listLinkedServers(string redisCacheName, string resourceGroupName) 
     returns @tainted LinkedServer[]|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = 
-        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/linkedServers?api-version=" + 
+        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/linkedServers" + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
@@ -634,7 +555,7 @@ public client class Client {
             LinkedServer[] getLinkedServerArray = getLinkedServerList.value;
             return getLinkedServerArray;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(listResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -648,13 +569,9 @@ public client class Client {
     # + return - If successful, returns PatchSchedule. Else returns error. 
     remote function createPatchSchedule(string redisCacheName, string resourceGroupName, 
                                         PatchScheduleProperty? patchScheduleProperties) 
-    returns @tainted PatchSchedule|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
+                                        returns @tainted PatchSchedule|error {
         string requestPath = 
-        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/patchSchedules/default?api-version=" + 
+        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/patchSchedules/default" + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         json createPayload = {properties: <json>patchScheduleProperties.cloneWithType(json)};
@@ -668,7 +585,7 @@ public client class Client {
             PatchSchedule createPatchResponse = check responsePayload.cloneWithType(PatchSchedule);
             return createPatchResponse;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(createResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -678,19 +595,16 @@ public client class Client {
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + return - If successful, returns boolean. Else returns error. 
     remote function deletePatchSchedule(string redisCacheName, string resourceGroupName) returns @tainted boolean|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = 
-        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/patchSchedules/default?api-version=" + 
+        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/patchSchedules/default" + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         http:Response deleteResponse = <http:Response>check self.AzureRedisClient->delete(requestPath, request);
         if (deleteResponse.statusCode == http:STATUS_OK || deleteResponse.statusCode == http:STATUS_NO_CONTENT) {
             return true;
         } else {
-            return createAzureError(deleteResponse.toString());
+            json responsePayload = check deleteResponse.getJsonPayload();
+            return getAzureError(deleteResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -701,12 +615,8 @@ public client class Client {
     # + return - If successful, returns PatchSchedule. Else returns error. 
     remote function getPatchSchedule(string redisCacheName, string resourceGroupName) 
     returns @tainted PatchSchedule|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = 
-        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/patchSchedules/default?api-version=" + 
+        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/patchSchedules/default" + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
@@ -715,7 +625,7 @@ public client class Client {
             PatchSchedule getPatchResponse = check responsePayload.cloneWithType(PatchSchedule);
             return getPatchResponse;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(getResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -726,12 +636,8 @@ public client class Client {
     # + return - If successful, returns PatchShedule[]. Else returns error. 
     remote function listPatchSchedules(string redisCacheName, string resourceGroupName) returns @tainted 
     PatchSchedule[]|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = 
-        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/patchSchedules?api-version=" + 
+        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/patchSchedules" + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
@@ -741,7 +647,7 @@ public client class Client {
             PatchSchedule[] getPatchSheduleArray = getPatchSheduleList.value;
             return getPatchSheduleArray;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(listResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -755,14 +661,9 @@ public client class Client {
     # + return - If successful, returns PrivateEndpointConnection. Else returns error. 
     remote function putPrivateEndpointConnection(string redisCacheName, string resourceGroupName, 
                                                  string privateEndpointConnectionName, string status, string description) returns @tainted PrivateEndpointConnection|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || privateEndpointConnectionName == 
-        EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = 
         RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/privateEndpointConnections/" + 
-        privateEndpointConnectionName + "?api-version=" + config:getAsString("API_VERSION");
+        privateEndpointConnectionName + API_VERSION + config:getAsString("API_VERSION");
         http:Request request = new;
         json putPrivateEndpointConnectionJsonPayload = {"properties": {"privateLinkServiceConnectionState": {
                     "status": status,
@@ -776,7 +677,7 @@ public client class Client {
             PrivateEndpointConnection getPrivateEndpointConnection = check responsePayload.cloneWithType(PrivateEndpointConnection);
             return getPrivateEndpointConnection;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(putResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -788,14 +689,9 @@ public client class Client {
     # + return - If successful, returns PrivateEndpointConnection. Else returns error. 
     remote function getPrivateEndpointConnection(string redisCacheName, string resourceGroupName, 
                                                  string privateEndpointConnectionName) returns @tainted PrivateEndpointConnection|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || privateEndpointConnectionName == 
-        EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = 
         RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/privateEndpointConnections/" + 
-        privateEndpointConnectionName + "?api-version=" + config:getAsString("API_VERSION");
+        privateEndpointConnectionName + API_VERSION + config:getAsString("API_VERSION");
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check getResponse.getJsonPayload();
@@ -803,7 +699,7 @@ public client class Client {
             PrivateEndpointConnection getPrivateEndpointConnection = check responsePayload.cloneWithType(PrivateEndpointConnection);
             return getPrivateEndpointConnection;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(getResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -814,12 +710,8 @@ public client class Client {
     # + return - If successful, returns PrivateEndpointConnection[]. Else returns error.
     remote function listPrivateEndpointConnection(string redisCacheName, string resourceGroupName) returns @tainted 
     PrivateEndpointConnection[]|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = 
-        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/privateEndpointConnections?api-version=" + 
+        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/privateEndpointConnections" + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
@@ -829,7 +721,7 @@ public client class Client {
             PrivateEndpointConnection[] getPrivateEndpointConnectionArray = getPrivateEndpointConnection.value;
             return getPrivateEndpointConnectionArray;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(listResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -842,21 +734,16 @@ public client class Client {
     remote function deletePrivateEndpointConnection(string redisCacheName, string resourceGroupName, 
                                                     string privateEndpointConnectionName) 
                                                     returns @tainted boolean|error {
-
-        if (redisCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || privateEndpointConnectionName == 
-        EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = 
         RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/privateEndpointConnections/" + 
-        privateEndpointConnectionName + "?api-version=" + config:getAsString("API_VERSION");
+        privateEndpointConnectionName + API_VERSION + config:getAsString("API_VERSION");
         http:Request request = new;
         http:Response deleteResponse = <http:Response>check self.AzureRedisClient->delete(requestPath, request);
-        json responsePayload = check deleteResponse.getJsonPayload();
         if (deleteResponse.statusCode == http:STATUS_OK || deleteResponse.statusCode == http:STATUS_NO_CONTENT) {
             return true;
         } else {
-            return createAzureError(responsePayload.toString());
+            json responsePayload = check deleteResponse.getJsonPayload();
+            return getAzureError(deleteResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -869,9 +756,8 @@ public client class Client {
     # + return - If successful, returns PrivateLinkResource. Else returns error.
     remote function getPrivateLinkResources(string redisCacheName, string resourceGroupName) 
     returns @tainted PrivateLinkResource|error {
-
         string requestPath = 
-        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/privateLinkResources?api-version=" + 
+        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/privateLinkResources" + API_VERSION + 
         config:getAsString("API_VERSION");
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
@@ -881,11 +767,11 @@ public client class Client {
             PrivateLinkResource);
             return getPrivateLinkResource;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(getResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
-    //Functions related to Redis enterprise
+    //Functions related to Redis enterprise only available is Public Preview Edition released
 
     # This Function Creates a new Redis Enterprise Cluster
     #
@@ -898,9 +784,8 @@ public client class Client {
     remote function createRedisEnterprise(string redisEnterpriseClusterName, string resourceGroupName, string location, 
                                           string skuName, int skuCapacity, string[] zones, string tags, CreateEnterpriseCacheProperty properties) 
                                           returns @tainted RedisEnterpriseInstance|error {
-
         string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
-        redisEnterpriseClusterName + "?api-version=" + config:getAsString("ENTERPRISE_API_VERSION");
+        redisEnterpriseClusterName + API_VERSION + config:getAsString("ENTERPRISE_API_VERSION");
         http:Request request = new;
         json createEnterpriseCacheJsonPayload = {
             "location": location,
@@ -924,7 +809,7 @@ public client class Client {
             RedisEnterpriseInstance);
             return redisEnterpriseResponse;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(responsePayload.toString());
         }
     }
 
@@ -935,9 +820,8 @@ public client class Client {
     # + return - If successful, returns RedisEnterpriseInstance. Else returns error. 
     remote function getRedisEnterprise(string redisEnterpriseClusterName, string resourceGroupName) returns @tainted 
     RedisEnterpriseInstance|error {
-
         string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
-        redisEnterpriseClusterName + "?api-version=" + config:getAsString("ENTERPRISE_API_VERSION");
+        redisEnterpriseClusterName + API_VERSION + config:getAsString("ENTERPRISE_API_VERSION");
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check getResponse.getJsonPayload();
@@ -945,7 +829,7 @@ public client class Client {
             RedisEnterpriseInstance getRedisEnterprise = check responsePayload.cloneWithType(RedisEnterpriseInstance);
             return getRedisEnterprise;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(responsePayload.toString());
         }
     }
 
@@ -956,12 +840,8 @@ public client class Client {
     # + return - If successful, returns boolean. Else returns error. 
     remote function deleteRedisEnterprise(string redisEnterpriseClusterName, string resourceGroupName) 
     returns @tainted boolean|error {
-
-        if (redisEnterpriseClusterName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
-            return createAzureError("Required values not provided");
-        }
         string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
-        redisEnterpriseClusterName + "?api-version=" + config:getAsString("ENTERPRISE_API_VERSION");
+        redisEnterpriseClusterName + API_VERSION + config:getAsString("ENTERPRISE_API_VERSION");
         http:Request request = new;
         http:Response deleteResponse = <http:Response>check self.AzureRedisClient->delete(requestPath, request);
         string responsePayload = deleteResponse.getJsonPayload().toString();
@@ -970,7 +850,7 @@ public client class Client {
         } else if (deleteResponse.statusCode == ACCEPTED) {
             return true;
         } else {
-            return createAzureError(deleteResponse.toString());
+            return getAzureError(deleteResponse.toString());
         }
     }
 
@@ -978,8 +858,7 @@ public client class Client {
     # 
     # + return - If successful, returns RedisEnterpriseInstance[]. Else returns error. 
     remote function listRedisEnterprise() returns @tainted RedisEnterpriseInstance[]|error {
-
-        string requestPath = "/providers/Microsoft.Cache/redisEnterprise?api-version=" + config:getAsString(
+        string requestPath = "/providers/Microsoft.Cache/redisEnterprise" + API_VERSION + config:getAsString(
         "ENTERPRISE_API_VERSION");
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
@@ -990,7 +869,7 @@ public client class Client {
             RedisEnterpriseInstance[] getRedisEnterpriseArray = getRedisEnterpriseList.value;
             return getRedisEnterpriseArray;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(responsePayload.toString());
         }
     }
 
@@ -1000,12 +879,8 @@ public client class Client {
     # + return - If successful, returns RedisEnterpriseInstance[]. Else returns error. 
     remote function listRedisEnterpriseByResourceGroup(string resourceGroupName) returns @tainted 
     RedisEnterpriseInstance[]|error {
-
-        if (resourceGroupName == EMPTY_STRING) {
-            return createAzureError("Required values not provided");
-        }
         string requestPath = 
-        RESOURCE_GROUP_PATH + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise?api-version=" + 
+        RESOURCE_GROUP_PATH + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise" + API_VERSION + 
         config:getAsString("ENTERPRISE_API_VERSION");
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
@@ -1016,7 +891,7 @@ public client class Client {
             RedisEnterpriseInstance[] getRedisEnterpriseArray = getRedisEnterpriseList.value;
             return getRedisEnterpriseArray;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(responsePayload.toString());
         }
     }
 
@@ -1030,12 +905,8 @@ public client class Client {
     remote function updateRedisEnterprise(string redisEnterpriseClusterName, string resourceGroupName, string location, 
                                           string skuName, int skuCapacity, string[] zones, string tags, CreateEnterpriseCacheProperty properties) returns @tainted 
                                           RedisEnterpriseInstance|error {
-
-        if (redisEnterpriseClusterName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
-        redisEnterpriseClusterName + "?api-version=" + config:getAsString("ENTERPRISE_API_VERSION");
+        redisEnterpriseClusterName + API_VERSION + config:getAsString("ENTERPRISE_API_VERSION");
         http:Request request = new;
         json updateCacheJsonPayload = {
             "location": location,
@@ -1054,7 +925,7 @@ public client class Client {
             RedisEnterpriseInstance updatedRedisEnterprise = check responsePayload.cloneWithType(RedisEnterpriseInstance);
             return updatedRedisEnterprise;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(responsePayload.toString());
         }
     }
 
@@ -1067,10 +938,10 @@ public client class Client {
     # + databaseName - Name of Database Name
     # + return - If successful, returns RedisEnterpriseDatabase. Else returns error 
     remote function createRedisEnterpriseDatabase(string redisEnterpriseName, string resourceGroupName, 
-                                                  string databaseName, CreateEnterpriseDBProperty properties) returns @tainted RedisEnterpriseDatabase|error {
-
+                                                  string databaseName, CreateEnterpriseDBProperty properties) 
+                                                  returns @tainted RedisEnterpriseDatabase|error {
         string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
-        redisEnterpriseName + "/databases/" + databaseName + "?api-version=" + config:getAsString(
+        redisEnterpriseName + "/databases/" + databaseName + API_VERSION + config:getAsString(
         "ENTERPRISE_API_VERSION");
         http:Request request = new;
         json createEnterpriseCacheDBJsonPayload = {"properties": {
@@ -1087,7 +958,7 @@ public client class Client {
             RedisEnterpriseDatabase getRedisEnterpriseDatabase = check responsePayload.cloneWithType(RedisEnterpriseDatabase);
             return getRedisEnterpriseDatabase;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(responsePayload.toString());
         }
     }
 
@@ -1099,12 +970,8 @@ public client class Client {
     # + return - If successful, returns boolean. Else returns error. 
     remote function deleteRedisEnterpriseDatabase(string redisEnterpriseName, string resourceGroupName, 
                                                   string databaseName) returns @tainted boolean|error {
-
-        if (redisEnterpriseName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
-        redisEnterpriseName + "/databases/" + databaseName + "?api-version=" + config:getAsString(
+        redisEnterpriseName + "/databases/" + databaseName + API_VERSION + config:getAsString(
         "ENTERPRISE_API_VERSION");
         http:Request request = new;
         http:Response deleteResponse = <http:Response>check self.AzureRedisClient->delete(requestPath, request);
@@ -1114,7 +981,7 @@ public client class Client {
         } else if (deleteResponse.statusCode == ACCEPTED) {
             return true;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(responsePayload.toString());
         }
     }
 
@@ -1129,13 +996,8 @@ public client class Client {
     remote function exportRedisEnterpriseDatabase(string redisEnterpriseName, string resourceGroupName, 
                                                   string databaseName, string blobContainerUrl, string sasKeyParameters) returns @tainted 
                                                   boolean|error {
-
-        if (redisEnterpriseName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || sasKeyParameters == 
-        EMPTY_STRING || blobContainerUrl == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
-        redisEnterpriseName + "/databases/" + databaseName + "/export?api-version=" + config:getAsString(
+        redisEnterpriseName + "/databases/" + databaseName + "/export" + API_VERSION + config:getAsString(
         "ENTERPRISE_API_VERSION");
         http:Request request = new;
         json exportCacheJsonPayload = {"sasUri": blobContainerUrl + "?" + sasKeyParameters};
@@ -1145,7 +1007,7 @@ public client class Client {
         if (exportResponse.statusCode == http:STATUS_OK || exportResponse.statusCode == http:STATUS_NO_CONTENT || exportResponse.statusCode == ACCEPTED) {
             return true;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(responsePayload.toString());
         }
     }
 
@@ -1160,12 +1022,8 @@ public client class Client {
     remote function importRedisEnterpriseDatabase(string redisEnterpriseName, string resourceGroupName, 
                                                   string databaseName, string blobFileUrl, string sasKeyParameters) returns @tainted 
                                                   boolean|error {
-
-        if (redisEnterpriseName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
-        redisEnterpriseName + "/databases/" + databaseName + "/import?api-version=" + config:getAsString(
+        redisEnterpriseName + "/databases/" + databaseName + "/import" + API_VERSION + config:getAsString(
         "ENTERPRISE_API_VERSION");
         http:Request request = new;
         json importCacheJsonPayload = {"sasUri": blobFileUrl + "?" + sasKeyParameters};
@@ -1175,7 +1033,7 @@ public client class Client {
         if (importResponse.statusCode == http:STATUS_OK || importResponse.statusCode == http:STATUS_NO_CONTENT || importResponse.statusCode == ACCEPTED) {
             return true;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(responsePayload.toString());
         }
     }
 
@@ -1187,12 +1045,8 @@ public client class Client {
     # + return - If successful, returns RedisEnterpriseDatabase. Else returns error. 
     remote function getRedisEnterpriseDatabase(string redisEnterpriseName, string resourceGroupName, string databaseName) returns @tainted 
     RedisEnterpriseDatabase|error {
-
-        if (redisEnterpriseName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
-        redisEnterpriseName + "/databases/" + databaseName + "?api-version=" + config:getAsString(
+        redisEnterpriseName + "/databases/" + databaseName + API_VERSION + config:getAsString(
         "ENTERPRISE_API_VERSION");
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
@@ -1201,7 +1055,7 @@ public client class Client {
             RedisEnterpriseDatabase getRedisEnterpriseDatabase = check responsePayload.cloneWithType(RedisEnterpriseDatabase);
             return getRedisEnterpriseDatabase;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(responsePayload.toString());
         }
     }
 
@@ -1212,12 +1066,8 @@ public client class Client {
     # + return - If successful, returns RedisEnterpriseDatabase[]. Else returns error. 
     remote function listRedisEnterpriseDatabaseByCluster(string redisEnterpriseName, string resourceGroupName) returns @tainted 
     RedisEnterpriseDatabase[]|error {
-
-        if (redisEnterpriseName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
-        redisEnterpriseName + "/databases?api-version=" + config:getAsString("ENTERPRISE_API_VERSION");
+        redisEnterpriseName + "/databases" + API_VERSION + config:getAsString("ENTERPRISE_API_VERSION");
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check listResponse.getJsonPayload();
@@ -1226,7 +1076,7 @@ public client class Client {
             RedisEnterpriseDatabase[] getRedisEnterpriseDatabaseArray = getRedisEnterpriseDatabaseList.value;
             return getRedisEnterpriseDatabaseArray;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(responsePayload.toString());
         }
     }
 
@@ -1237,12 +1087,8 @@ public client class Client {
     # + return - If successful, returns AccessKey. Else returns error. 
     remote function listRedisEnterpriseDatabaseKeys(string redisEnterpriseName, string resourceGroupName, 
                                                     string databaseName) returns @tainted AccessKey|error {
-
-        if (redisEnterpriseName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
-        redisEnterpriseName + "/databases/" + databaseName + "/listKeys?api-version=" + config:getAsString(
+        redisEnterpriseName + "/databases/" + databaseName + "/listKeys" + API_VERSION + config:getAsString(
         "ENTERPRISE_API_VERSION");
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->post(requestPath, request);
@@ -1251,7 +1097,7 @@ public client class Client {
             AccessKey listKeys = check responsePayload.cloneWithType(AccessKey);
             return listKeys;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(responsePayload.toString());
         }
     }
 
@@ -1264,12 +1110,8 @@ public client class Client {
     remote function regenerateRedisEnterpriseDatabaseKey(string redisEnterpriseName, string resourceGroupName, 
                                                          string databaseName, string keyType) returns @tainted 
                                                          AccessKey|error {
-
-        if (redisEnterpriseName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || keyType == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
-        redisEnterpriseName + "/databases/" + databaseName + "/regenerateKey?api-version=" + config:getAsString(
+        redisEnterpriseName + "/databases/" + databaseName + "/regenerateKey" + API_VERSION + config:getAsString(
         "ENTERPRISE_API_VERSION");
         http:Request request = new;
         json regenerateKeyJsonPayload = {"keyType": keyType};
@@ -1280,7 +1122,7 @@ public client class Client {
             AccessKey listKeys = check responsePayload.cloneWithType(AccessKey);
             return listKeys;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(responsePayload.toString());
         }
     }
 
@@ -1299,12 +1141,8 @@ public client class Client {
     remote function updateRedisEnterpriseDatabase(string redisEnterpriseName, string resourceGroupName, 
                                                   string databaseName, string clientProtocol, string evictionPolicy, 
                                                   string moduleName) returns @tainted RedisEnterpriseDatabase|error {
-
-        if (redisEnterpriseName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
-        redisEnterpriseName + "/databases/" + databaseName + "?api-version=" + config:getAsString(
+        redisEnterpriseName + "/databases/" + databaseName + API_VERSION + config:getAsString(
         "ENTERPRISE_API_VERSION");
         http:Request request = new;
         json updateCacheJsonPayload = {"properties": {
@@ -1319,7 +1157,7 @@ public client class Client {
             RedisEnterpriseDatabase updateRedisEnterpriseDatabase = check responsePayload.cloneWithType(RedisEnterpriseDatabase);
             return updateRedisEnterpriseDatabase;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(responsePayload.toString());
         }
     }
 
@@ -1334,14 +1172,9 @@ public client class Client {
     remote function putPrivateEndpointConnectionEnterprise(string redisEnterpriseCacheName, string resourceGroupName, 
                                                            string privateEndpointConnectionName, string status, string description) 
                                                            returns @tainted PrivateEndpointConnection|error {
-
-        if (redisEnterpriseCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || 
-        privateEndpointConnectionName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = 
         RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisEnterpriseCacheName + "/privateEndpointConnections/" + 
-        privateEndpointConnectionName + "?api-version=" + config:getAsString("ENTERPRISE_API_VERSION");
+        privateEndpointConnectionName + API_VERSION + config:getAsString("ENTERPRISE_API_VERSION");
         http:Request request = new;
         json putPrivateEndpointConnectionJsonPayload = {"properties": {"privateLinkServiceConnectionState": {
                     "status": status,
@@ -1356,7 +1189,7 @@ public client class Client {
             PrivateEndpointConnection getPrivateEndpointConnection = check responsePayload.cloneWithType(PrivateEndpointConnection);
             return getPrivateEndpointConnection;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(responsePayload.toString());
         }
     }
 
@@ -1369,14 +1202,9 @@ public client class Client {
     remote function getPrivateEndpointConnectionEnterprise(string redisEnterpriseCacheName, string resourceGroupName, 
                                                            string privateEndpointConnectionName) 
                                                            returns @tainted PrivateEndpointConnection|error {
-
-        if (redisEnterpriseCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || 
-        privateEndpointConnectionName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = 
         RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisEnterpriseCacheName + "/privateEndpointConnections/" + 
-        privateEndpointConnectionName + "?api-version=" + config:getAsString("ENTERPRISE_API_VERSION");
+        privateEndpointConnectionName + API_VERSION + config:getAsString("ENTERPRISE_API_VERSION");
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
         json responsePayload = check getResponse.getJsonPayload();
@@ -1384,7 +1212,7 @@ public client class Client {
             PrivateEndpointConnection getPrivateEndpointConnection = check responsePayload.cloneWithType(PrivateEndpointConnection);
             return getPrivateEndpointConnection;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(responsePayload.toString());
         }
     }
 
@@ -1395,12 +1223,8 @@ public client class Client {
     # + return - If successful, returns PrivateEndpointConnection[]. Else returns error.
     remote function listPrivateEndpointConnectionEnterprise(string redisEnterpriseCacheName, string resourceGroupName) returns @tainted 
     PrivateEndpointConnection[]|error {
-
-        if (redisEnterpriseCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = 
-        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisEnterpriseCacheName + "/privateEndpointConnections?api-version=" + 
+        RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisEnterpriseCacheName + "/privateEndpointConnections" + API_VERSION + 
         config:getAsString("ENTERPRISE_API_VERSION");
         http:Request request = new;
         http:Response listResponse = <http:Response>check self.AzureRedisClient->get(requestPath, request);
@@ -1410,7 +1234,7 @@ public client class Client {
             PrivateEndpointConnection[] getPrivateEndpointConnectionArray = getPrivateEndpointConnection.value;
             return getPrivateEndpointConnectionArray;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(responsePayload.toString());
         }
     }
 
@@ -1423,21 +1247,16 @@ public client class Client {
     remote function deletePrivateEndpointConnectionEnterprise(string redisEnterpriseCacheName, string resourceGroupName, 
                                                               string privateEndpointConnectionName) 
                                                               returns @tainted boolean|error {
-
-        if (redisEnterpriseCacheName == EMPTY_STRING || resourceGroupName == EMPTY_STRING || 
-        privateEndpointConnectionName == EMPTY_STRING) {
-            return createCustomError("Required values not provided");
-        }
         string requestPath = 
         RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisEnterpriseCacheName + "/privateEndpointConnections/" + 
-        privateEndpointConnectionName + "?api-version=" + config:getAsString("ENTERPRISE_API_VERSION");
+        privateEndpointConnectionName + API_VERSION + config:getAsString("ENTERPRISE_API_VERSION");
         http:Request request = new;
         http:Response deleteResponse = <http:Response>check self.AzureRedisClient->delete(requestPath, request);
         json responsePayload = check deleteResponse.getJsonPayload();
         if (deleteResponse.statusCode == http:STATUS_OK || deleteResponse.statusCode == http:STATUS_NO_CONTENT) {
             return true;
         } else {
-            return createAzureError(responsePayload.toString());
+            return getAzureError(responsePayload.toString());
         }
     }
 }

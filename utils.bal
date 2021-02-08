@@ -1,4 +1,3 @@
-
 // Copyright (c) 2021 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 //
 // WSO2 Inc. licenses this file to you under the Apache License,
@@ -47,7 +46,7 @@ isolated function jsonToFirewallRule(json payloadResponse) returns FirewallRule 
     return firewallRule;
 }
 
-isolated function createAzureError(string message, error? err = ()) returns error {
+isolated function getAzureError(string message, error? err = ()) returns error {
     error redisError;
     if (err is error) {
         redisError = AzureRedisError(message, err);

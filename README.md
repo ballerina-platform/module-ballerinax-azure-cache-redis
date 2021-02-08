@@ -19,7 +19,7 @@
 # Supported Operations
 
 ## Operations regarding creating and managing Redis Cache Instances
-The `ballerinax/azure_redis_cache` module contains operations regarding
+The `ballerinax/azure-cache-redis` module contains operations regarding
 * checkeRedisCacheAvailability
 * createRedisCache
 * getRedisCache
@@ -81,10 +81,10 @@ Have to create an app in azure active directory
 
 There is only one client provided by Ballerina to interact with Azure Redis Cache.
 
-**azure_redis_cache:Client** - This creates a Azure Redis Client instance and perform different actions related to creating managing that Redis cache Instance, Firewall Rules, Patch Schedules and Linked Servers.
+**azure-cache-redis:Client** - This creates a Azure Redis Client instance and perform different actions related to creating managing that Redis cache Instance, Firewall Rules, Patch Schedules and Linked Servers.
 
 ```ballerina
-azure_redis_cache:AzureRedisConfiguration config = {oauth2Config: {
+azure-cache-redis:AzureRedisConfiguration config = {oauth2Config: {
         tokenUrl: <TOKEN_URL>,
         clientId: <CLIENT_ID>,
         clientSecret: <CLIENT_SECRET>,
@@ -94,14 +94,14 @@ Client azureRedisClient = new (config);
 ```
 
 # Sample
-First, import the `ballerinax/azure_redis_cache` module into the Ballerina project.
+First, import the `ballerinax/azure-cache-redis` module into the Ballerina project.
 ```ballerina
-import ballerinax/azure_redis_cache;
+import ballerinax/azure-cache-redis;
 ```
 
 You can now make the connection configuration using the connection string and entity path.
 ```ballerina
-azure_redis_cache:AzureRedisConfiguration config = {oauth2Config: {
+azure-cache-redis:AzureRedisConfiguration config = {oauth2Config: {
         tokenUrl: "https://login.microsoftonline.com/" + config:getAsString("TENANT_ID") + "/oauth2/v2.0/token",
         clientId: config:getAsString("CLIENT_ID"),
         clientSecret: config:getAsString("CLIENT_SECRET"),
@@ -127,7 +127,7 @@ Client azureRedisClient = new (config);
         "minimumTlsVersion": minimumTlsVersion
     };
 
-    var response = azureRedisClient->createRedisCache("TestRedisConnectorCache", "TestRedisConnector", "South India", properties);
+    RedisCacheInstance|error response = azureRedisClient->createRedisCache("TestRedisConnectorCache", "TestRedisConnector", "South India", properties);
     if (response is RedisCacheInstance) {
         boolean createSuccess = true;
         log:print("Redis cache instance created and deployment in progress");
@@ -151,6 +151,15 @@ Client azureRedisClient = new (config);
         string hostName = response.properties.hostName;
     } else {
         log:print(response);
+    }
+
+    AccessKey|error keys = azureRedisClient->listKeys("TestRedisConnectorCache", "TestRedisConnector");
+    if (keys is AccessKey) {
+        json primaryKey = keys.primaryKey;
+        json secondaryKey = keys.secondaryKey;
+        log:print(primaryKey);
+    } else {
+        log:print(keys.message());
     }
 ```
 

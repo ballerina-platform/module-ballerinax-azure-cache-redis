@@ -11,11 +11,11 @@
 
 There is only one client provided by Ballerina to interact with Azure Redis Cache.
 
-1. **azure_redis_cache:Client** - This creates a Azure Redis Cache instance and perform different actions related to managing that instance created
+1. **azure-cache-redis:Client** - This creates a Azure Redis Cache instance and perform different actions related to managing that instance created
 
 
 
 ## Sample
 
-First, import the `ballerinax/azure_redis_cache` module into the Ballerina project.
+First, import the `ballerinax/azure-cache-redis` module into the Ballerina project.
 

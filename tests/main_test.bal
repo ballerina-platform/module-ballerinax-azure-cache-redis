@@ -16,7 +16,7 @@
 import ballerina/log;
 import ballerina/test;
 import ballerina/config;
-//import ballerina/runtime;
+import ballerina/runtime;
 
 AzureRedisConfiguration config = {oauth2Config: {
         tokenUrl: "https://login.microsoftonline.com/" + config:getAsString("TENANT_ID") + "/oauth2/v2.0/token",
@@ -26,6 +26,42 @@ AzureRedisConfiguration config = {oauth2Config: {
     }};
 
 Client azureRedisClient = new (config);
+
+@test:BeforeSuite
+function beforeSuit() {
+    TlsVersion minimumTlsVersion = {minimumTlsVersion: "1.2"};
+
+    CreateCacheProperty properties = 
+    {
+        "sku": {
+            "name": "Premium",
+            "family": "P",
+            "capacity": 1
+        },
+        "enableNonSslPort": true,
+        "shardCount": 2,
+        "replicasPerMaster": 2,
+        "redisConfiguration": {"maxmemory-policy": "allkeys-lru"},
+        "staticIP": "192.168.0.5",
+        "minimumTlsVersion": minimumTlsVersion,
+        "publicNetworkAccess": "Enabled"
+    };
+    var createResponse = azureRedisClient->createRedisCache("TestRedisConnectorCacheLinkedServer", "TestRedisConnector", 
+    "Southeast Asia", properties);
+    if (createResponse is json) {
+        log:print("Deployment of cache instance for linked server");
+        json state = createResponse.properties.provisioningState;
+        while (state != "Succeeded") {
+            var getresponse = azureRedisClient->getRedisCache("TestRedisConnectorCacheLinkedServer", 
+            "TestRedisConnector");
+            if (getresponse is json) {
+                state = getresponse.properties.provisioningState;
+            }
+        }
+    } else {
+        log:print("Setup resources failed");
+    }
+}
 
 @test:Config {}
 function testCheckeRedisCacheAvailability() {
@@ -52,7 +88,7 @@ function testCreateRedisCache() {
         "shardCount": 2,
         "replicasPerMaster": 2,
         "redisConfiguration": {"maxmemory-policy": "allkeys-lru"},
-        "subnetId": "/subscriptions/subid/resourceGroups/rg2/providers/Microsoft.Network/virtualNetworks/network1/subnets/subnet1",
+        "subnetId": "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Network/virtualNetworks/network1/subnets/subnet1",
         "staticIP": "192.168.0.5",
         "minimumTlsVersion": minimumTlsVersion,
         "publicNetworkAccess": "Enabled"
@@ -179,7 +215,10 @@ function testRegenerateKey() {
     }
 }
 
-@test:Config {dependsOn: ["testCreateRedisCache"]}
+@test:Config {
+    dependsOn: ["testCreateRedisCache"],
+    enable: false
+}
 function testUpdateRedisCache() {
     log:print("<---Running UpdateRedisCache--->");
 
@@ -196,7 +235,7 @@ function testUpdateRedisCache() {
         "shardCount": 2,
         "replicasPerMaster": 2,
         "redisConfiguration": {"maxmemory-policy": "allkeys-lru"},
-        "subnetId": "/subscriptions/subid/resourceGroups/rg2/providers/Microsoft.Network/virtualNetworks/network1/subnets/subnet1",
+        "subnetId": "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Network/virtualNetworks/network1/subnets/subnet1",
         "staticIP": "192.168.0.5",
         "minimumTlsVersion": minimumTlsVersion,
         "publicNetworkAccess": "Enabled"
@@ -216,8 +255,8 @@ function testCreateFirewallRule() {
     log:print("<---Running CreateFireWallRule Test--->");
     var response = azureRedisClient->createFirewallRule("TestRedisConnectorCache", "TestRedisConnector", 
     "TestFilewallRule", "192.168.1.1", "192.168.1.4");
-    if (response is FirewallRuleResponse) {
-        FirewallRuleResponse testValue = 
+    if (response is FirewallRule) {
+        FirewallRule testValue = 
         {
             "id": 
             "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/redis/TestRedisConnectorCache/firewallRules/TestFilewallRule",
@@ -239,8 +278,8 @@ function testCreateFirewallRule() {
 function testGetFireWallRule() {
     log:print("<---Running GetFireWallRule Test--->");
     var response = azureRedisClient->getFirewallRule("TestRedisConnectorCache", "TestRedisConnector", "TestFilewallRule");
-    if (response is FirewallRuleResponse) {
-        FirewallRuleResponse testValue = 
+    if (response is FirewallRule) {
+        FirewallRule testValue = 
         {
             "id": 
             "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCache/firewallRules/TestFilewallRule",
@@ -291,136 +330,103 @@ function testDeleteFireWallRule() {
     }
 }
 
-@test:Config {dependsOn: ["testCreateRedisCache"]}
-function testCreateLinkedServer() {
-    log:print("<---Running CreateLinkedServer Test--->");
+// @test:Config {dependsOn: ["testCreateRedisCache"]}
+// function testCreateLinkedServer() {
+//     log:print("<---Running CreateLinkedServer Test--->");
+//     var response = azureRedisClient->createLinkedServer("TestRedisConnectorCache", "TestRedisConnector", 
+//     "TestRedisConnectorCacheLinkedServer", 
+//     "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCacheLinkedServer", 
+//     "Southeast Asia", "Secondary");
+//     if (response is LinkedServer) {
+//         LinkedServer testValue = {
+//             "id": 
+//             "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCache/linkedServers/TestRedisConnectorCacheLinkedServer",
+//             "name": "TestRedisConnectorCacheLinkedServer",
+//             "type": "Microsoft.Cache/Redis/linkedServers",
+//             "properties": 
+//             {
+//                 "linkedRedisCacheId": 
+//                 "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCacheLinkedServer",
+//                 "linkedRedisCacheLocation": "Southeast Asia",
+//                 "provisioningState": "Creating",
+//                 "serverRole": "Secondary"
+//             }
+//         };
+//         log:print("Linking...");
+//         json state = response.properties.provisioningState;
+//         while (state != "Succeeded") {
+//             var getresponse = azureRedisClient->getLinkedServer("TestRedisConnectorCache", "TestRedisConnector", 
+//             "TestRedisConnectorCacheLinkedServer");
+//             if (getresponse is json) {
+//                 state = getresponse.properties.provisioningState;
+//             }
+//         }
+//         test:assertEquals(response, testValue, msg = "Error in creating linked server");
+//     } else {
+//         test:assertFail(response.message());
+//     }
+// }
 
-    TlsVersion minimumTlsVersion = {minimumTlsVersion: "1.2"};
+// @test:Config {dependsOn: ["testCreateLinkedServer"]}
+// function testGetLinkedServer() {
+//     log:print("<---Running GetLinkedServer Test--->");
+//     var response = azureRedisClient->getLinkedServer("TestRedisConnectorCache", "TestRedisConnector", 
+//     "TestRedisConnectorCacheLinkedServer");
+//     if (response is LinkedServer) {
+//         LinkedServer testValue = {
+//             "id": 
+//             "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCache/linkedServers/TestRedisConnectorCacheLinkedServer",
+//             "name": "TestRedisConnectorCacheLinkedServer",
+//             "type": "Microsoft.Cache/Redis/linkedServers",
+//             "properties": 
+//             {
+//                 "linkedRedisCacheId": 
+//                 "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCacheLinkedServer",
+//                 "linkedRedisCacheLocation": "Southeast Asia",
+//                 "provisioningState": "Succeeded",
+//                 "serverRole": "Secondary"
+//             }
+//         };
+//         test:assertEquals(response, testValue, msg = "Error in fetching linked server");
+//     } else {
+//         test:assertFail(response.message());
+//     }
+// }
 
-    CreateCacheProperty properties = 
-    {
-        "sku": {
-            "name": "Premium",
-            "family": "P",
-            "capacity": 1
-        },
-        "enableNonSslPort": true,
-        "shardCount": 2,
-        "replicasPerMaster": 2,
-        "redisConfiguration": {"maxmemory-policy": "allkeys-lru"},
-        "staticIP": "192.168.0.5",
-        "minimumTlsVersion": minimumTlsVersion,
-        "publicNetworkAccess": "Enabled"
-    };
-    var createResponse = azureRedisClient->createRedisCache("TestRedisConnectorCacheLinkedServer", "TestRedisConnector", 
-    "Southeast Asia", properties);
-    if (createResponse is json) {
-        log:print("Deployment of second cache instance for linked server");
-        json state = createResponse.properties.provisioningState;
-        while (state != "Succeeded") {
-            var getresponse = azureRedisClient->getRedisCache("TestRedisConnectorCacheLinkedServer", 
-            "TestRedisConnector");
-            if (getresponse is json) {
-                state = getresponse.properties.provisioningState;
-            }
-        }
-    } else {
-        test:assertFail(createResponse.message());
-    }
-    var response = azureRedisClient->createLinkedServer("TestRedisConnectorCache", "TestRedisConnector", 
-    "TestRedisConnectorCacheLinkedServer", 
-    "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCacheLinkedServer", 
-    "Southeast Asia", "Secondary");
-    if (response is LinkedServer) {
-        LinkedServer testValue = {
-            "id": 
-            "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCache/linkedServers/TestRedisConnectorCacheLinkedServer",
-            "name": "TestRedisConnectorCacheLinkedServer",
-            "type": "Microsoft.Cache/Redis/linkedServers",
-            "properties": 
-            {
-                "linkedRedisCacheId": 
-                "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCacheLinkedServer",
-                "linkedRedisCacheLocation": "Southeast Asia",
-                "provisioningState": "Creating",
-                "serverRole": "Secondary"
-            }
-        };
-        log:print("Linking...");
-        json state = response.properties.provisioningState;
-        while (state != "Succeeded") {
-            var getresponse = azureRedisClient->getLinkedServer("TestRedisConnectorCache", "TestRedisConnector", 
-            "TestRedisConnectorCacheLinkedServer");
-            if (getresponse is json) {
-                state = getresponse.properties.provisioningState;
-            }
-        }
-        test:assertEquals(response, testValue, msg = "Error in creating linked server");
-    } else {
-        test:assertFail(response.message());
-    }
-}
+// @test:Config {dependsOn: ["testCreateLinkedServer"]}
+// function testListLinkedServer() {
+//     log:print("<---Running ListLinkedServer Test--->");
+//     var response = azureRedisClient->listLinkedServers("TestRedisConnectorCacheLinkedServer", "TestRedisConnector");
+//     if (response is LinkedServer[]) {
+//         LinkedServer[] testValue = [{
+//                 "id": "/subscriptions/7241b7fa-c310-4b99-a53e-c5048cf0ec25/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCacheLinkedServer/linkedServers/TestRedisConnectorCache",
+//                 "name": "TestRedisConnectorCache",
+//                 "type": "Microsoft.Cache/Redis/linkedServers",
+//                 "properties": 
+//                 {
+//                     "linkedRedisCacheId": "/subscriptions/7241b7fa-c310-4b99-a53e-c5048cf0ec25/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCache",
+//                     "linkedRedisCacheLocation": "Southeast Asia",
+//                     "serverRole": "Primary",
+//                     "provisioningState": "Succeeded"
+//                 }
+//             }];
+//         test:assertEquals(response, testValue, msg = "Error in listing linked server");
+//     } else {
+//         test:assertFail(response.message());
+//     }
+// }
 
-@test:Config {dependsOn: ["testCreateLinkedServer"]}
-function testGetLinkedServer() {
-    log:print("<---Running GetLinkedServer Test--->");
-    var response = azureRedisClient->getLinkedServer("TestRedisConnectorCache", "TestRedisConnector", 
-    "TestRedisConnectorCacheLinkedServer");
-    if (response is LinkedServer) {
-        LinkedServer testValue = {
-            "id": 
-            "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCache/linkedServers/TestRedisConnectorCacheLinkedServer",
-            "name": "TestRedisConnectorCacheLinkedServer",
-            "type": "Microsoft.Cache/Redis/linkedServers",
-            "properties": 
-            {
-                "linkedRedisCacheId": 
-                "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCacheLinkedServer",
-                "linkedRedisCacheLocation": "Southeast Asia",
-                "provisioningState": "Succeeded",
-                "serverRole": "Secondary"
-            }
-        };
-        test:assertEquals(response, testValue, msg = "Error in fetching linked server");
-    } else {
-        test:assertFail(response.message());
-    }
-}
-
-@test:Config {dependsOn: ["testCreateLinkedServer"]}
-function testListLinkedServer() {
-    log:print("<---Running ListLinkedServer Test--->");
-    var response = azureRedisClient->listLinkedServers("TestRedisConnectorCacheLinkedServer", "TestRedisConnector");
-    if (response is LinkedServer[]) {
-        LinkedServer[] testValue = [{
-                "id": "/subscriptions/7241b7fa-c310-4b99-a53e-c5048cf0ec25/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCacheLinkedServer/linkedServers/TestRedisConnectorCache",
-                "name": "TestRedisConnectorCache",
-                "type": "Microsoft.Cache/Redis/linkedServers",
-                "properties": 
-                {
-                    "linkedRedisCacheId": "/subscriptions/7241b7fa-c310-4b99-a53e-c5048cf0ec25/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCache",
-                    "linkedRedisCacheLocation": "Southeast Asia",
-                    "serverRole": "Primary",
-                    "provisioningState": "Succeeded"
-                }
-            }];
-        test:assertEquals(response, testValue, msg = "Error in listing linked server");
-    } else {
-        test:assertFail(response.message());
-    }
-}
-
-@test:Config {dependsOn: ["testCreateLinkedServer"]}
-function testDeleteLinkedServer() {
-    log:print("<---Running DeleteLinkedServer Test--->");
-    var response = azureRedisClient->deleteLinkedServer("TestRedisConnectorCache", "TestRedisConnector", 
-    "TestRedisConnectorCacheLinkedServer");
-    if (response is boolean) {
-        test:assertEquals(response, true, msg = "Deleting LinkedServer test failed");
-    } else {
-        test:assertFail(response.message());
-    }
-}
+// @test:Config {dependsOn: ["testCreateLinkedServer"]}
+// function testDeleteLinkedServer() {
+//     log:print("<---Running DeleteLinkedServer Test--->");
+//     var response = azureRedisClient->deleteLinkedServer("TestRedisConnectorCache", "TestRedisConnector", 
+//     "TestRedisConnectorCacheLinkedServer");
+//     if (response is boolean) {
+//         test:assertEquals(response, true, msg = "Deleting LinkedServer test failed");
+//     } else {
+//         test:assertFail(response.message());
+//     }
+// }
 
 @test:Config {dependsOn: ["testCreateRedisCache"]}
 function testCreatePatchSchedule() {
@@ -529,7 +535,7 @@ function testPutPrivateEndpointConnection() {
     log:print("<---Running PutPrivateEndpointConnection Test--->");
     var response = azureRedisClient->putPrivateEndpointConnection("TestRedisConnectorCache", "TestRedisConnector", 
     "testPrivateEndpoint", "Approved", "Auto-Approved");
-    if (response is json) {
+    if (response is PrivateEndpointConnection) {
         json testValue = {
             "id": 
             "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCache/privateEndpointConnections/testPrivateEndpoint",
@@ -562,7 +568,7 @@ function testgetPrivateEndpointConnection() {
     log:print("<---Running GetPrivateEndpointConnection Test--->");
     var response = azureRedisClient->getPrivateEndpointConnection("TestRedisConnectorCache", "TestRedisConnector", 
     "TestPrivateEndpoint");
-    if (response is json) {
+    if (response is PrivateEndpointConnection) {
         json testValue = {
             "id": 
             "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/cachetest01/privateEndpointConnections/TestPrivateEndpoint",
@@ -594,9 +600,8 @@ function testgetPrivateEndpointConnection() {
 function testListPrivateEndpointConnection() {
     log:print("<---Running ListPrivateEndpointConnection Test--->");
     var response = azureRedisClient->listPrivateEndpointConnection("TestRedisConnectorCache", "TestRedisConnector");
-    if (response is StatusCode) {
-        StatusCode statusCode = <@untainted>response;
-        test:assertEquals(statusCode?.code, "200", msg = "Error in listing private endpoint connection");
+    if (response is PrivateEndpointConnection[]) {
+        test:assertTrue(true, msg = "Error in listing private endpoint connection");
     } else {
         test:assertFail(response.message());
     }
@@ -621,9 +626,8 @@ function testDeletePrivateEndpointConnection() {
 function testGetPrivateLinkResources() {
     log:print("<---Running GetPrivateLinkResources Test--->");
     var response = azureRedisClient->getPrivateLinkResources("TestRedisConnectorCache", "TestRedisConnector");
-    if (response is StatusCode) {
-        StatusCode statusCode = <@untainted>response;
-        test:assertEquals(statusCode?.code, "200", msg = "Error in getting PrivateLinkResources");
+    if (response is PrivateLinkResource) {
+        test:assertTrue(true, msg = "Error in getting PrivateLinkResources");
     } else {
         test:assertFail(response.message());
     }
@@ -948,5 +952,27 @@ function testgetPrivateEndpointConnectionEnterprise() {
         test:assertEquals(response, testValue, msg = "Error in getting PrivateEndpointConnectionEnterprise");
     } else {
         test:assertFail(response.message());
+    }
+}
+
+@test:AfterSuite  {}
+function afterFunc() {
+    log:print("<---Running AfterSuite--->");
+    var response = azureRedisClient->deleteRedisCache("TestRedisConnectorCacheLinkedServer", "TestRedisConnector");
+    if (response is boolean) {
+        log:print("Cleaning up resources...");
+        var getresponse = azureRedisClient->getRedisCache("TestRedisConnectorCacheLinkedServer", "TestRedisConnector");
+        json state = ();
+        if (getresponse is json) {
+            state = getresponse.properties.provisioningState;
+        }
+        while (state == "Deleting") {
+            var getloopresponse = azureRedisClient->getRedisCache("TestRedisConnectorCacheLinkedServer", "TestRedisConnector");
+            if (getloopresponse is json) {
+                state = getloopresponse.properties.provisioningState;
+            }
+        }
+    } else {
+        log:print("Cleaning up resources failed");
     }
 }
