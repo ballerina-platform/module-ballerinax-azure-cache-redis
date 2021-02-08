@@ -16,7 +16,7 @@
 import ballerina/log;
 import ballerina/test;
 import ballerina/config;
-import ballerina/runtime;
+//import ballerina/runtime;
 
 AzureRedisConfiguration config = {oauth2Config: {
         tokenUrl: "https://login.microsoftonline.com/" + config:getAsString("TENANT_ID") + "/oauth2/v2.0/token",
@@ -48,13 +48,13 @@ function beforeSuit() {
     };
     var createResponse = azureRedisClient->createRedisCache("TestRedisConnectorCacheLinkedServer", "TestRedisConnector", 
     "Southeast Asia", properties);
-    if (createResponse is json) {
+    if (createResponse is RedisCacheInstance) {
         log:print("Deployment of cache instance for linked server");
         json state = createResponse.properties.provisioningState;
         while (state != "Succeeded") {
             var getresponse = azureRedisClient->getRedisCache("TestRedisConnectorCacheLinkedServer", 
             "TestRedisConnector");
-            if (getresponse is json) {
+            if (getresponse is RedisCacheInstance) {
                 state = getresponse.properties.provisioningState;
             }
         }
@@ -102,7 +102,7 @@ function testCreateRedisCache() {
         json state = response.properties.provisioningState;
         while (state != "Succeeded") {
             var getresponse = azureRedisClient->getRedisCache("TestRedisConnectorCache", "TestRedisConnector");
-            if (getresponse is json) {
+            if (getresponse is RedisCacheInstance) {
                 state = getresponse.properties.provisioningState;
             }
         }
@@ -330,103 +330,103 @@ function testDeleteFireWallRule() {
     }
 }
 
-// @test:Config {dependsOn: ["testCreateRedisCache"]}
-// function testCreateLinkedServer() {
-//     log:print("<---Running CreateLinkedServer Test--->");
-//     var response = azureRedisClient->createLinkedServer("TestRedisConnectorCache", "TestRedisConnector", 
-//     "TestRedisConnectorCacheLinkedServer", 
-//     "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCacheLinkedServer", 
-//     "Southeast Asia", "Secondary");
-//     if (response is LinkedServer) {
-//         LinkedServer testValue = {
-//             "id": 
-//             "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCache/linkedServers/TestRedisConnectorCacheLinkedServer",
-//             "name": "TestRedisConnectorCacheLinkedServer",
-//             "type": "Microsoft.Cache/Redis/linkedServers",
-//             "properties": 
-//             {
-//                 "linkedRedisCacheId": 
-//                 "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCacheLinkedServer",
-//                 "linkedRedisCacheLocation": "Southeast Asia",
-//                 "provisioningState": "Creating",
-//                 "serverRole": "Secondary"
-//             }
-//         };
-//         log:print("Linking...");
-//         json state = response.properties.provisioningState;
-//         while (state != "Succeeded") {
-//             var getresponse = azureRedisClient->getLinkedServer("TestRedisConnectorCache", "TestRedisConnector", 
-//             "TestRedisConnectorCacheLinkedServer");
-//             if (getresponse is json) {
-//                 state = getresponse.properties.provisioningState;
-//             }
-//         }
-//         test:assertEquals(response, testValue, msg = "Error in creating linked server");
-//     } else {
-//         test:assertFail(response.message());
-//     }
-// }
+@test:Config {dependsOn: ["testCreateRedisCache"]}
+function testCreateLinkedServer() {
+    log:print("<---Running CreateLinkedServer Test--->");
+    var response = azureRedisClient->createLinkedServer("TestRedisConnectorCache", "TestRedisConnector", 
+    "TestRedisConnectorCacheLinkedServer", 
+    "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCacheLinkedServer", 
+    "Southeast Asia", "Secondary");
+    if (response is LinkedServer) {
+        LinkedServer testValue = {
+            "id": 
+            "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCache/linkedServers/TestRedisConnectorCacheLinkedServer",
+            "name": "TestRedisConnectorCacheLinkedServer",
+            "type": "Microsoft.Cache/Redis/linkedServers",
+            "properties": 
+            {
+                "linkedRedisCacheId": 
+                "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCacheLinkedServer",
+                "linkedRedisCacheLocation": "Southeast Asia",
+                "provisioningState": "Creating",
+                "serverRole": "Secondary"
+            }
+        };
+        log:print("Linking...");
+        json state = response.properties.provisioningState;
+        while (state != "Succeeded") {
+            var getresponse = azureRedisClient->getLinkedServer("TestRedisConnectorCache", "TestRedisConnector", 
+            "TestRedisConnectorCacheLinkedServer");
+            if (getresponse is LinkedServer) {
+                state = getresponse.properties.provisioningState;
+            }
+        }
+        test:assertEquals(response, testValue, msg = "Error in creating linked server");
+    } else {
+        test:assertFail(response.message());
+    }
+}
 
-// @test:Config {dependsOn: ["testCreateLinkedServer"]}
-// function testGetLinkedServer() {
-//     log:print("<---Running GetLinkedServer Test--->");
-//     var response = azureRedisClient->getLinkedServer("TestRedisConnectorCache", "TestRedisConnector", 
-//     "TestRedisConnectorCacheLinkedServer");
-//     if (response is LinkedServer) {
-//         LinkedServer testValue = {
-//             "id": 
-//             "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCache/linkedServers/TestRedisConnectorCacheLinkedServer",
-//             "name": "TestRedisConnectorCacheLinkedServer",
-//             "type": "Microsoft.Cache/Redis/linkedServers",
-//             "properties": 
-//             {
-//                 "linkedRedisCacheId": 
-//                 "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCacheLinkedServer",
-//                 "linkedRedisCacheLocation": "Southeast Asia",
-//                 "provisioningState": "Succeeded",
-//                 "serverRole": "Secondary"
-//             }
-//         };
-//         test:assertEquals(response, testValue, msg = "Error in fetching linked server");
-//     } else {
-//         test:assertFail(response.message());
-//     }
-// }
+@test:Config {dependsOn: ["testCreateLinkedServer"]}
+function testGetLinkedServer() {
+    log:print("<---Running GetLinkedServer Test--->");
+    var response = azureRedisClient->getLinkedServer("TestRedisConnectorCache", "TestRedisConnector", 
+    "TestRedisConnectorCacheLinkedServer");
+    if (response is LinkedServer) {
+        LinkedServer testValue = {
+            "id": 
+            "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCache/linkedServers/TestRedisConnectorCacheLinkedServer",
+            "name": "TestRedisConnectorCacheLinkedServer",
+            "type": "Microsoft.Cache/Redis/linkedServers",
+            "properties": 
+            {
+                "linkedRedisCacheId": 
+                "/subscriptions/" + config:getAsString("SUBSCRIPTION_ID") + "/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCacheLinkedServer",
+                "linkedRedisCacheLocation": "Southeast Asia",
+                "provisioningState": "Succeeded",
+                "serverRole": "Secondary"
+            }
+        };
+        test:assertEquals(response, testValue, msg = "Error in fetching linked server");
+    } else {
+        test:assertFail(response.message());
+    }
+}
 
-// @test:Config {dependsOn: ["testCreateLinkedServer"]}
-// function testListLinkedServer() {
-//     log:print("<---Running ListLinkedServer Test--->");
-//     var response = azureRedisClient->listLinkedServers("TestRedisConnectorCacheLinkedServer", "TestRedisConnector");
-//     if (response is LinkedServer[]) {
-//         LinkedServer[] testValue = [{
-//                 "id": "/subscriptions/7241b7fa-c310-4b99-a53e-c5048cf0ec25/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCacheLinkedServer/linkedServers/TestRedisConnectorCache",
-//                 "name": "TestRedisConnectorCache",
-//                 "type": "Microsoft.Cache/Redis/linkedServers",
-//                 "properties": 
-//                 {
-//                     "linkedRedisCacheId": "/subscriptions/7241b7fa-c310-4b99-a53e-c5048cf0ec25/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCache",
-//                     "linkedRedisCacheLocation": "Southeast Asia",
-//                     "serverRole": "Primary",
-//                     "provisioningState": "Succeeded"
-//                 }
-//             }];
-//         test:assertEquals(response, testValue, msg = "Error in listing linked server");
-//     } else {
-//         test:assertFail(response.message());
-//     }
-// }
+@test:Config {dependsOn: ["testCreateLinkedServer"]}
+function testListLinkedServer() {
+    log:print("<---Running ListLinkedServer Test--->");
+    var response = azureRedisClient->listLinkedServers("TestRedisConnectorCacheLinkedServer", "TestRedisConnector");
+    if (response is LinkedServer[]) {
+        LinkedServer[] testValue = [{
+                "id": "/subscriptions/7241b7fa-c310-4b99-a53e-c5048cf0ec25/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCacheLinkedServer/linkedServers/TestRedisConnectorCache",
+                "name": "TestRedisConnectorCache",
+                "type": "Microsoft.Cache/Redis/linkedServers",
+                "properties": 
+                {
+                    "linkedRedisCacheId": "/subscriptions/7241b7fa-c310-4b99-a53e-c5048cf0ec25/resourceGroups/TestRedisConnector/providers/Microsoft.Cache/Redis/TestRedisConnectorCache",
+                    "linkedRedisCacheLocation": "Southeast Asia",
+                    "serverRole": "Primary",
+                    "provisioningState": "Succeeded"
+                }
+            }];
+        test:assertEquals(response, testValue, msg = "Error in listing linked server");
+    } else {
+        test:assertFail(response.message());
+    }
+}
 
-// @test:Config {dependsOn: ["testCreateLinkedServer"]}
-// function testDeleteLinkedServer() {
-//     log:print("<---Running DeleteLinkedServer Test--->");
-//     var response = azureRedisClient->deleteLinkedServer("TestRedisConnectorCache", "TestRedisConnector", 
-//     "TestRedisConnectorCacheLinkedServer");
-//     if (response is boolean) {
-//         test:assertEquals(response, true, msg = "Deleting LinkedServer test failed");
-//     } else {
-//         test:assertFail(response.message());
-//     }
-// }
+@test:Config {dependsOn: ["testCreateLinkedServer"]}
+function testDeleteLinkedServer() {
+    log:print("<---Running DeleteLinkedServer Test--->");
+    var response = azureRedisClient->deleteLinkedServer("TestRedisConnectorCache", "TestRedisConnector", 
+    "TestRedisConnectorCacheLinkedServer");
+    if (response is boolean) {
+        test:assertEquals(response, true, msg = "Deleting LinkedServer test failed");
+    } else {
+        test:assertFail(response.message());
+    }
+}
 
 @test:Config {dependsOn: ["testCreateRedisCache"]}
 function testCreatePatchSchedule() {

@@ -782,7 +782,7 @@ public client class Client {
     # + skuCapacity - provide information about capacity.
     # + return - If successful, returns RedisEnterpriseInstance. Else returns error. 
     remote function createRedisEnterprise(string redisEnterpriseClusterName, string resourceGroupName, string location, 
-                                          string skuName, int skuCapacity, string[] zones, string tags, CreateEnterpriseCacheProperty properties) 
+                                          string skuName, int skuCapacity, string[] zones, string tags, json properties) 
                                           returns @tainted RedisEnterpriseInstance|error {
         string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
         redisEnterpriseClusterName + API_VERSION + config:getAsString("ENTERPRISE_API_VERSION");
@@ -903,7 +903,7 @@ public client class Client {
     # + resourceGroupName - Resource Group Name where Redis Enterprise found.
     # + return - If successful, returns RedisEnterpriseInstance. Else returns error. 
     remote function updateRedisEnterprise(string redisEnterpriseClusterName, string resourceGroupName, string location, 
-                                          string skuName, int skuCapacity, string[] zones, string tags, CreateEnterpriseCacheProperty properties) returns @tainted 
+                                          string skuName, int skuCapacity, string[] zones, string tags, json properties) returns @tainted 
                                           RedisEnterpriseInstance|error {
         string requestPath = RESOURCE_GROUP_PATH + resourceGroupName + "/providers/Microsoft.Cache/redisEnterprise/" + 
         redisEnterpriseClusterName + API_VERSION + config:getAsString("ENTERPRISE_API_VERSION");

@@ -1,6 +1,6 @@
 [package]
 org= "ballerinax"
-name= "azure-cache-redis"
+name= "azure_cache_redis"
 version= "0.1.0"
 
 [build-options]
