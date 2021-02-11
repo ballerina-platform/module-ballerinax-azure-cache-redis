@@ -1,7 +1,7 @@
 # Ballerina Azure Cache for Redis
 
-[![Build](https://github.com/ballerina-platform/module-ballerinax-azure-cache-redis/workflows/CI/badge.svg)](https://github.com/ballerina-platform/module-ballerinax-azure.eventhub/actions?query=workflow%3ACI)
-[![GitHub Last Commit](https://img.shields.io/github/last-commit/ballerina-platform/module-ballerinax-azure-cache-redis.svg)](https://github.com/ballerina-platform/module-ballerinax-azure.eventhub/commits/master)
+[![Build](https://github.com/ballerina-platform/module-ballerinax-azure-cache-redis/workflows/CI/badge.svg)](https://github.com/ballerina-platform/module-ballerinax-azure-cache-redis/actions?query=workflow%3ACI)
+[![GitHub Last Commit](https://img.shields.io/github/last-commit/ballerina-platform/module-ballerinax-azure-cache-redis.svg)](https://github.com/ballerina-platform/module-ballerinax-azure-cache-redis/commits/master)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Connects to Microsoft Azure Cache for Redis using Ballerina.
