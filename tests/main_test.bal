@@ -27,9 +27,9 @@ AzureRedisConfiguration config = {oauth2Config: {
 Client azureRedisManagementClient = new (config);
 
 @test:Config {}
-function testCheckeRedisCacheAvailability() {
+function testCheckeAzureCacheAvailability() {
     log:print("<---Running Checking RedisCacheName availability Test--->");
-    var response = azureRedisManagementClient->checkRedisCacheNameAvailability(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache");
+    var response = azureRedisManagementClient->checkAzureCacheNameAvailability(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache");
     if (response is boolean) {
         test:assertEquals(response, true, msg = "Name not available or recently deleted");
     } else {
@@ -64,111 +64,139 @@ function testCreateRedisCache() {
                 state = getresponse.properties.provisioningState;
             }
         }
-        test:assertEquals(createSuccess, true, msg = "Error in creating Redis Cache");
-    } else {
-        test:assertFail(response.message());
-    }
-}
-
-@test:Config {dependsOn: ["testCreateRedisCache"]}
-function testGetRedisCache() {
-    log:print("<---Running GetRedisCache Test--->");
-    var response = azureRedisManagementClient->getRedisCache(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") );
-    if (response is RedisCacheInstance) {
-        log:print(response.toString());
-        boolean getSuccess = true;
-        test:assertEquals(getSuccess, true, msg = "Error in fetching Redis Instance");
-    } else {
-        test:assertFail(response.message());
-    }
-}
-
-@test:Config {dependsOn: ["testCreateRedisCache"]}
-function testGetHostName() {
-    log:print("<---Running GetHostName Test--->");
-    var response = azureRedisManagementClient->getHostName(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") );
-    if (response is string) {
-        string expectedHostName = "TestRedisConnectorCache.redis.cache.windows.net";
-        test:assertEquals(response, expectedHostName, msg = "Error in fetching Redis Cache Host Name");
-    } else {
-        test:assertFail(response.message());
-    }
-}
-
-@test:Config {dependsOn: ["testCreateRedisCache"]}
-function testGetPortNumber() {
-    log:print("<---Running GetPortNumber Test--->");
-    var response = azureRedisManagementClient->getPortNumber(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") );
-    if (response is int) {
-        int expectedPortNumber = 6379;
-        test:assertEquals(response, expectedPortNumber, msg = "Error in fetching Redis Cache Port Number");
-    } else {
-        test:assertFail(response.message());
-    }
-}
-
-@test:Config {dependsOn: ["testCreateRedisCache"]}
-function testGetgetPrimaryKey() {
-    log:print("<---Running GetPortNumber Test--->");
-    var response = azureRedisManagementClient->getPrimaryKey(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") );
-    if (response is string) {
-        test:assertTrue(true, msg = "Error in fetching Redis Cache Primary Key");
-    } else {
-        test:assertFail(response.message());
-    }
-}
-
-@test:Config {dependsOn: ["testCreateRedisCache"]}
-function testListByResourceGroup() {
-    log:print("<---Running ListByResourceGroup Test--->");
-    var response = azureRedisManagementClient->listRedisCacheInstances(config:getAsString("SUBSCRIPTION_ID"), config:getAsString("RESOURCE_GROUP_NAME") );
-    if (response is RedisCacheInstance[]) {
-        boolean listSuccess = true;
-        test:assertEquals(listSuccess, true, msg = "Error in Listing Redis Instances");
-    } else {
-        test:assertFail(response.message());
-    }
-}
-
-@test:Config {dependsOn: ["testCreateRedisCache"]}
-function testListBySubscription() {
-    log:print("<---Running ListBySubscription Test--->");
-    var response = azureRedisManagementClient->listRedisCacheInstances(config:getAsString("SUBSCRIPTION_ID"));
-    if (response is RedisCacheInstance[]) {
-        boolean listSuccess = true;
-        test:assertEquals(listSuccess, true, msg = "Error in Listing Redis Instances");
-    } else {
-        test:assertFail(response.message());
-    }
-}
-
-@test:Config {dependsOn: ["testCreateRedisCache"]}
-function testListKeys() {
-    log:print("<---Running ListKeys Test--->");
-    var response = azureRedisManagementClient->listKeys(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") );
-    if (response is AccessKey) {
-        boolean listKey = true;
-        test:assertEquals(listKey, true, msg = "Error in Listing Redis Instance Key");
-    } else {
-        test:assertFail(response.message());
-    }
-}
-
-@test:Config {dependsOn: ["testCreateRedisCache"]}
-function testRegenerateKey() {
-    log:print("<---Running RegenerateKey Test--->");
-    var response = azureRedisManagementClient->regenerateKey(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") , "Primary");
-    if (response is AccessKey) {
-        boolean listKey = true;
-        test:assertEquals(listKey, true, msg = "Error in regenerating Redis Instance Key");
+        test:assertEquals(createSuccess, true, msg = "Error in creating Azure Cache");
     } else {
         test:assertFail(response.message());
     }
 }
 
 @test:Config {
-    dependsOn: ["testCreateRedisCache"],
-    enable: false
+    dependsOn: ["testCreateRedisCache"]
+}
+function testGetRedisCache() {
+    log:print("<---Running GetRedisCache Test--->");
+    var response = azureRedisManagementClient->getRedisCache(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") );
+    if (response is RedisCacheInstance) {
+        boolean getSuccess = true;
+        test:assertEquals(getSuccess, true, msg = "Error in fetching Azure Instance");
+    } else {
+        test:assertFail(response.message());
+    }
+}
+
+@test:Config {
+    dependsOn: ["testCreateRedisCache"]
+}
+function testGetHostName() {
+    log:print("<---Running GetHostName Test--->");
+    var response = azureRedisManagementClient->getHostName(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") );
+    if (response is string) {
+        string expectedHostName = "TestRedisConnectorCache.redis.cache.windows.net";
+        test:assertEquals(response, expectedHostName, msg = "Error in fetching Azure Cache Host Name");
+    } else {
+        test:assertFail(response.message());
+    }
+}
+
+@test:Config {
+    dependsOn: ["testCreateRedisCache"]
+}
+function testGetSSLPortNumber() {
+    log:print("<---Running GetPortNumber Test--->");
+    var response = azureRedisManagementClient->getSSLPortNumber(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") );
+    if (response is int) {
+        int expectedSSLPortNumber = 6380;
+        test:assertEquals(response, expectedSSLPortNumber, msg = "Error in fetching Azure Cache SSL Port Number");
+    } else {
+        test:assertFail(response.message());
+    }
+}
+
+@test:Config {
+    dependsOn: ["testCreateRedisCache"]
+}
+function testGetNonSSLPortNumber() {
+    log:print("<---Running GetPortNumber Test--->");
+    var response = azureRedisManagementClient->getNonSSLPortNumber(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") );
+    if (response is int) {
+        int expectedSSLPortNumber = 6379;
+        test:assertEquals(response, expectedSSLPortNumber, msg = "Error in fetching Azure Cache Non SSL Port Number");
+    } else {
+        test:assertFail(response.message());
+    }
+}
+
+@test:Config {
+    dependsOn: ["testCreateRedisCache"]
+}
+function testGetPrimaryKey() {
+    log:print("<---Running GetPortNumber Test--->");
+    var response = azureRedisManagementClient->getPrimaryKey(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") );
+    if (response is string) {
+        test:assertTrue(true, msg = "Error in fetching Azure Cache Primary Key");
+    } else {
+        test:assertFail(response.message());
+    }
+}
+
+@test:Config {
+    dependsOn: ["testCreateRedisCache"]
+}
+function testListByResourceGroup() {
+    log:print("<---Running ListByResourceGroup Test--->");
+    var response = azureRedisManagementClient->listRedisCacheInstances(config:getAsString("SUBSCRIPTION_ID"), config:getAsString("RESOURCE_GROUP_NAME") );
+    if (response is RedisCacheInstance[]) {
+        boolean listSuccess = true;
+        test:assertEquals(listSuccess, true, msg = "Error in Listing Azure Instances");
+    } else {
+        test:assertFail(response.message());
+    }
+}
+
+@test:Config {
+    dependsOn: ["testCreateRedisCache"]
+}
+function testListBySubscription() {
+    log:print("<---Running ListBySubscription Test--->");
+    var response = azureRedisManagementClient->listRedisCacheInstances(config:getAsString("SUBSCRIPTION_ID"));
+    if (response is RedisCacheInstance[]) {
+        boolean listSuccess = true;
+        test:assertEquals(listSuccess, true, msg = "Error in Listing Azure Instances");
+    } else {
+        test:assertFail(response.message());
+    }
+}
+
+@test:Config {
+    dependsOn: ["testCreateRedisCache"]
+}
+function testListKeys() {
+    log:print("<---Running ListKeys Test--->");
+    var response = azureRedisManagementClient->listKeys(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") );
+    if (response is AccessKey) {
+        boolean listKey = true;
+        test:assertEquals(listKey, true, msg = "Error in Listing Azure Instance Key");
+    } else {
+        test:assertFail(response.message());
+    }
+}
+
+@test:Config {
+    dependsOn: ["testCreateRedisCache"]
+}
+function testRegenerateKey() {
+    log:print("<---Running RegenerateKey Test--->");
+    var response = azureRedisManagementClient->regenerateKey(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") , "Primary");
+    if (response is AccessKey) {
+        boolean listKey = true;
+        test:assertEquals(listKey, true, msg = "Error in regenerating Azure Instance Key");
+    } else {
+        test:assertFail(response.message());
+    }
+}
+
+@test:Config {
+    dependsOn: ["testCreateRedisCache"]
 }
 function testUpdateRedisCache() {
     log:print("<---Running UpdateRedisCache--->");
@@ -176,18 +204,17 @@ function testUpdateRedisCache() {
     CreateCacheProperty properties = 
     {
         "sku": {
-            "name": "Premium",
-            "family": "P",
+            "name": "Basic",
+            "family": "C",
             "capacity": 1
         },
         "enableNonSslPort": false,
-        "shardCount": 2,
         "redisConfiguration": {"maxmemory-policy": "allkeys-lru"},
         "minimumTlsVersion": "1.2",
         "publicNetworkAccess": "Enabled"
     };
 
-    var response = azureRedisManagementClient->updateRedisCache(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") , "southeastasia", properties);
+    var response = azureRedisManagementClient->updateRedisCache(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME"), properties);
     if (response is RedisCacheInstance) {
         boolean updateSuccess = true;
         test:assertEquals(updateSuccess, true, msg = "Error in updating RedisCache");
@@ -196,7 +223,9 @@ function testUpdateRedisCache() {
     }
 }
 
-@test:Config {dependsOn: ["testCreateRedisCache"]}
+@test:Config {
+    dependsOn: ["testCreateRedisCache"]
+}
 function testCreateFirewallRule() {
     log:print("<---Running CreateFireWallRule Test--->");
     var response = azureRedisManagementClient->createFirewallRule(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") , 
@@ -220,7 +249,9 @@ function testCreateFirewallRule() {
     }
 }
 
-@test:Config {dependsOn: ["testCreateFirewallRule"]}
+@test:Config {
+    dependsOn: ["testCreateFirewallRule"]
+}
 function testGetFireWallRule() {
     log:print("<---Running GetFireWallRule Test--->");
     var response = azureRedisManagementClient->getFirewallRule(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") , "TestFilewallRule");
@@ -242,7 +273,9 @@ function testGetFireWallRule() {
     }
 }
 
-@test:Config {dependsOn: ["testCreateFirewallRule"]}
+@test:Config {
+    dependsOn: ["testCreateFirewallRule"]
+}
 function testListFireWallRule() {
     log:print("<---Running ListFireWallRule Test--->");
     var response = azureRedisManagementClient->listFirewallRules(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") );
@@ -264,7 +297,9 @@ function testListFireWallRule() {
     }
 }
 
-@test:Config {dependsOn: ["testCreateFirewallRule"]}
+@test:Config {
+    dependsOn: ["testCreateFirewallRule"]
+}
 function testDeleteFireWallRule() {
     log:print("<---Running DeleteFireWallRule Test--->");
     var response = azureRedisManagementClient->deleteFirewallRule(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") , 
@@ -276,7 +311,9 @@ function testDeleteFireWallRule() {
     }
 }
 
-@test:Config {dependsOn: ["testCreateRedisCache"]}
+@test:Config {
+    dependsOn: ["testCreateRedisCache"]
+}
 function testCreatePatchSchedule() {
     PatchScheduleProperty properties = {scheduleEntries: [{
             dayOfWeek: "Monday",
@@ -313,7 +350,9 @@ function testCreatePatchSchedule() {
     }
 }
 
-@test:Config {dependsOn: ["testCreatePatchSchedule"]}
+@test:Config {
+    dependsOn: ["testCreatePatchSchedule"]
+}
 function testGetPatchSchedule() {
     log:print("<---Running GetPatchSchedule Test--->");
     var response = azureRedisManagementClient->getPatchSchedule(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") );
@@ -340,7 +379,9 @@ function testGetPatchSchedule() {
     }
 }
 
-@test:Config {dependsOn: ["testCreatePatchSchedule"]}
+@test:Config {
+    dependsOn: ["testCreatePatchSchedule"]
+}
 function testListPatchSchedule() {
     log:print("<---Running ListPatchSchedule Test--->");
     var response = azureRedisManagementClient->listPatchSchedules(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") );
@@ -367,7 +408,9 @@ function testListPatchSchedule() {
     }
 }
 
-@test:Config {dependsOn: ["testCreatePatchSchedule"]}
+@test:Config {
+    dependsOn: ["testCreatePatchSchedule"]
+}
 function testDeletePatchSchedule() {
     log:print("<---Running DeletePatchSchedule Test--->");
     var response = azureRedisManagementClient->deletePatchSchedule(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") );
@@ -378,7 +421,7 @@ function testDeletePatchSchedule() {
     }
 }
 
-// @test:Config {dependsOn: ["testCreateRedisCache"]}
+// @test:Config {//dependsOn: ["testCreateRedisCache"]}
 // function testCreateLinkedServer() {
 //     log:print("<---Running CreateLinkedServer Test--->");
 //     var response = azureRedisManagementClient->createLinkedServer(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") , 
@@ -478,7 +521,7 @@ function testDeletePatchSchedule() {
 //     }
 // }
 
-// @test:Config {dependsOn: ["testCreateRedisCache"]}
+// @test:Config {//dependsOn: ["testCreateRedisCache"]}
 // function testExportRedisCache() {
 //     log:print("<---Running ExportRedisCache Test--->");
 //     var response = azureRedisManagementClient->exportRedisCache(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") , "datadump1", 
@@ -493,7 +536,7 @@ function testDeletePatchSchedule() {
 //     runtime:sleep(6000);
 // }
 
-// @test:Config {dependsOn: ["testCreateRedisCache"]}
+// @test:Config {//dependsOn: ["testCreateRedisCache"]}
 // function testImportRedisCache() {
 //     log:print("<---Running ImportRedisCache Test--->");
 //     var response = azureRedisManagementClient->importRedisCache(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") , 
@@ -608,28 +651,30 @@ function testDeletePatchSchedule() {
 //     }
 // }
 
-// @test:Config {dependsOn: ["testCreateRedisCache"]}
-// function testDeleteRedisCache() {
-//     log:print("<---Running Delete Redis Cache Test--->");
-//     var response = azureRedisManagementClient->deleteRedisCache(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") );
-//     if (response is boolean) {
-//         var getresponse = azureRedisManagementClient->getRedisCache(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") );
-//         json state = ();
-//         if (getresponse is RedisCacheInstance) {
-//             state = getresponse.properties.provisioningState;
-//         }
-//         while (state == "Deleting") {
-//             var getloopresponse = azureRedisManagementClient->getRedisCache(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") );
-//             if (getloopresponse is RedisCacheInstance) {
-//                 state = getloopresponse.properties.provisioningState;
-//             }
-//             else {
-//             state = "Deleted";
-//             }
-//         }
-//         test:assertEquals(response, true, msg = "Deleting Redis Cache Instance test failed");
-//     } else {
-//         test:assertFail(response.message());
-//     }
-// }
+@test:Config {
+    dependsOn: ["testCreateRedisCache"]
+}
+function testDeleteRedisCache() {
+    log:print("<---Running Delete Redis Cache Test--->");
+    var response = azureRedisManagementClient->deleteRedisCache(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") );
+    if (response is boolean) {
+        var getresponse = azureRedisManagementClient->getRedisCache(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") );
+        json state = ();
+        if (getresponse is RedisCacheInstance) {
+            state = getresponse.properties.provisioningState;
+        }
+        while (state == "Deleting") {
+            var getloopresponse = azureRedisManagementClient->getRedisCache(config:getAsString("SUBSCRIPTION_ID"), "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME") );
+            if (getloopresponse is RedisCacheInstance) {
+                state = getloopresponse.properties.provisioningState;
+            }
+            else {
+            state = "Deleted";
+            }
+        }
+        test:assertEquals(response, true, msg = "Deleting Azure Cache Instance test failed");
+    } else {
+        test:assertFail(response.message());
+    }
+}
 

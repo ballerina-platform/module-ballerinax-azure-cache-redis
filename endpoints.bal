@@ -22,7 +22,7 @@ public type AzureRedisConfiguration record {
     http:ClientSecureSocket secureSocketConfig?;
 };
 
-# Azure Redis Cache Client Object.
+# Azure Cache for Redis Client Object.
 # 
 # + AzureRedisCacheManagementClient - the HTTP Client
 public client class Client {
@@ -39,14 +39,7 @@ public client class Client {
         });
     }
 
-    //Operations related to Redis cache
-
-    # This Function checks a Redis Cache Instance with input name already exist or not
-    #
-    # + subscriptionId - Subscription Id of a subscription
-    # + cacheName - Redis Cache Instance Name 
-    # + return - If successful, returns boolean. Else returns error. 
-    public function checkRedisCacheNameAvailability(string subscriptionId, string cacheName) returns @tainted boolean|error {
+    public function checkAzureCacheNameAvailability(string subscriptionId, string cacheName) returns @tainted boolean|error {
         string requestPath = SUBSCRIPTION_PATH + subscriptionId + "/providers/Microsoft.Cache/CheckNameAvailability" + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
         json checkPayload = {
@@ -63,6 +56,8 @@ public client class Client {
         }
     }
 
+    //Operations related to Redis cache
+
     # This Function Creates a new Redis Cache Instance
     #
     # + subscriptionId - Subscription Id of a subscription
@@ -75,7 +70,7 @@ public client class Client {
     # + return - If successful, returns RedisCacheInstance. Else returns error. 
     remote function createRedisCache(string subscriptionId, string redisCacheName, string resourceGroupName, string location, CreateCacheProperty properties, json tags = (), string[]? zones = ()
                                      ) returns @tainted RedisCacheInstance|error {
-        var checkAvailability = self.checkRedisCacheNameAvailability(subscriptionId, redisCacheName);
+        var checkAvailability = self.checkAzureCacheNameAvailability(subscriptionId, redisCacheName);
         if (checkAvailability is boolean) {
             string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + API_VERSION_PATH + API_VERSION;
             http:Request request = new;
@@ -178,13 +173,13 @@ public client class Client {
         }
     }
 
-    # This Function Fetches Port number of a specific Redis Cache Instance
+    # This Function Fetches SSL Port number of a specific Redis Cache Instance
     #
     # + subscriptionId - Subscription Id of a subscription
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + return - If successful, returns int. Else returns error. 
-    remote function getPortNumber(string subscriptionId, string redisCacheName, string resourceGroupName) 
+    remote function getSSLPortNumber(string subscriptionId, string redisCacheName, string resourceGroupName) 
     returns @tainted int|error {
         string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
@@ -192,8 +187,29 @@ public client class Client {
         json responsePayload = check getResponse.getJsonPayload();
         if (getResponse.statusCode == http:STATUS_OK) {
             RedisCacheInstance getRedisCacheResponse = check responsePayload.cloneWithType(RedisCacheInstance);
-            int portNumber = getRedisCacheResponse.properties.port;
-            return portNumber;
+            int sslPortNumber = getRedisCacheResponse.properties.sslPort;
+            return sslPortNumber;
+        } else {
+            return getAzureError(getResponse.statusCode.toString() + SPACE + responsePayload.toString());
+        }
+    }
+
+    # This Function Fetches Non SSL Port number of a specific Redis Cache Instance only can be used when NonSslPort enabled in instance
+    #
+    # + subscriptionId - Subscription Id of a subscription
+    # + redisCacheName - Redis Cache Instance Name 
+    # + resourceGroupName - Resource Group Name where Redis Cache found. 
+    # + return - If successful, returns int. Else returns error. 
+    remote function getNonSSLPortNumber(string subscriptionId, string redisCacheName, string resourceGroupName) 
+    returns @tainted int|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + API_VERSION_PATH + API_VERSION;
+        http:Request request = new;
+        http:Response getResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
+        json responsePayload = check getResponse.getJsonPayload();
+        if (getResponse.statusCode == http:STATUS_OK) {
+            RedisCacheInstance getRedisCacheResponse = check responsePayload.cloneWithType(RedisCacheInstance);
+            int nonSSlPortNumber = getRedisCacheResponse.properties.port;
+            return nonSSlPortNumber;
         } else {
             return getAzureError(getResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
@@ -308,13 +324,12 @@ public client class Client {
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + properties - properties Parameter Description including Pricing tier(Basic, Standard, Premium)
     # + return - If successful, returns RedisCacheInstance. Else returns error. 
-    remote function updateRedisCache(string subscriptionId, string redisCacheName, string resourceGroupName, string location, CreateCacheProperty properties) returns @tainted 
+    remote function updateRedisCache(string subscriptionId, string redisCacheName, string resourceGroupName, CreateCacheProperty properties) returns @tainted 
     RedisCacheInstance|error {
         string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + API_VERSION_PATH + 
         API_VERSION;
         http:Request request = new;
         json updateCacheJsonPayload = {
-            "location": location,
             "properties": {
                 "sku": {
                     "name": properties.sku.name,
@@ -322,7 +337,14 @@ public client class Client {
                     "capacity": properties.sku.capacity
                 },
                 "enableNonSslPort": properties?.enableNonSslPort,
-                "publicNetworkAccess": properties?.publicNetworkAccess
+                "publicNetworkAccess": properties?.publicNetworkAccess,
+                "minimumTlsVersion": properties?.minimumTlsVersion,
+                "redisConfiguration": properties?.redisConfiguration,
+                "replicasPerMaster": properties?.replicasPerMaster,
+                "shardCount": properties?.shardCount,
+                "staticIP": properties?.staticIP,
+                "subnetId": properties?.subnetId,
+                "tenantSettings": properties?.tenantSettings
             }
         };
         request.setJsonPayload(updateCacheJsonPayload);

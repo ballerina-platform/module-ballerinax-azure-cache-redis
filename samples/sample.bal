@@ -1,4 +1,5 @@
 import ballerinax/azure_cache_redis as azure_cache_redis;
+import ballerina/io;
 
 azure_cache_redis:AzureRedisConfiguration config = {oauth2Config: {
         tokenUrl: "https://login.microsoftonline.com/" + config:getAsString("TENANT_ID") + "/oauth2/v2.0/token",

@@ -158,7 +158,7 @@ public type RedisCacheInstanceProperty record {
     json accessKeys?;
     string hostName;
     int port;
-    int sslPort?;
+    int sslPort;
     LinkedServer[] linkedServers?;
 };
 
