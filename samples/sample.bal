@@ -1,6 +1,6 @@
-import ballerinax/azure-cache-redis as azure-cache-redis;
+import ballerinax/azure_cache_redis as azure_cache_redis;
 
-azure-cache-redis:AzureRedisConfiguration config = {oauth2Config: {
+azure_cache_redis:AzureRedisConfiguration config = {oauth2Config: {
         tokenUrl: "https://login.microsoftonline.com/" + config:getAsString("TENANT_ID") + "/oauth2/v2.0/token",
         clientId: config:getAsString("CLIENT_ID"),
         clientSecret: config:getAsString("CLIENT_SECRET"),
@@ -8,21 +8,20 @@ azure-cache-redis:AzureRedisConfiguration config = {oauth2Config: {
     }};
 
 public function main() returns error? {
-    azure-cache-redis:Client azureClient = new (config);
+    azure_cache_redis:Client azureClient = new (config);
 
     CreateCacheProperty properties = {
         "sku": {
-            "name": "Premium",
-            "family": "P",
+            "name": "Basic",
+            "family": "C",
             "capacity": 1
         },
         "enableNonSslPort": true,
-        "shardCount": 2,
         "redisConfiguration": {"maxmemory-policy": "allkeys-lru"},
         "minimumTlsVersion " : "1.2"
         };
 
-    azure-cache-redis:RedisCacheInstance|error instance = azureClient->createRedisCache("TestCache", "TestResourceGroup", 
+    RedisCacheInstance|error instance = azureClient->createRedisCache(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup", 
     "southeast asia", properties);
 
     if (instance is RedisCacheInstance) {
@@ -33,25 +32,33 @@ public function main() returns error? {
                 state = getresponse.properties.provisioningState;
             }
         }
-        io:println("Deployed Success");
+        io:println("Deployment Success");
     } else {
         io:println(instance.message());
     } 
 
-    //Getting host name and port
-    azure-cache-redis:RedisCacheInstance|error instance = azureClient->getRedisCache("TestCache", "TestResourceGroup");
+    //Getting host name
+    string|error hostName = azureClient->getHostName(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup");
 
-    if (instance is RedisCacheInstance) {
-        json hostName = instance.properties.hostName;
-        json port = instance.properties.port;
-        //hostName is the host name used to connect to redis like localhost and port is used as port number(default 6379)
+    if (hostName is string) {
+        //hostName is the host name used to connect to redis like localhost
         io:println(hostName);
     } else {
-        io:println(instance.message());
+        io:println(hostName.message());
+    } 
+
+    //Getting port number
+    int|error portNumber = azureClient->getPortNumber(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup");
+
+    if (portNumber is int) {
+        //portNumber is the port is used as port number(default 6379)
+        io:println(portNumber);
+    } else {
+        io:println(portNumber.message());
     } 
 
     //Getting Access keys
-    azure-cache-redis:RedisCacheInstance|error keys = azureRedisClient->listKeys("TestRedisConnectorCache", "TestRedisConnector");
+    AccessKeys|error keys = azureRedisClient->listKeys(<SUBSCRIPTION_ID>, "TestRedisConnectorCache", "TestRedisConnector");
     if (keys is AccessKey) {
         json primaryKey = keys.primaryKey;
         json secondaryKey = keys.secondaryKey;
@@ -62,7 +69,18 @@ public function main() returns error? {
     }
 
     // list redis caches exists in resource group
-    azure-cache-redis:RedisCacheInstance|error instances = azureClient->listByResourceGroup("TestRedisConnector");
+    RedisCacheInstance[]|error instances = azureClient->listRedisCacheInstances(<SUBSCRIPTION_ID>, "TestRedisConnector");
+
+    if (instances is RedisCacheInstance[]) {
+        foreach RedisCacheInstance redisInstance in response {
+            io:println(redisInstance.toString());
+        }
+    } else {
+        io:println(instances.message());
+    }
+
+    // list redis caches exists in subscription
+    RedisCacheInstance[]|error instances = azureClient->listRedisCacheInstances(<SUBSCRIPTION_ID>);
 
     if (instances is RedisCacheInstance[]) {
         foreach RedisCacheInstance redisInstance in response {
@@ -73,7 +91,7 @@ public function main() returns error? {
     }
 
     // creating fire wall rule
-    azure-cache-redis:FireWallRule|error rule = azureClient->createFirewallRule("TestRedisConnectorCache", "TestRedisConnector", 
+    FireWallRule|error rule = azureClient->createFirewallRule(<SUBSCRIPTION_ID>, "TestRedisConnectorCache", "TestRedisConnector", 
     "TestFilewallRule", "192.168.1.1", "192.168.1.4");
 
     if (rule is FireWallRule) {

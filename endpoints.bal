@@ -70,8 +70,10 @@ public client class Client {
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + location - location where redis cache instance created
     # + properties - properties Parameter Description including Pricing tier(Basic, Standard, Premium)
+    # + tags - Resource tags.
+    # + zones - A list of availability zones denoting where the resource needs to come from
     # + return - If successful, returns RedisCacheInstance. Else returns error. 
-    remote function createRedisCache(string subscriptionId, string redisCacheName, string resourceGroupName, string location, CreateCacheProperty properties, json tags = (), string[] zones = []
+    remote function createRedisCache(string subscriptionId, string redisCacheName, string resourceGroupName, string location, CreateCacheProperty properties, json tags = (), string[]? zones = ()
                                      ) returns @tainted RedisCacheInstance|error {
         var checkAvailability = self.checkRedisCacheNameAvailability(subscriptionId, redisCacheName);
         if (checkAvailability is boolean) {
@@ -135,76 +137,6 @@ public client class Client {
         }
     }
 
-    //Requires Premium Azure Redis Cache Instance
-    //that your Redis Database (RDB) file or files are uploaded into page or block blobs in Azure storage, in the same region and subscription as your Azure Cache for Redis instance.
-
-    # This Function exports a Redis Cache Instance to any azure storages
-    #
-    # + subscriptionId - Subscription Id of a subscription
-    # + redisCacheName - Redis Cache Instance Name 
-    # + resourceGroupName - Resource Group Name where Redis Cache found. 
-    # + prefix - file name to be exported 
-    # + blobContainerUrl - path to bolb storage 
-    # + sasKeyParameters - SAS key
-    # + format - file format SUBSCRIPTION_PATH + subscriptionId + to which exported
-    # + return - If successful, returns boolean. Else returns error. 
-    remote function exportRedisCache(string subscriptionId, string redisCacheName, string resourceGroupName, string prefix, 
-                                     string blobContainerUrl, string sasKeyParameters, string? format = ()) 
-                                     returns @tainted boolean|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/export" + API_VERSION_PATH + 
-        API_VERSION;
-        http:Request request = new;
-        json exportCacheJsonPayload = {
-            "format": format,
-            "prefix": prefix,
-            "container": blobContainerUrl + sasKeyParameters
-        };
-        request.setJsonPayload(exportCacheJsonPayload);
-        http:Response exportResponse = <http:Response>check self.AzureRedisCacheManagementClient->post(requestPath, request);
-        if (exportResponse.statusCode == http:STATUS_OK || exportResponse.statusCode == http:STATUS_NO_CONTENT) {
-            return true;
-        } else if (exportResponse.statusCode == ACCEPTED) {
-            return true;
-        } else {
-            json responsePayload = check exportResponse.getJsonPayload();
-            return getAzureError(exportResponse.statusCode.toString() + SPACE + responsePayload.toString());
-        }
-    }
-
-    //Requires Premium Azure Redis Cache Instance
-    //that your Redis Database (RDB) file or files are uploaded into page or block blobs in Azure storage, in the same region and subscription as your Azure Cache for Redis instance.
-
-    # This Function imports a Redis Cache Instance from any azure storages
-    #
-    # + subscriptionId - Subscription Id of a subscription
-    # + redisCacheName - Redis Cache Instance Name 
-    # + resourceGroupName - Resource Group Name where Redis Cache found. 
-    # + files - file name to be imported  
-    # + format - file format to be imported
-    # + return - If successful, returns boolean. Else returns error. 
-    remote function importRedisCache(string subscriptionId, string redisCacheName, string resourceGroupName, string[] files, 
-                                     string? format = ()) returns @tainted boolean|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/import" + API_VERSION_PATH + 
-        API_VERSION;
-        http:Request request = new;
-        json importCacheJsonPayload = {
-            "format": format,
-            "files": files
-        };
-        request.setJsonPayload(importCacheJsonPayload);
-        http:Response importResponse = <http:Response>check self.AzureRedisCacheManagementClient->post(requestPath, request);
-        if (importResponse.statusCode == http:STATUS_OK || importResponse.statusCode == http:STATUS_NO_CONTENT) {
-            return true;
-        } else if (importResponse.statusCode == ACCEPTED) {
-            return true;
-        } else {
-            json responsePayload = check importResponse.getJsonPayload();
-            return getAzureError(importResponse.statusCode.toString() + SPACE + responsePayload.toString());
-        }
-    }
-
     # This Function Fetches a Redis Cache Instance
     #
     # + subscriptionId - Subscription Id of a subscription
@@ -225,32 +157,45 @@ public client class Client {
         }
     }
 
-    # This Function force reboots a Redis Cache Instance
+    # This Function Fetches Host Name of a specific Redis Cache Instance
     #
+    # + subscriptionId - Subscription Id of a subscription
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
-    # + shardId - Id od the shard
-    # + rebootType - Nodes type which should be rebooted
-    # + ports - ports which are to be rebooted
-    # + return - If successful, returns StatusCode. Else returns error. 
-    remote function forceRebootRedisCache(string subscriptionId, string redisCacheName, string resourceGroupName, int shardId, 
-                                          string rebootType, int[] ports) returns @tainted StatusCode|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/forceReboot" + API_VERSION_PATH + 
-        API_VERSION;
+    # + return - If successful, returns string. Else returns error. 
+    remote function getHostName(string subscriptionId, string redisCacheName, string resourceGroupName) 
+    returns @tainted string|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
-        json rebootCacheJsonPayload = {
-            "shardId": shardId,
-            "rebootType": rebootType,
-            "ports": ports
-        };
-        request.setJsonPayload(rebootCacheJsonPayload);
-        http:Response rebootResponse = <http:Response>check self.AzureRedisCacheManagementClient->post(requestPath, request);
-        json responsePayload = check rebootResponse.getJsonPayload();
-        if (rebootResponse.statusCode == http:STATUS_OK) {
-            return jsonToStatusCode(rebootResponse.statusCode);
+        http:Response getResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
+        json responsePayload = check getResponse.getJsonPayload();
+        if (getResponse.statusCode == http:STATUS_OK) {
+            RedisCacheInstance getRedisCacheResponse = check responsePayload.cloneWithType(RedisCacheInstance);
+            string hostName = getRedisCacheResponse.properties.hostName;
+            return hostName;
         } else {
-            return getAzureError(rebootResponse.statusCode.toString() + SPACE + responsePayload.toString());
+            return getAzureError(getResponse.statusCode.toString() + SPACE + responsePayload.toString());
+        }
+    }
+
+    # This Function Fetches Port number of a specific Redis Cache Instance
+    #
+    # + subscriptionId - Subscription Id of a subscription
+    # + redisCacheName - Redis Cache Instance Name 
+    # + resourceGroupName - Resource Group Name where Redis Cache found. 
+    # + return - If successful, returns int. Else returns error. 
+    remote function getPortNumber(string subscriptionId, string redisCacheName, string resourceGroupName) 
+    returns @tainted int|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + API_VERSION_PATH + API_VERSION;
+        http:Request request = new;
+        http:Response getResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
+        json responsePayload = check getResponse.getJsonPayload();
+        if (getResponse.statusCode == http:STATUS_OK) {
+            RedisCacheInstance getRedisCacheResponse = check responsePayload.cloneWithType(RedisCacheInstance);
+            int portNumber = getRedisCacheResponse.properties.port;
+            return portNumber;
+        } else {
+            return getAzureError(getResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 
@@ -305,6 +250,27 @@ public client class Client {
         if (listResponse.statusCode == http:STATUS_OK) {
             AccessKey listKeys = check responsePayload.cloneWithType(AccessKey);
             return listKeys;
+        } else {
+            return getAzureError(listResponse.statusCode.toString() + SPACE + responsePayload.toString());
+        }
+    }
+
+    # This Function Fetches a primary key of a specific Redis Cache Instance
+    #
+    # + subscriptionId - Subscription Id of a subscription
+    # + redisCacheName - Redis Cache Instance Name 
+    # + resourceGroupName - Resource Group Name where Redis Cache found. 
+    # + return - If successful, returns string. Else returns error.
+    remote function getPrimaryKey(string subscriptionId, string redisCacheName, string resourceGroupName) returns @tainted string|error {
+        string requestPath = 
+        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/listKeys" + API_VERSION_PATH + 
+        API_VERSION;
+        http:Request request = new;
+        http:Response listResponse = <http:Response>check self.AzureRedisCacheManagementClient->post(requestPath, request);
+        json responsePayload = check listResponse.getJsonPayload();
+        if (listResponse.statusCode == http:STATUS_OK) {
+            AccessKey listKeys = check responsePayload.cloneWithType(AccessKey);
+            return listKeys.primaryKey;
         } else {
             return getAzureError(listResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
@@ -474,114 +440,6 @@ public client class Client {
         }
     }
 
-    //Operations related to Linked server (requires Premium SKU).
-
-    # This Function Creates an Linked server
-    #
-    # + subscriptionId - Subscription Id of a subscription
-    # + redisCacheName - Redis Cache Instance Name 
-    # + resourceGroupName - Resource Group Name where Redis Cache found. 
-    # + linkedServerName - Name of Linked Server Name
-    # + linkedRedisCacheId - Full name of Redis Cache Id
-    # + linkedRedisCacheLocation - Location of Linked Server
-    # + serverRole - Primary/Secondary
-    # + return - If successful, returns LinkedServer. Else returns error. 
-    remote function createLinkedServer(string subscriptionId, string redisCacheName, string resourceGroupName, string linkedServerName, 
-                                       string linkedRedisCacheId, string linkedRedisCacheLocation, string serverRole) returns @tainted 
-                                       LinkedServer|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/linkedServers/" + linkedServerName + API_VERSION_PATH + 
-        API_VERSION;
-        http:Request request = new;
-        json createLinkedServerJsonPayload = {"properties": {
-                "linkedRedisCacheId": linkedRedisCacheId,
-                "linkedRedisCacheLocation": linkedRedisCacheLocation,
-                "serverRole": serverRole
-            }};
-        request.setJsonPayload(createLinkedServerJsonPayload);
-        http:Response createResponse = <http:Response>check self.AzureRedisCacheManagementClient->put(requestPath, request);
-        string statusCode = createResponse.statusCode.toString();
-        json responsePayload = check createResponse.getJsonPayload();
-        if (createResponse.statusCode == http:STATUS_OK) {
-            LinkedServer createLinkedServerResponse = check responsePayload.cloneWithType(LinkedServer);
-            return createLinkedServerResponse;
-        } else if (createResponse.statusCode == http:STATUS_CREATED) {
-            LinkedServer createLinkedServerResponse = check responsePayload.cloneWithType(LinkedServer);
-            return createLinkedServerResponse;
-        } else {
-            return getAzureError(createResponse.statusCode.toString() + SPACE + responsePayload.toString());
-        }
-    }
-
-    # This Function Deletes an Linked server
-    #
-    # + subscriptionId - Subscription Id of a subscription
-    # + redisCacheName - Redis Cache Instance Name 
-    # + resourceGroupName - Resource Group Name where Redis Cache found. 
-    # + linkedServerName - Name of Linked Server Name
-    # + return - If successful, returns boolean. Else returns error. 
-    remote function deleteLinkedServer(string subscriptionId, string redisCacheName, string resourceGroupName, string linkedServerName) 
-    returns @tainted boolean|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/linkedServers/" + linkedServerName + API_VERSION_PATH + 
-        API_VERSION;
-        http:Request request = new;
-        http:Response deleteResponse = <http:Response>check self.AzureRedisCacheManagementClient->delete(requestPath, request);
-        string statusCode = deleteResponse.statusCode.toString();
-        if (deleteResponse.statusCode == http:STATUS_OK || deleteResponse.statusCode == http:STATUS_NO_CONTENT) {
-            return true;
-        } else {
-            json responsePayload = check deleteResponse.getJsonPayload();
-            return getAzureError(deleteResponse.statusCode.toString() + SPACE + responsePayload.toString());
-        }
-    }
-
-    # This Function Creates an Linked server
-    #
-    # + subscriptionId - Subscription Id of a subscription
-    # + redisCacheName - Redis Cache Instance Name 
-    # + resourceGroupName - Resource Group Name where Redis Cache found. 
-    # + linkedServerName - Name of Linked Server Name
-    # + return - If successful, returns LinkedServer. Else returns error. 
-    remote function getLinkedServer(string subscriptionId, string redisCacheName, string resourceGroupName, string linkedServerName) returns @tainted 
-    LinkedServer|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/linkedServers/" + linkedServerName + API_VERSION_PATH + 
-        API_VERSION;
-        http:Request request = new;
-        http:Response getResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
-        json responsePayload = check getResponse.getJsonPayload();
-        if (getResponse.statusCode == http:STATUS_OK) {
-            LinkedServer getLinkedServerResponse = check responsePayload.cloneWithType(LinkedServer);
-            return getLinkedServerResponse;
-        } else {
-            return getAzureError(getResponse.statusCode.toString() + SPACE + responsePayload.toString());
-        }
-    }
-
-    # This Function Fetches list of Linked Servers
-    #
-    # + subscriptionId - Subscription Id of a subscription
-    # + redisCacheName - Redis Cache Instance Name 
-    # + resourceGroupName - Resource Group Name where Redis Cache found. 
-    # + return - If successful, returns LinkedServer[]. Else returns error. 
-    remote function listLinkedServers(string subscriptionId, string redisCacheName, string resourceGroupName) 
-    returns @tainted LinkedServer[]|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/linkedServers" + API_VERSION_PATH + 
-        API_VERSION;
-        http:Request request = new;
-        http:Response listResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
-        json responsePayload = check listResponse.getJsonPayload();
-        if (listResponse.statusCode == http:STATUS_OK) {
-            LinkedServerList getLinkedServerList = check responsePayload.cloneWithType(LinkedServerList);
-            LinkedServer[] getLinkedServerArray = getLinkedServerList.value;
-            return getLinkedServerArray;
-        } else {
-            return getAzureError(listResponse.statusCode.toString() + SPACE + responsePayload.toString());
-        }
-    }
-
     //Functions related to patching schedule for Redis cache.
 
     # This Function Creates or Updates Patch Schedule
@@ -678,7 +536,115 @@ public client class Client {
         }
     }
 
-    //Operations related to Private Endpoint Connections (requires Premium SKU) Not currently not supported as it is in preview.
+    # This Function Creates an Linked server
+    #
+    # + subscriptionId - Subscription Id of a subscription
+    # + redisCacheName - Redis Cache Instance Name 
+    # + resourceGroupName - Resource Group Name where Redis Cache found. 
+    # + linkedServerName - Name of Linked Server Name
+    # + linkedRedisCacheId - Full name of Redis Cache Id
+    # + linkedRedisCacheLocation - Location of Linked Server
+    # + serverRole - Primary/Secondary
+    # + return - If successful, returns LinkedServer. Else returns error. 
+    remote function createLinkedServer(string subscriptionId, string redisCacheName, string resourceGroupName, string linkedServerName, 
+                                       string linkedRedisCacheId, string linkedRedisCacheLocation, string serverRole) returns @tainted 
+                                       LinkedServer|error {
+        string requestPath = 
+        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/linkedServers/" + linkedServerName + API_VERSION_PATH + 
+        API_VERSION;
+        http:Request request = new;
+        json createLinkedServerJsonPayload = {"properties": {
+                "linkedRedisCacheId": linkedRedisCacheId,
+                "linkedRedisCacheLocation": linkedRedisCacheLocation,
+                "serverRole": serverRole
+            }};
+        request.setJsonPayload(createLinkedServerJsonPayload);
+        http:Response createResponse = <http:Response>check self.AzureRedisCacheManagementClient->put(requestPath, request);
+        string statusCode = createResponse.statusCode.toString();
+        json responsePayload = check createResponse.getJsonPayload();
+        if (createResponse.statusCode == http:STATUS_OK) {
+            LinkedServer createLinkedServerResponse = check responsePayload.cloneWithType(LinkedServer);
+            return createLinkedServerResponse;
+        } else if (createResponse.statusCode == http:STATUS_CREATED) {
+            LinkedServer createLinkedServerResponse = check responsePayload.cloneWithType(LinkedServer);
+            return createLinkedServerResponse;
+        } else {
+            return getAzureError(createResponse.statusCode.toString() + SPACE + responsePayload.toString());
+        }
+    }
+
+    # This Function Deletes an Linked server
+    #
+    # + subscriptionId - Subscription Id of a subscription
+    # + redisCacheName - Redis Cache Instance Name 
+    # + resourceGroupName - Resource Group Name where Redis Cache found. 
+    # + linkedServerName - Name of Linked Server Name
+    # + return - If successful, returns boolean. Else returns error. 
+    remote function deleteLinkedServer(string subscriptionId, string redisCacheName, string resourceGroupName, string linkedServerName) 
+    returns @tainted boolean|error {
+        string requestPath = 
+        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/linkedServers/" + linkedServerName + API_VERSION_PATH + 
+        API_VERSION;
+        http:Request request = new;
+        http:Response deleteResponse = <http:Response>check self.AzureRedisCacheManagementClient->delete(requestPath, request);
+        string statusCode = deleteResponse.statusCode.toString();
+        if (deleteResponse.statusCode == http:STATUS_OK || deleteResponse.statusCode == http:STATUS_NO_CONTENT) {
+            return true;
+        } else {
+            json responsePayload = check deleteResponse.getJsonPayload();
+            return getAzureError(deleteResponse.statusCode.toString() + SPACE + responsePayload.toString());
+        }
+    }
+
+    //Operations related to Linked server (requires Premium SKU).
+
+    # This Function Creates an Linked server
+    #
+    # + subscriptionId - Subscription Id of a subscription
+    # + redisCacheName - Redis Cache Instance Name 
+    # + resourceGroupName - Resource Group Name where Redis Cache found. 
+    # + linkedServerName - Name of Linked Server Name
+    # + return - If successful, returns LinkedServer. Else returns error. 
+    remote function getLinkedServer(string subscriptionId, string redisCacheName, string resourceGroupName, string linkedServerName) returns @tainted 
+    LinkedServer|error {
+        string requestPath = 
+        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/linkedServers/" + linkedServerName + API_VERSION_PATH + 
+        API_VERSION;
+        http:Request request = new;
+        http:Response getResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
+        json responsePayload = check getResponse.getJsonPayload();
+        if (getResponse.statusCode == http:STATUS_OK) {
+            LinkedServer getLinkedServerResponse = check responsePayload.cloneWithType(LinkedServer);
+            return getLinkedServerResponse;
+        } else {
+            return getAzureError(getResponse.statusCode.toString() + SPACE + responsePayload.toString());
+        }
+    }
+
+    # This Function Fetches list of Linked Servers
+    #
+    # + subscriptionId - Subscription Id of a subscription
+    # + redisCacheName - Redis Cache Instance Name 
+    # + resourceGroupName - Resource Group Name where Redis Cache found. 
+    # + return - If successful, returns LinkedServer[]. Else returns error. 
+    remote function listLinkedServers(string subscriptionId, string redisCacheName, string resourceGroupName) 
+    returns @tainted LinkedServer[]|error {
+        string requestPath = 
+        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/linkedServers" + API_VERSION_PATH + 
+        API_VERSION;
+        http:Request request = new;
+        http:Response listResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
+        json responsePayload = check listResponse.getJsonPayload();
+        if (listResponse.statusCode == http:STATUS_OK) {
+            LinkedServerList getLinkedServerList = check responsePayload.cloneWithType(LinkedServerList);
+            LinkedServer[] getLinkedServerArray = getLinkedServerList.value;
+            return getLinkedServerArray;
+        } else {
+            return getAzureError(listResponse.statusCode.toString() + SPACE + responsePayload.toString());
+        }
+    }
+
+    //Operations related to Private Endpoint Connections (requires Premium SKU) Not currently not supported as it is in preview version.
 
     # This Function Add Private Endpoint Connection
     #
@@ -800,6 +766,76 @@ public client class Client {
             return getPrivateLinkResource;
         } else {
             return getAzureError(getResponse.statusCode.toString() + SPACE + responsePayload.toString());
+        }
+    }
+
+    //Requires Premium Azure Redis Cache Instance
+    //that your Redis Database (RDB) file or files are uploaded into page or block blobs in Azure storage, in the same region and subscription as your Azure Cache for Redis instance.
+
+    # This Function exports a Redis Cache Instance to any azure storages
+    #
+    # + subscriptionId - Subscription Id of a subscription
+    # + redisCacheName - Redis Cache Instance Name 
+    # + resourceGroupName - Resource Group Name where Redis Cache found. 
+    # + prefix - file name to be exported 
+    # + blobContainerUrl - path to bolb storage 
+    # + sasKeyParameters - SAS key
+    # + format - file format SUBSCRIPTION_PATH + subscriptionId + to which exported
+    # + return - If successful, returns boolean. Else returns error. 
+    remote function exportRedisCache(string subscriptionId, string redisCacheName, string resourceGroupName, string prefix, 
+                                     string blobContainerUrl, string sasKeyParameters, string? format = ()) 
+                                     returns @tainted boolean|error {
+        string requestPath = 
+        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/export" + API_VERSION_PATH + 
+        API_VERSION;
+        http:Request request = new;
+        json exportCacheJsonPayload = {
+            "format": format,
+            "prefix": prefix,
+            "container": blobContainerUrl + sasKeyParameters
+        };
+        request.setJsonPayload(exportCacheJsonPayload);
+        http:Response exportResponse = <http:Response>check self.AzureRedisCacheManagementClient->post(requestPath, request);
+        if (exportResponse.statusCode == http:STATUS_OK || exportResponse.statusCode == http:STATUS_NO_CONTENT) {
+            return true;
+        } else if (exportResponse.statusCode == ACCEPTED) {
+            return true;
+        } else {
+            json responsePayload = check exportResponse.getJsonPayload();
+            return getAzureError(exportResponse.statusCode.toString() + SPACE + responsePayload.toString());
+        }
+    }
+
+    //Requires Premium Azure Redis Cache Instance
+    //that your Redis Database (RDB) file or files are uploaded into page or block blobs in Azure storage, in the same region and subscription as your Azure Cache for Redis instance.
+
+    # This Function imports a Redis Cache Instance from any azure storages
+    #
+    # + subscriptionId - Subscription Id of a subscription
+    # + redisCacheName - Redis Cache Instance Name 
+    # + resourceGroupName - Resource Group Name where Redis Cache found. 
+    # + files - file name to be imported  
+    # + format - file format to be imported
+    # + return - If successful, returns boolean. Else returns error. 
+    remote function importRedisCache(string subscriptionId, string redisCacheName, string resourceGroupName, string[] files, 
+                                     string? format = ()) returns @tainted boolean|error {
+        string requestPath = 
+        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/import" + API_VERSION_PATH + 
+        API_VERSION;
+        http:Request request = new;
+        json importCacheJsonPayload = {
+            "format": format,
+            "files": files
+        };
+        request.setJsonPayload(importCacheJsonPayload);
+        http:Response importResponse = <http:Response>check self.AzureRedisCacheManagementClient->post(requestPath, request);
+        if (importResponse.statusCode == http:STATUS_OK || importResponse.statusCode == http:STATUS_NO_CONTENT) {
+            return true;
+        } else if (importResponse.statusCode == ACCEPTED) {
+            return true;
+        } else {
+            json responsePayload = check importResponse.getJsonPayload();
+            return getAzureError(importResponse.statusCode.toString() + SPACE + responsePayload.toString());
         }
     }
 }

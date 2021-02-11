@@ -25,6 +25,7 @@
 # + staticIP - Static IP address used to connect
 # + minimumTlsVersion - minimum of TlsVersion to be supported
 # + publicNetworkAccess - Whether public access is Enabled/Not
+# + tenantSettings - Dictionary of tenantSettings
 public type CreateCacheProperty record {
     StockKeepingUnit sku;
     boolean enableNonSslPort?;
@@ -144,6 +145,7 @@ public type RedisCacheInstance record {
 # + instances - Instances nodes available
 # + publicNetworkAccess - Whether public access is Enabled/Not
 # + linkedServers - list of Linked servers
+# + privateEndpointConnections - PrivateEndpoint Connections if set
 public type RedisCacheInstanceProperty record {
     string provisioningState;
     string redisVersion?;
@@ -155,7 +157,7 @@ public type RedisCacheInstanceProperty record {
     json redisConfiguration?;
     json accessKeys?;
     string hostName;
-    int port?;
+    int port;
     int sslPort?;
     LinkedServer[] linkedServers?;
 };
@@ -171,39 +173,6 @@ public type Instance record {
     int sslPort?;
     int nonSslPort?;
     boolean isMaster?;
-};
-
-public type PrivateEndpointConnection record {
-    string id;
-    string name;
-    string 'type;
-    PrivateEndpointConnectionProperty properties;
-};
-
-public type PrivateEndpointConnectionProperty record {
-    PrivateEndpoint privateEndpoint?;
-    PrivateLinkServiceConnectionState privateLinkServiceConnectionState?;
-};
-
-public type PrivateEndpoint record {
-    string id?;
-};
-
-public type PrivateLinkServiceConnectionState record {
-    string status?;
-    string description?;
-    string actionRequired?;
-};
-
-public type PrivateLinkResource record {
-    string name;
-    string 'type;
-    string id;
-    json properties;
-};
-
-public type PrivateEndpointConnectionList record {
-    PrivateEndpointConnection[] value;
 };
 
 # Represents a Linked Server
@@ -286,4 +255,37 @@ public type PatchScheduleList record {
 public type AccessKey record {
     string primaryKey;
     string secondaryKey;
+};
+
+public type PrivateEndpointConnection record {
+    string id;
+    string name;
+    string 'type;
+    PrivateEndpointConnectionProperty properties;
+};
+
+public type PrivateEndpointConnectionProperty record {
+    PrivateEndpoint privateEndpoint?;
+    PrivateLinkServiceConnectionState privateLinkServiceConnectionState?;
+};
+
+public type PrivateEndpoint record {
+    string id?;
+};
+
+public type PrivateLinkServiceConnectionState record {
+    string status?;
+    string description?;
+    string actionRequired?;
+};
+
+public type PrivateLinkResource record {
+    string name;
+    string 'type;
+    string id;
+    json properties;
+};
+
+public type PrivateEndpointConnectionList record {
+    PrivateEndpointConnection[] value;
 };
