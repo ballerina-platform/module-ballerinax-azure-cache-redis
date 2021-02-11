@@ -35,17 +35,6 @@ isolated function jsonToStatusCode(int statusCodeResponse) returns StatusCode {
     return statusCode;
 }
 
-isolated function jsonToFirewallRule(json payloadResponse) returns FirewallRule {
-    FirewallRule firewallRule = {};
-    firewallRule.id = payloadResponse.id != () ? payloadResponse.id.toString() : EMPTY_STRING;
-    if (payloadResponse.properties is error) {
-        return firewallRule;
-    } else {
-        firewallRule.properties = jsonToFirewallRulePropertyArray(<json[]>payloadResponse.properties);
-    }
-    return firewallRule;
-}
-
 isolated function getAzureError(string message, error? err = ()) returns error {
     error redisError;
     if (err is error) {
@@ -74,13 +63,6 @@ isolated function jsonArrayToStringArray(json[] jsonArray) returns string[] {
         counter = counter + 1;
     }
     return stringArray;
-}
-
-isolated function jsonToFirewallRulePropertyArray(json payloadResponse) returns FirewallRuleProperty {
-    FirewallRuleProperty firewallRuleProperty = {};
-    firewallRuleProperty.startIP = payloadResponse.startIP != () ? payloadResponse.startIP.toString() : EMPTY_STRING;
-    firewallRuleProperty.endIP = payloadResponse.endIP != () ? payloadResponse.endIP.toString() : EMPTY_STRING;
-    return firewallRuleProperty;
 }
 
 isolated function convertToInt(json|error jsonToIntValue) returns int {

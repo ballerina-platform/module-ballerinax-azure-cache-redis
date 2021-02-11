@@ -27,36 +27,15 @@
 # + publicNetworkAccess - Whether public access is Enabled/Not
 public type CreateCacheProperty record {
     StockKeepingUnit sku;
-    boolean enableNonSslPort;
-    int shardCount?;
+    boolean enableNonSslPort?;
     int replicasPerMaster?;
     json redisConfiguration?;
+    int shardCount?;
     string subnetId?;
     string staticIP?;
-    TlsVersion minimumTlsVersion?;
-    string publicNetworkAccess;
-};
-
-# Represents a property that provided during creation of Redis Enterprise
-#
-# + minimumTlsVersion - minimum of TlsVersion to be supported
-public type CreateEnterpriseCacheProperty record {
-    TlsVersion minimumTlsVersion?;
-};
-
-# Represents a property that provided during creation of Redis Enterprise Database
-#
-# + clientProtocol - Whether redis clients connect using TLS-encrypted or plaintext redis protocols
-# + clusteringPolicy - Name of Clustering policy 
-# + evictionPolicy - Redis eviction policy
-# + port - Port through which Connection done
-# + modules - Name of Redis Labs modules that can be used
-public type CreateEnterpriseDBProperty record {
-    string clientProtocol;
-    string clusteringPolicy;
-    string evictionPolicy;
-    int port;
-    string[] modules;
+    string minimumTlsVersion?;
+    string publicNetworkAccess?;
+    json tenantSettings?;
 };
 
 # Represents a pricing tier information of Redis Cache
@@ -97,8 +76,8 @@ public type FirewallRule record {
 # + startIP - Start IP address of range
 # + endIP - End IP address of range
 public type FirewallRuleProperty record {
-    string startIP = "";
-    string endIP = "";
+    string startIP;
+    string endIP;
 };
 
 # Represents a firewall rule list
@@ -216,27 +195,6 @@ public type PrivateLinkServiceConnectionState record {
     string actionRequired?;
 };
 
-public type RedisEnterpriseInstance record {
-    string name;
-    string 'type;
-    string id;
-    string location;
-    EnterpriseStockKeepingUnit sku;
-    string[] zones?;
-    json tags?;
-    RedisEnterpriseInstanceProperty properties;
-};
-
-public type RedisEnterpriseInstanceProperty record {
-    string provisioningState;
-    string resourceState?;
-    string publicNetworkAccess?;
-    PrivateEndpointConnection[] privateEndpointConnections?;
-    string hostName?;
-    string redisVersion?;
-    string minimumTlsVersion?;
-};
-
 public type PrivateLinkResource record {
     string name;
     string 'type;
@@ -246,10 +204,6 @@ public type PrivateLinkResource record {
 
 public type PrivateEndpointConnectionList record {
     PrivateEndpointConnection[] value;
-};
-
-public type RedisEnterpriseInstanceList record {
-    RedisEnterpriseInstance[] value;
 };
 
 # Represents a Linked Server
@@ -323,33 +277,6 @@ public type ScheduleEntry record {
 # + value - Array of PatchSchedule
 public type PatchScheduleList record {
     PatchSchedule[] value;
-};
-
-public type RedisEnterpriseDatabase record {
-    string id;
-    string name;
-    string 'type;
-    json properties;
-};
-
-public type RedisEnterpriseDatabaseProperty record {
-    string provisioningState;
-    string resourceState;
-    string clientProtocol;
-    string clusteringPolicy;
-    string evictionPolicy;
-    int port;
-    RedisEnterpriseDatabasePropertyModule[] modules;
-};
-
-public type RedisEnterpriseDatabasePropertyModule record {
-    string name;
-    string args;
-    string 'version;
-};
-
-public type RedisEnterpriseDatabaseList record {
-    RedisEnterpriseDatabase[] value;
 };
 
 # Represents a Set of Keys used for access

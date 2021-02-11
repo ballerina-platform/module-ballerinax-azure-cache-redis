@@ -15,7 +15,9 @@
 // under the License.
 
 # Azure Redis Cache REST API version
-const string BASE_URL = "https://management.azure.com/subscriptions/";
+const string API_VERSION = "2020-06-01";
+# Azure Redis Cache REST API Base url
+const string BASE_URL = "https://management.azure.com";
 # Constant `EMPTY_STRING`.
 const string EMPTY_STRING = "";
 # Constant `SPACE`.
@@ -29,4 +31,5 @@ const int NO_CONTENT = 204;
 # Request path constants
 const string RESOURCE_GROUP_PATH = "/resourceGroups/";
 const string PROVIDER_PATH = "/providers/Microsoft.Cache/redis/";
-const string API_VERSION = "?api-version=";
+const string API_VERSION_PATH = "?api-version=";
+const string SUBSCRIPTION_PATH = "/subscriptions/";
