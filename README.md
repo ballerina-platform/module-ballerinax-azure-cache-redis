@@ -34,10 +34,10 @@ https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-overview#serv
 The `ballerinax/azure-cache-redis` module contains operations regarding
 * createRedisCache
 * getRedisCache
-* testGetHostName
-* testGetSSLPortNumber
-* testGetNonSSLPortNumber
-* testGetgetPrimaryKey
+* getHostName
+* getSSLPortNumber
+* getNonSSLPortNumber
+* getPrimaryKey
 * listRedisInstances
 * listKeys
 * regenerateKey
