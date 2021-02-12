@@ -33,3 +33,6 @@ hs_err_pid*
 
 #resource folder contain build file
 **/resources/*.json
+
+#config file
+.conf
