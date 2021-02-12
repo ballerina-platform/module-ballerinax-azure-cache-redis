@@ -35,4 +35,4 @@ hs_err_pid*
 **/resources/*.json
 
 #config file
-.conf
+*.conf
