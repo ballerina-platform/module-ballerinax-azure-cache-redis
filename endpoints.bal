@@ -391,7 +391,7 @@ public client class AzureRedisCacheManagementClient {
     # + return - If successful, returns FirewallRule. Else returns error. 
     remote function createFirewallRule(string subscriptionId, string redisCacheName, string resourceGroupName, 
                                        string ruleName, string startIP, string endIP) 
-    returns @tainted FirewallRule|error {
+                                       returns @tainted FirewallRule|error {
         string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
         PROVIDER_PATH + redisCacheName + "/firewallRules/" + ruleName + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
@@ -492,7 +492,7 @@ public client class AzureRedisCacheManagementClient {
     # + return - If successful, returns PatchSchedule. Else returns error. 
     remote function createPatchSchedule(string subscriptionId, string redisCacheName, string resourceGroupName, 
                                         PatchScheduleProperty? patchScheduleProperties) 
-    returns @tainted PatchSchedule|error {
+                                        returns @tainted PatchSchedule|error {
         string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
         PROVIDER_PATH + redisCacheName + "/patchSchedules/default" + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
