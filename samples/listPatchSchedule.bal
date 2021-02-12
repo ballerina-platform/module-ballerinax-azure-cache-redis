@@ -11,13 +11,11 @@ public function main() returns error? {
     }};
     azure_cache_redis:Client azureClient = new (config);
 
-    // list redis caches exists in resource group
-    RedisCacheInstance[]|error instances = azureClient->listRedisCacheInstances(<SUBSCRIPTION_ID>, "TestResourceGroup");
-    if (instances is RedisCacheInstance[]) {
-        foreach RedisCacheInstance redisInstance in response {
-            io:println(redisInstance.toString());
-        }
+    // fetch array of patch schedules
+    PatchSchedule[]|error response = azureRedisManagementClient->getPatchSchedule(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup", "TestPatchSchedule");
+    if (response is PatchSchedule[]) {
+        log:print("Patch Schedule fetched");
     } else {
-        io:println(instances.message());
+        log:print(response.message());
     }
 }

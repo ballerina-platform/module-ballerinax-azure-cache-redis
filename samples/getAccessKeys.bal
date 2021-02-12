@@ -12,7 +12,7 @@ public function main() returns error? {
     azure_cache_redis:Client azureClient = new (config);
 
 //Getting Access keys
-    AccessKeys|error response = azureRedisClient->listKeys(<SUBSCRIPTION_ID>, "TestRedisConnectorCache", "TestRedisConnector");
+    AccessKeys|error response = azureRedisClient->listKeys(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup");
     if (response is AccessKey) {
         json primaryKey = response.primaryKey;
         json secondaryKey = response.secondaryKey;

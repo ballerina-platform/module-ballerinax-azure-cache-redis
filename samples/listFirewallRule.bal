@@ -11,13 +11,11 @@ public function main() returns error? {
     }};
     azure_cache_redis:Client azureClient = new (config);
 
-    // list redis caches exists in resource group
-    RedisCacheInstance[]|error instances = azureClient->listRedisCacheInstances(<SUBSCRIPTION_ID>, "TestResourceGroup");
-    if (instances is RedisCacheInstance[]) {
-        foreach RedisCacheInstance redisInstance in response {
-            io:println(redisInstance.toString());
-        }
+    // fetch fire wall rule
+    FirewallRule[]|error response = azureRedisManagementClient->listFirewallRule(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup");
+    if (response is FirewallRule[]) {
+        log:print("Array of Firewall Rule fetched");
     } else {
-        io:println(instances.message());
+        log:print(response.message());
     }
 }
