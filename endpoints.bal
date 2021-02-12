@@ -595,7 +595,7 @@ public client class AzureRedisCacheManagementClient {
     remote function createLinkedServer(string subscriptionId, string redisCacheName, string resourceGroupName, 
                                        string linkedServerName, string linkedRedisCacheId, 
                                        string linkedRedisCacheLocation, string serverRole) 
-    returns @tainted LinkedServer|error {
+                                       returns @tainted LinkedServer|error {
         string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
         PROVIDER_PATH + redisCacheName + "/linkedServers/" + linkedServerName + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
