@@ -25,7 +25,7 @@ public type AzureRedisConfiguration record {
 # Azure Cache for Redis Client Object.
 # 
 # + AzureRedisCacheManagementClient - the HTTP Client
-public client class Client {
+public client class AzureRedisCacheManagementClient {
 
     http:Client AzureRedisCacheManagementClient;
 
@@ -39,15 +39,18 @@ public client class Client {
         });
     }
 
-    public function checkAzureCacheNameAvailability(string subscriptionId, string cacheName) returns @tainted boolean|error {
-        string requestPath = SUBSCRIPTION_PATH + subscriptionId + "/providers/Microsoft.Cache/CheckNameAvailability" + API_VERSION_PATH + API_VERSION;
+    public function checkAzureCacheNameAvailability(string subscriptionId, string cacheName) 
+    returns @tainted boolean|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + "/providers/Microsoft.Cache/CheckNameAvailability" + 
+        API_VERSION_PATH + API_VERSION;
         http:Request request = new;
         json checkPayload = {
             "type": "Microsoft.Cache/Redis",
             "name": cacheName
         };
         request.setJsonPayload(checkPayload);
-        http:Response checkResponse = <http:Response>check self.AzureRedisCacheManagementClient->post(requestPath, request);
+        http:Response checkResponse = <http:Response>check self.AzureRedisCacheManagementClient->post(requestPath, 
+        request);
         if (checkResponse.statusCode == http:STATUS_OK) {
             return true;
         } else {
@@ -68,11 +71,13 @@ public client class Client {
     # + tags - Resource tags.
     # + zones - A list of availability zones denoting where the resource needs to come from
     # + return - If successful, returns RedisCacheInstance. Else returns error. 
-    remote function createRedisCache(string subscriptionId, string redisCacheName, string resourceGroupName, string location, CreateCacheProperty properties, json tags = (), string[]? zones = ()
-                                     ) returns @tainted RedisCacheInstance|error {
+    remote function createRedisCache(string subscriptionId, string redisCacheName, string resourceGroupName, 
+                                     string location, CreateCacheProperty properties, json tags = (), 
+                                     string[]? zones = ()) returns @tainted RedisCacheInstance|error {
         var checkAvailability = self.checkAzureCacheNameAvailability(subscriptionId, redisCacheName);
         if (checkAvailability is boolean) {
-            string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + API_VERSION_PATH + API_VERSION;
+            string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+            PROVIDER_PATH + redisCacheName + API_VERSION_PATH + API_VERSION;
             http:Request request = new;
             json createCachePayload = {
                 "location": location,
@@ -96,7 +101,8 @@ public client class Client {
                 "zones": zones
             };
             request.setJsonPayload(createCachePayload);
-            http:Response createResponse = <http:Response>check self.AzureRedisCacheManagementClient->put(requestPath, request);
+            http:Response createResponse = <http:Response>check self.AzureRedisCacheManagementClient->put(requestPath, 
+            request);
             json responsePayload = check createResponse.getJsonPayload();
             if (createResponse.statusCode == http:STATUS_OK) {
                 RedisCacheInstance getRedisCacheResponse = check responsePayload.cloneWithType(RedisCacheInstance);
@@ -118,13 +124,15 @@ public client class Client {
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + return - If successful, returns boolean. Else returns error. 
-    remote function deleteRedisCache(string subscriptionId, string redisCacheName, string resourceGroupName) returns @tainted boolean|error {
-        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + API_VERSION_PATH + 
-        API_VERSION;
+    remote function deleteRedisCache(string subscriptionId, string redisCacheName, string resourceGroupName) 
+    returns @tainted boolean|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
-        http:Response deleteResponse = <http:Response>check self.AzureRedisCacheManagementClient->delete(requestPath, request);
-        if (deleteResponse.statusCode == http:STATUS_OK || deleteResponse.statusCode == http:STATUS_NO_CONTENT || deleteResponse.statusCode == 
-        ACCEPTED) {
+        http:Response deleteResponse = <http:Response>check self.AzureRedisCacheManagementClient->delete(requestPath, 
+        request);
+        if (deleteResponse.statusCode == http:STATUS_OK || deleteResponse.statusCode == http:STATUS_NO_CONTENT || 
+        deleteResponse.statusCode == ACCEPTED) {
             return true;
         } else {
             json responsePayload = check deleteResponse.getJsonPayload();
@@ -138,9 +146,10 @@ public client class Client {
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + return - If successful, returns RedisCacheInstance. Else returns error. 
-    remote function getRedisCache(string subscriptionId, string redisCacheName, string resourceGroupName) 
-    returns @tainted RedisCacheInstance|error {
-        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + API_VERSION_PATH + API_VERSION;
+    remote function getRedisCache(string subscriptionId, string redisCacheName, string resourceGroupName) returns @tainted 
+    RedisCacheInstance|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
         json responsePayload = check getResponse.getJsonPayload();
@@ -160,7 +169,8 @@ public client class Client {
     # + return - If successful, returns string. Else returns error. 
     remote function getHostName(string subscriptionId, string redisCacheName, string resourceGroupName) 
     returns @tainted string|error {
-        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + API_VERSION_PATH + API_VERSION;
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
         json responsePayload = check getResponse.getJsonPayload();
@@ -181,7 +191,8 @@ public client class Client {
     # + return - If successful, returns int. Else returns error. 
     remote function getSSLPortNumber(string subscriptionId, string redisCacheName, string resourceGroupName) 
     returns @tainted int|error {
-        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + API_VERSION_PATH + API_VERSION;
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
         json responsePayload = check getResponse.getJsonPayload();
@@ -202,7 +213,8 @@ public client class Client {
     # + return - If successful, returns int. Else returns error. 
     remote function getNonSSLPortNumber(string subscriptionId, string redisCacheName, string resourceGroupName) 
     returns @tainted int|error {
-        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + API_VERSION_PATH + API_VERSION;
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
         json responsePayload = check getResponse.getJsonPayload();
@@ -220,27 +232,34 @@ public client class Client {
     # + subscriptionId - Subscription Id of a subscription
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + return - If successful, returns RedisCacheInstance[]. Else returns error. 
-    remote function listRedisCacheInstances(string subscriptionId, string? resourceGroupName = ()) returns @tainted RedisCacheInstance[]|error {
-        if(resourceGroupName is string){
-            string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + "/providers/Microsoft.Cache/redis" + API_VERSION_PATH + 
-            API_VERSION;
+    remote function listRedisCacheInstances(string subscriptionId, string? resourceGroupName = ()) returns @tainted 
+    RedisCacheInstance[]|error {
+        if (resourceGroupName is string) {
+            string requestPath = 
+            SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + "/providers/Microsoft.Cache/redis" + 
+            API_VERSION_PATH + API_VERSION;
             http:Request request = new;
-            http:Response listResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
+            http:Response listResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, 
+            request);
             json responsePayload = check listResponse.getJsonPayload();
             if (listResponse.statusCode == http:STATUS_OK) {
-                RedisCacheInstanceList listRedisCacheInstance = check responsePayload.cloneWithType(RedisCacheInstanceList);
+                RedisCacheInstanceList listRedisCacheInstance = check responsePayload.cloneWithType(
+                RedisCacheInstanceList);
                 RedisCacheInstance[] listRedisCacheInstanceArray = listRedisCacheInstance.value;
                 return listRedisCacheInstanceArray;
             } else {
                 return getAzureError(listResponse.statusCode.toString() + SPACE + responsePayload.toString());
             }
         } else {
-            string requestPath = SUBSCRIPTION_PATH + subscriptionId + "/providers/Microsoft.Cache/redis" + API_VERSION_PATH + API_VERSION;
+            string requestPath = SUBSCRIPTION_PATH + subscriptionId + "/providers/Microsoft.Cache/redis" + 
+            API_VERSION_PATH + API_VERSION;
             http:Request request = new;
-            http:Response listResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
+            http:Response listResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, 
+            request);
             json responsePayload = check listResponse.getJsonPayload();
             if (listResponse.statusCode == http:STATUS_OK) {
-                RedisCacheInstanceList listRedisCacheInstance = check responsePayload.cloneWithType(RedisCacheInstanceList);
+                RedisCacheInstanceList listRedisCacheInstance = check responsePayload.cloneWithType(
+                RedisCacheInstanceList);
                 RedisCacheInstance[] listRedisCacheInstanceArray = listRedisCacheInstance.value;
                 return listRedisCacheInstanceArray;
             } else {
@@ -256,12 +275,13 @@ public client class Client {
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + return - If successful, returns AccessKey. Else returns error.
-    remote function listKeys(string subscriptionId, string redisCacheName, string resourceGroupName) returns @tainted AccessKey|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/listKeys" + API_VERSION_PATH + 
-        API_VERSION;
+    remote function listKeys(string subscriptionId, string redisCacheName, string resourceGroupName) returns @tainted 
+    AccessKey|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + "/listKeys" + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
-        http:Response listResponse = <http:Response>check self.AzureRedisCacheManagementClient->post(requestPath, request);
+        http:Response listResponse = <http:Response>check self.AzureRedisCacheManagementClient->post(requestPath, 
+        request);
         json responsePayload = check listResponse.getJsonPayload();
         if (listResponse.statusCode == http:STATUS_OK) {
             AccessKey listKeys = check responsePayload.cloneWithType(AccessKey);
@@ -277,12 +297,13 @@ public client class Client {
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + return - If successful, returns string. Else returns error.
-    remote function getPrimaryKey(string subscriptionId, string redisCacheName, string resourceGroupName) returns @tainted string|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/listKeys" + API_VERSION_PATH + 
-        API_VERSION;
+    remote function getPrimaryKey(string subscriptionId, string redisCacheName, string resourceGroupName) 
+    returns @tainted string|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + "/listKeys" + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
-        http:Response listResponse = <http:Response>check self.AzureRedisCacheManagementClient->post(requestPath, request);
+        http:Response listResponse = <http:Response>check self.AzureRedisCacheManagementClient->post(requestPath, 
+        request);
         json responsePayload = check listResponse.getJsonPayload();
         if (listResponse.statusCode == http:STATUS_OK) {
             AccessKey listKeys = check responsePayload.cloneWithType(AccessKey);
@@ -301,13 +322,13 @@ public client class Client {
     # + return - If successful, returns AccessKey. Else returns error.
     remote function regenerateKey(string subscriptionId, string redisCacheName, string resourceGroupName, string keyType) returns @tainted 
     AccessKey|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/regenerateKey" + API_VERSION_PATH + 
-        API_VERSION;
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + "/regenerateKey" + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
         json regenerateKeyJsonPayload = {"keyType": keyType};
         request.setJsonPayload(regenerateKeyJsonPayload);
-        http:Response regenerateResponse = <http:Response>check self.AzureRedisCacheManagementClient->post(requestPath, request);
+        http:Response regenerateResponse = <http:Response>check self.AzureRedisCacheManagementClient->post(requestPath, 
+        request);
         json responsePayload = check regenerateResponse.getJsonPayload();
         if (regenerateResponse.statusCode == http:STATUS_OK) {
             AccessKey listKeys = check responsePayload.cloneWithType(AccessKey);
@@ -324,13 +345,12 @@ public client class Client {
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + properties - properties Parameter Description including Pricing tier(Basic, Standard, Premium)
     # + return - If successful, returns RedisCacheInstance. Else returns error. 
-    remote function updateRedisCache(string subscriptionId, string redisCacheName, string resourceGroupName, CreateCacheProperty properties) returns @tainted 
-    RedisCacheInstance|error {
-        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + API_VERSION_PATH + 
-        API_VERSION;
+    remote function updateRedisCache(string subscriptionId, string redisCacheName, string resourceGroupName, 
+                                     CreateCacheProperty properties) returns @tainted RedisCacheInstance|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
-        json updateCacheJsonPayload = {
-            "properties": {
+        json updateCacheJsonPayload = {"properties": {
                 "sku": {
                     "name": properties.sku.name,
                     "family": properties.sku.family,
@@ -345,10 +365,10 @@ public client class Client {
                 "staticIP": properties?.staticIP,
                 "subnetId": properties?.subnetId,
                 "tenantSettings": properties?.tenantSettings
-            }
-        };
+            }};
         request.setJsonPayload(updateCacheJsonPayload);
-        http:Response updateResponse = <http:Response>check self.AzureRedisCacheManagementClient->patch(requestPath, request);
+        http:Response updateResponse = <http:Response>check self.AzureRedisCacheManagementClient->patch(requestPath, 
+        request);
         json responsePayload = check updateResponse.getJsonPayload();
         if (updateResponse.statusCode == http:STATUS_OK) {
             RedisCacheInstance getRedisCacheResponse = check responsePayload.cloneWithType(RedisCacheInstance);
@@ -369,18 +389,19 @@ public client class Client {
     # + startIP - Start IP of permitted range
     # + endIP - End IP of permitted range
     # + return - If successful, returns FirewallRule. Else returns error. 
-    remote function createFirewallRule(string subscriptionId, string redisCacheName, string resourceGroupName, string ruleName, string startIP, 
-                                       string endIP) returns @tainted FirewallRule|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/firewallRules/" + ruleName + API_VERSION_PATH + 
-        API_VERSION;
+    remote function createFirewallRule(string subscriptionId, string redisCacheName, string resourceGroupName, 
+                                       string ruleName, string startIP, string endIP) 
+    returns @tainted FirewallRule|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + "/firewallRules/" + ruleName + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
         json createFilewallRuleJsonPayload = {"properties": {
                 "startIP": startIP,
                 "endIP": endIP
             }};
         request.setJsonPayload(createFilewallRuleJsonPayload);
-        http:Response createResponse = <http:Response>check self.AzureRedisCacheManagementClient->put(requestPath, request);
+        http:Response createResponse = <http:Response>check self.AzureRedisCacheManagementClient->put(requestPath, 
+        request);
         json responsePayload = check createResponse.getJsonPayload();
         if (createResponse.statusCode == http:STATUS_OK) {
             FirewallRule createFirewallResponse = check responsePayload.cloneWithType(FirewallRule);
@@ -400,13 +421,13 @@ public client class Client {
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + ruleName - Name of Firewall Rule Name
     # + return - If successful, returns boolean. Else returns error. 
-    remote function deleteFirewallRule(string subscriptionId, string redisCacheName, string resourceGroupName, string ruleName) 
-    returns @tainted boolean|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/firewallRules/" + ruleName + API_VERSION_PATH + 
-        API_VERSION;
+    remote function deleteFirewallRule(string subscriptionId, string redisCacheName, string resourceGroupName, 
+                                       string ruleName) returns @tainted boolean|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + "/firewallRules/" + ruleName + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
-        http:Response deleteResponse = <http:Response>check self.AzureRedisCacheManagementClient->delete(requestPath, request);
+        http:Response deleteResponse = <http:Response>check self.AzureRedisCacheManagementClient->delete(requestPath, 
+        request);
         if (deleteResponse.statusCode == http:STATUS_OK || deleteResponse.statusCode == http:STATUS_NO_CONTENT) {
             return true;
         } else {
@@ -422,11 +443,10 @@ public client class Client {
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + ruleName - Name of FirewallRule Name
     # + return - If successful, returns FirewallRule. Else returns error. 
-    remote function getFirewallRule(string subscriptionId, string redisCacheName, string resourceGroupName, string ruleName) returns @tainted 
-    FirewallRule|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/firewallRules/" + ruleName + API_VERSION_PATH + 
-        API_VERSION;
+    remote function getFirewallRule(string subscriptionId, string redisCacheName, string resourceGroupName, 
+                                    string ruleName) returns @tainted FirewallRule|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + "/firewallRules/" + ruleName + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
         json responsePayload = check getResponse.getJsonPayload();
@@ -446,15 +466,14 @@ public client class Client {
     # + return - If successful, returns FirewallRule[]. Else returns error. 
     remote function listFirewallRules(string subscriptionId, string redisCacheName, string resourceGroupName) returns @tainted 
     FirewallRule[]|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/firewallRules" + API_VERSION_PATH + 
-        API_VERSION;
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + "/firewallRules" + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
-        http:Response listResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
+        http:Response listResponse = 
+        <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
         json responsePayload = check listResponse.getJsonPayload();
         if (listResponse.statusCode == http:STATUS_OK) {
-            FirewallRuleList getFirewallRuleList = check responsePayload.cloneWithType(
-            FirewallRuleList);
+            FirewallRuleList getFirewallRuleList = check responsePayload.cloneWithType(FirewallRuleList);
             FirewallRule[] getFirewallRuleArray = getFirewallRuleList.value;
             return getFirewallRuleArray;
         } else {
@@ -473,14 +492,14 @@ public client class Client {
     # + return - If successful, returns PatchSchedule. Else returns error. 
     remote function createPatchSchedule(string subscriptionId, string redisCacheName, string resourceGroupName, 
                                         PatchScheduleProperty? patchScheduleProperties) 
-                                        returns @tainted PatchSchedule|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/patchSchedules/default" + API_VERSION_PATH + 
-        API_VERSION;
+    returns @tainted PatchSchedule|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + "/patchSchedules/default" + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
         json createPayload = {properties: <json>patchScheduleProperties.cloneWithType(json)};
         request.setJsonPayload(createPayload);
-        http:Response createResponse = <http:Response>check self.AzureRedisCacheManagementClient->put(requestPath, request);
+        http:Response createResponse = <http:Response>check self.AzureRedisCacheManagementClient->put(requestPath, 
+        request);
         json responsePayload = check createResponse.getJsonPayload();
         if (createResponse.statusCode == http:STATUS_OK) {
             PatchSchedule createPatchResponse = check responsePayload.cloneWithType(PatchSchedule);
@@ -499,12 +518,13 @@ public client class Client {
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + return - If successful, returns boolean. Else returns error. 
-    remote function deletePatchSchedule(string subscriptionId, string redisCacheName, string resourceGroupName) returns @tainted boolean|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/patchSchedules/default" + API_VERSION_PATH + 
-        API_VERSION;
+    remote function deletePatchSchedule(string subscriptionId, string redisCacheName, string resourceGroupName) 
+    returns @tainted boolean|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + "/patchSchedules/default" + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
-        http:Response deleteResponse = <http:Response>check self.AzureRedisCacheManagementClient->delete(requestPath, request);
+        http:Response deleteResponse = <http:Response>check self.AzureRedisCacheManagementClient->delete(requestPath, 
+        request);
         if (deleteResponse.statusCode == http:STATUS_OK || deleteResponse.statusCode == http:STATUS_NO_CONTENT) {
             return true;
         } else {
@@ -519,11 +539,10 @@ public client class Client {
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found.
     # + return - If successful, returns PatchSchedule. Else returns error. 
-    remote function getPatchSchedule(string subscriptionId, string redisCacheName, string resourceGroupName) 
-    returns @tainted PatchSchedule|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/patchSchedules/default" + API_VERSION_PATH + 
-        API_VERSION;
+    remote function getPatchSchedule(string subscriptionId, string redisCacheName, string resourceGroupName) returns @tainted 
+    PatchSchedule|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + "/patchSchedules/default" + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
         json responsePayload = check getResponse.getJsonPayload();
@@ -543,11 +562,11 @@ public client class Client {
     # + return - If successful, returns PatchShedule[]. Else returns error. 
     remote function listPatchSchedules(string subscriptionId, string redisCacheName, string resourceGroupName) returns @tainted 
     PatchSchedule[]|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/patchSchedules" + API_VERSION_PATH + 
-        API_VERSION;
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + "/patchSchedules" + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
-        http:Response listResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
+        http:Response listResponse = 
+        <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
         json responsePayload = check listResponse.getJsonPayload();
         if (listResponse.statusCode == http:STATUS_OK) {
             PatchScheduleList getPatchSheduleList = check responsePayload.cloneWithType(PatchScheduleList);
@@ -573,12 +592,12 @@ public client class Client {
     # + linkedRedisCacheLocation - Location of Linked Server
     # + serverRole - Primary/Secondary
     # + return - If successful, returns LinkedServer. Else returns error. 
-    remote function createLinkedServer(string subscriptionId, string redisCacheName, string resourceGroupName, string linkedServerName, 
-                                       string linkedRedisCacheId, string linkedRedisCacheLocation, string serverRole) returns @tainted 
-                                       LinkedServer|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/linkedServers/" + linkedServerName + API_VERSION_PATH + 
-        API_VERSION;
+    remote function createLinkedServer(string subscriptionId, string redisCacheName, string resourceGroupName, 
+                                       string linkedServerName, string linkedRedisCacheId, 
+                                       string linkedRedisCacheLocation, string serverRole) 
+    returns @tainted LinkedServer|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + "/linkedServers/" + linkedServerName + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
         json createLinkedServerJsonPayload = {"properties": {
                 "linkedRedisCacheId": linkedRedisCacheId,
@@ -586,7 +605,8 @@ public client class Client {
                 "serverRole": serverRole
             }};
         request.setJsonPayload(createLinkedServerJsonPayload);
-        http:Response createResponse = <http:Response>check self.AzureRedisCacheManagementClient->put(requestPath, request);
+        http:Response createResponse = <http:Response>check self.AzureRedisCacheManagementClient->put(requestPath, 
+        request);
         string statusCode = createResponse.statusCode.toString();
         json responsePayload = check createResponse.getJsonPayload();
         if (createResponse.statusCode == http:STATUS_OK) {
@@ -607,13 +627,13 @@ public client class Client {
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + linkedServerName - Name of Linked Server Name
     # + return - If successful, returns boolean. Else returns error. 
-    remote function deleteLinkedServer(string subscriptionId, string redisCacheName, string resourceGroupName, string linkedServerName) 
-    returns @tainted boolean|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/linkedServers/" + linkedServerName + API_VERSION_PATH + 
-        API_VERSION;
+    remote function deleteLinkedServer(string subscriptionId, string redisCacheName, string resourceGroupName, 
+                                       string linkedServerName) returns @tainted boolean|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + "/linkedServers/" + linkedServerName + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
-        http:Response deleteResponse = <http:Response>check self.AzureRedisCacheManagementClient->delete(requestPath, request);
+        http:Response deleteResponse = <http:Response>check self.AzureRedisCacheManagementClient->delete(requestPath, 
+        request);
         string statusCode = deleteResponse.statusCode.toString();
         if (deleteResponse.statusCode == http:STATUS_OK || deleteResponse.statusCode == http:STATUS_NO_CONTENT) {
             return true;
@@ -632,11 +652,10 @@ public client class Client {
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + linkedServerName - Name of Linked Server Name
     # + return - If successful, returns LinkedServer. Else returns error. 
-    remote function getLinkedServer(string subscriptionId, string redisCacheName, string resourceGroupName, string linkedServerName) returns @tainted 
-    LinkedServer|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/linkedServers/" + linkedServerName + API_VERSION_PATH + 
-        API_VERSION;
+    remote function getLinkedServer(string subscriptionId, string redisCacheName, string resourceGroupName, 
+                                    string linkedServerName) returns @tainted LinkedServer|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + "/linkedServers/" + linkedServerName + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
         json responsePayload = check getResponse.getJsonPayload();
@@ -654,13 +673,13 @@ public client class Client {
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found. 
     # + return - If successful, returns LinkedServer[]. Else returns error. 
-    remote function listLinkedServers(string subscriptionId, string redisCacheName, string resourceGroupName) 
-    returns @tainted LinkedServer[]|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/linkedServers" + API_VERSION_PATH + 
-        API_VERSION;
+    remote function listLinkedServers(string subscriptionId, string redisCacheName, string resourceGroupName) returns @tainted 
+    LinkedServer[]|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + "/linkedServers" + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
-        http:Response listResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
+        http:Response listResponse = 
+        <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
         json responsePayload = check listResponse.getJsonPayload();
         if (listResponse.statusCode == http:STATUS_OK) {
             LinkedServerList getLinkedServerList = check responsePayload.cloneWithType(LinkedServerList);
@@ -681,10 +700,11 @@ public client class Client {
     # + privateEndpointConnectionName - Name of Private Endpoint Connection
     # + return - If successful, returns PrivateEndpointConnection. Else returns error. 
     remote function putPrivateEndpointConnection(string subscriptionId, string redisCacheName, string resourceGroupName, 
-                                                 string privateEndpointConnectionName, string status, string description) returns @tainted PrivateEndpointConnection|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/privateEndpointConnections/" + 
-        privateEndpointConnectionName + API_VERSION_PATH + API_VERSION;
+                                                 string privateEndpointConnectionName, string status, string description) returns @tainted 
+    PrivateEndpointConnection|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + "/privateEndpointConnections/" + privateEndpointConnectionName + 
+        API_VERSION_PATH + API_VERSION;
         http:Request request = new;
         json putPrivateEndpointConnectionJsonPayload = {"properties": {"privateLinkServiceConnectionState": {
                     "status": status,
@@ -695,7 +715,8 @@ public client class Client {
         json responsePayload = check putResponse.getJsonPayload();
         log:print(responsePayload.toString());
         if (putResponse.statusCode == http:STATUS_CREATED) {
-            PrivateEndpointConnection getPrivateEndpointConnection = check responsePayload.cloneWithType(PrivateEndpointConnection);
+            PrivateEndpointConnection getPrivateEndpointConnection = check responsePayload.cloneWithType(
+            PrivateEndpointConnection);
             return getPrivateEndpointConnection;
         } else {
             return getAzureError(putResponse.statusCode.toString() + SPACE + responsePayload.toString());
@@ -710,15 +731,17 @@ public client class Client {
     # + privateEndpointConnectionName - Name of Private Endpoint Connection
     # + return - If successful, returns PrivateEndpointConnection. Else returns error. 
     remote function getPrivateEndpointConnection(string subscriptionId, string redisCacheName, string resourceGroupName, 
-                                                 string privateEndpointConnectionName) returns @tainted PrivateEndpointConnection|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/privateEndpointConnections/" + 
-        privateEndpointConnectionName + API_VERSION_PATH + API_VERSION;
+                                                 string privateEndpointConnectionName) returns @tainted 
+    PrivateEndpointConnection|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + "/privateEndpointConnections/" + privateEndpointConnectionName + 
+        API_VERSION_PATH + API_VERSION;
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
         json responsePayload = check getResponse.getJsonPayload();
         if (getResponse.statusCode == http:STATUS_OK) {
-            PrivateEndpointConnection getPrivateEndpointConnection = check responsePayload.cloneWithType(PrivateEndpointConnection);
+            PrivateEndpointConnection getPrivateEndpointConnection = check responsePayload.cloneWithType(
+            PrivateEndpointConnection);
             return getPrivateEndpointConnection;
         } else {
             return getAzureError(getResponse.statusCode.toString() + SPACE + responsePayload.toString());
@@ -733,14 +756,15 @@ public client class Client {
     # + return - If successful, returns PrivateEndpointConnection[]. Else returns error.
     remote function listPrivateEndpointConnection(string subscriptionId, string redisCacheName, string resourceGroupName) returns @tainted 
     PrivateEndpointConnection[]|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/privateEndpointConnections" + API_VERSION_PATH + 
-        API_VERSION;
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + "/privateEndpointConnections" + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
-        http:Response listResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
+        http:Response listResponse = 
+        <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
         json responsePayload = check listResponse.getJsonPayload();
         if (listResponse.statusCode == http:STATUS_OK) {
-            PrivateEndpointConnectionList getPrivateEndpointConnection = check responsePayload.cloneWithType(PrivateEndpointConnectionList);
+            PrivateEndpointConnectionList getPrivateEndpointConnection = check responsePayload.cloneWithType(
+            PrivateEndpointConnectionList);
             PrivateEndpointConnection[] getPrivateEndpointConnectionArray = getPrivateEndpointConnection.value;
             return getPrivateEndpointConnectionArray;
         } else {
@@ -755,14 +779,15 @@ public client class Client {
     # + resourceGroupName - Resource Group Name where Redis Cache found.
     # + privateEndpointConnectionName - Name of Private Endpoint Connection
     # + return - If successful, returns boolean. Else returns error.
-    remote function deletePrivateEndpointConnection(string subscriptionId, string redisCacheName, string resourceGroupName, 
-                                                    string privateEndpointConnectionName) 
-                                                    returns @tainted boolean|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/privateEndpointConnections/" + 
-        privateEndpointConnectionName + API_VERSION_PATH + API_VERSION;
+    remote function deletePrivateEndpointConnection(string subscriptionId, string redisCacheName, 
+                                                    string resourceGroupName, string privateEndpointConnectionName) 
+    returns @tainted boolean|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + "/privateEndpointConnections/" + privateEndpointConnectionName + 
+        API_VERSION_PATH + API_VERSION;
         http:Request request = new;
-        http:Response deleteResponse = <http:Response>check self.AzureRedisCacheManagementClient->delete(requestPath, request);
+        http:Response deleteResponse = <http:Response>check self.AzureRedisCacheManagementClient->delete(requestPath, 
+        request);
         if (deleteResponse.statusCode == http:STATUS_OK || deleteResponse.statusCode == http:STATUS_NO_CONTENT) {
             return true;
         } else {
@@ -779,17 +804,15 @@ public client class Client {
     # + redisCacheName - Redis Cache Instance Name 
     # + resourceGroupName - Resource Group Name where Redis Cache found.
     # + return - If successful, returns PrivateLinkResource. Else returns error.
-    remote function getPrivateLinkResources(string subscriptionId, string redisCacheName, string resourceGroupName) 
-    returns @tainted PrivateLinkResource|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/privateLinkResources" + API_VERSION_PATH + 
-        API_VERSION;
+    remote function getPrivateLinkResources(string subscriptionId, string redisCacheName, string resourceGroupName) returns @tainted 
+    PrivateLinkResource|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + "/privateLinkResources" + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
         http:Response getResponse = <http:Response>check self.AzureRedisCacheManagementClient->get(requestPath, request);
         json responsePayload = check getResponse.getJsonPayload();
         if (getResponse.statusCode == http:STATUS_OK) {
-            PrivateLinkResource getPrivateLinkResource = check responsePayload.cloneWithType(
-            PrivateLinkResource);
+            PrivateLinkResource getPrivateLinkResource = check responsePayload.cloneWithType(PrivateLinkResource);
             return getPrivateLinkResource;
         } else {
             return getAzureError(getResponse.statusCode.toString() + SPACE + responsePayload.toString());
@@ -809,12 +832,11 @@ public client class Client {
     # + sasKeyParameters - SAS key
     # + format - file format SUBSCRIPTION_PATH + subscriptionId + to which exported
     # + return - If successful, returns boolean. Else returns error. 
-    remote function exportRedisCache(string subscriptionId, string redisCacheName, string resourceGroupName, string prefix, 
-                                     string blobContainerUrl, string sasKeyParameters, string? format = ()) 
-                                     returns @tainted boolean|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/export" + API_VERSION_PATH + 
-        API_VERSION;
+    remote function exportRedisCache(string subscriptionId, string redisCacheName, string resourceGroupName, 
+                                     string prefix, string blobContainerUrl, string sasKeyParameters, 
+                                     string? format = ()) returns @tainted boolean|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + "/export" + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
         json exportCacheJsonPayload = {
             "format": format,
@@ -822,7 +844,8 @@ public client class Client {
             "container": blobContainerUrl + sasKeyParameters
         };
         request.setJsonPayload(exportCacheJsonPayload);
-        http:Response exportResponse = <http:Response>check self.AzureRedisCacheManagementClient->post(requestPath, request);
+        http:Response exportResponse = <http:Response>check self.AzureRedisCacheManagementClient->post(requestPath, 
+        request);
         if (exportResponse.statusCode == http:STATUS_OK || exportResponse.statusCode == http:STATUS_NO_CONTENT) {
             return true;
         } else if (exportResponse.statusCode == ACCEPTED) {
@@ -844,18 +867,18 @@ public client class Client {
     # + files - file name to be imported  
     # + format - file format to be imported
     # + return - If successful, returns boolean. Else returns error. 
-    remote function importRedisCache(string subscriptionId, string redisCacheName, string resourceGroupName, string[] files, 
-                                     string? format = ()) returns @tainted boolean|error {
-        string requestPath = 
-        SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + PROVIDER_PATH + redisCacheName + "/import" + API_VERSION_PATH + 
-        API_VERSION;
+    remote function importRedisCache(string subscriptionId, string redisCacheName, string resourceGroupName, 
+                                     string[] files, string? format = ()) returns @tainted boolean|error {
+        string requestPath = SUBSCRIPTION_PATH + subscriptionId + RESOURCE_GROUP_PATH + resourceGroupName + 
+        PROVIDER_PATH + redisCacheName + "/import" + API_VERSION_PATH + API_VERSION;
         http:Request request = new;
         json importCacheJsonPayload = {
             "format": format,
             "files": files
         };
         request.setJsonPayload(importCacheJsonPayload);
-        http:Response importResponse = <http:Response>check self.AzureRedisCacheManagementClient->post(requestPath, request);
+        http:Response importResponse = <http:Response>check self.AzureRedisCacheManagementClient->post(requestPath, 
+        request);
         if (importResponse.statusCode == http:STATUS_OK || importResponse.statusCode == http:STATUS_NO_CONTENT) {
             return true;
         } else if (importResponse.statusCode == ACCEPTED) {

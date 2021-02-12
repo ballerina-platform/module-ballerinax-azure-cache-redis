@@ -62,7 +62,7 @@ The `ballerinax/azure-cache-redis` module contains operations regarding
 * [Create Resource Group](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/manage-resource-groups-portal#create-resource-groups)
 
 * Access to Azure Active Directory.
-Application has to be created under Active Directory under same tenant.
+Application has to be created under Active Directory under a tenant.
 Client ID and Client Secret can be obtained from Certificates & secrets section in azure Active Directory which is used in authorization.
 
 * Ballerina SLP8 Installed
@@ -91,7 +91,8 @@ Ballerina Swan Lake Preview Version 8 is required.
 Instantiate the connector by giving authorization credentials that a client application can use.
 
 ## Getting the authorization credentials
-Have to register an application in azure Active Directory and generate Client Id and Client Secret for that application in Active Directory.
+Create or use existing Azure AD tenant.
+Under a tenant have to register an application in azure Active Directory and generate Client Id and Client Secret for that application in Active Directory.
 
 ## Azure Cache for Redis Management Client
 
@@ -106,7 +107,7 @@ azure_cache_redis:AzureRedisConfiguration config = {oauth2Config: {
         clientSecret: <CLIENT_SECRET>,
         scopes: ["https://management.azure.com/.default"]
 }};
-Client azureRedisManagementClient = new (config);
+AzureRedisCacheManagementClient azureRedisManagementClient = new (config);
 ```
 
 # Sample
@@ -123,7 +124,7 @@ azure_cache_redis:AzureRedisConfiguration config = {oauth2Config: {
         clientSecret: config:getAsString("CLIENT_SECRET"),
         scopes: ["https://management.azure.com/.default"]
 }};
-Client azureRedisManagementClient = new (config);
+AzureRedisCacheManagementClient azureRedisManagementClient = new (config);
 ```
 
 ### Create Azure Cache Instance
