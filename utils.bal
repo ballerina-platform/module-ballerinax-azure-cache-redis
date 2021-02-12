@@ -14,21 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-isolated function convertToStockKeepingUnit(json|error jsonToSKUValue) returns StockKeepingUnit {
-    StockKeepingUnit sku = {
-        name: "Premium",
-        family: "P",
-        capacity: 0
-    };
-    if (jsonToSKUValue is json) {
-        sku.name = jsonToSKUValue.name != () ? jsonToSKUValue.name.toString() : EMPTY_STRING;
-        sku.family = jsonToSKUValue.family != () ? jsonToSKUValue.family.toString() : EMPTY_STRING;
-        sku.capacity = jsonToSKUValue.capacity != () ? convertToInt(jsonToSKUValue.capacity) : 0;
-        return sku;
-    }
-    return sku;
-}
-
 isolated function jsonToStatusCode(int statusCodeResponse) returns StatusCode {
     StatusCode statusCode = {code: 0};
     statusCode.code = statusCodeResponse != 0 ? statusCodeResponse : 0;

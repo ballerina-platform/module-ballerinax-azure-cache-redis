@@ -23,7 +23,7 @@
 # + redisConfiguration - Configuration of Redis Instance
 # + subnetId - Full url of Subnet id 
 # + staticIP - Static IP address used to connect
-# + minimumTlsVersion - minimum of TlsVersion to be supported
+# + minimumTlsVersion - Minimum of TlsVersion to be supported
 # + publicNetworkAccess - Whether public access is Enabled/Not
 # + tenantSettings - Dictionary of tenantSettings
 public type CreateCacheProperty record {
@@ -144,7 +144,7 @@ public type RedisCacheInstance record {
 # + sslPort - SSL port used to connect if SSL enabled
 # + instances - Instances nodes available
 # + publicNetworkAccess - Whether public access is Enabled/Not
-# + linkedServers - list of Linked servers
+# + linkedServers - List of Linked servers
 # + privateEndpointConnections - PrivateEndpoint Connections if set
 public type RedisCacheInstanceProperty record {
     string provisioningState;
@@ -169,17 +169,26 @@ public type RedisCacheInstanceList record {
     RedisCacheInstance[] value;
 };
 
+# Represents a Redis instance associated with the cache
+#
+# + sslPort - SSL port number of the instance 
+# + nonSslPort - Non-SSL port number, If NonSslPort is enabled
+# + isMaster - Stock Keeping Unit which provide Pricing information
+# + shardId - If clustering is enabled, the Shard ID of Redis Instance
+# + zone - If the Cache have zones, specifies availability zone where this instance is located
 public type Instance record {
     int sslPort?;
     int nonSslPort?;
     boolean isMaster?;
+    int shardId?;
+    string zone?;
 };
 
 # Represents a Linked Server
 #
-# + id - Id of cache to be linked
-# + name - name of cache to be linked
-# + type - type of linked cache
+# + id - Id of cache to be Linked Server
+# + name - Name of cache to be Linked Server
+# + type - Type of Linked cache
 # + properties - Properties of Linked Server
 public type LinkedServer record {
     string id;
@@ -210,7 +219,7 @@ public type LinkedServerList record {
 
 # Represents a PatchSchedule
 #
-# + id - Id of Patch Schedule
+# + id - Resource Id of Patch Schedule
 # + location - Location where Patch Schedule is to be created
 # + name - Patch Schedule Name
 # + type - Type of Patch Schedule
@@ -233,8 +242,8 @@ public type PatchScheduleProperty record {
 # Represents a PatchSchedule
 #
 # + dayOfWeek - Day of the week when a cache can be patched
-# + startHourUtc - Start hour after which cache patching can start.
-# + maintenanceWindow - Timespan specifying how much time cache patching can take.
+# + startHourUtc - Start hour after which cache patching can start
+# + maintenanceWindow - Timespan specifying how much time cache patching can take
 public type ScheduleEntry record {
     string dayOfWeek;
     int startHourUtc;
@@ -250,13 +259,19 @@ public type PatchScheduleList record {
 
 # Represents a Set of Keys used for access
 #
-# + primaryKey - used to make connection to redis cache
-# + secondaryKey - secondary for primary key
+# + primaryKey - Key used to make connection to redis cache
+# + secondaryKey - Secondary for primary key
 public type AccessKey record {
     string primaryKey;
     string secondaryKey;
 };
 
+# Represents a Private Endpoint Connection
+#
+# + id - Id of Private Endpoint Connection
+# + name - Name of Private Endpoint Connection
+# + type - Type of the Private Endpoint Connection "Microsoft.Cache/Redis/privateEndpointConnections"
+# + properties - Properties of Private Endpoint Connection
 public type PrivateEndpointConnection record {
     string id;
     string name;
@@ -264,28 +279,49 @@ public type PrivateEndpointConnection record {
     PrivateEndpointConnectionProperty properties;
 };
 
+# Represents a Private Endpoint Connection property
+#
+# + privateEndpoint - Identifier for Private Endpoint
+# + privateLinkServiceConnectionState - name of Private Endpoint Connection
 public type PrivateEndpointConnectionProperty record {
     PrivateEndpoint privateEndpoint?;
     PrivateLinkServiceConnectionState privateLinkServiceConnectionState?;
 };
 
+# Represents a Private Endpoint
+#
+# + id - Resource identifier for Private Endpoint
 public type PrivateEndpoint record {
     string id?;
 };
 
+# Represents information about the state of the connection between service consumer and provider.
+#
+# + status - Indicates that changes on the service provider require any updates
+# + description - Reason for approval/rejection of the connection
+# + actionRequired -  Approved/Rejected/Removed by the owner of the service
 public type PrivateLinkServiceConnectionState record {
     string status?;
     string description?;
     string actionRequired?;
 };
 
+# Represents a Private Link Resource
+# 
+# + id - Resource ID of a Private Link Resource
+# + name - Name of Private Endpoint Connection
+# + type - Resource type
+# + properties - Properties of Private Link Resource
 public type PrivateLinkResource record {
+    string id;
     string name;
     string 'type;
-    string id;
     json properties;
 };
 
+# Represents list of Private Endpoint Connections
+#
+# + value - array of Private Endpoint Connections
 public type PrivateEndpointConnectionList record {
     PrivateEndpointConnection[] value;
 };

@@ -1,0 +1,31 @@
+name: Deployment
+
+on:
+    release:
+        types: [published]
+
+jobs:
+    build:
+
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v2
+            - name: Ballerina Build
+              uses: ballerina-platform/ballerina-action/@swan-lake-connector-release
+              with:
+                  args:
+                      build -c --skip-tests
+              env:
+                  CLIENT_ID: ${{ secrets.CLIENT_ID }}
+                  CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+                  TENANT_ID: ${{ secrets.TENANT_ID }} 
+                  SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
+                  RESOURCE_GROUP_NAME: ${{ secrets.RESOURCE_GROUP_NAME }}                  
+            - name: Ballerina Push
+              uses: ballerina-platform/ballerina-action/@swan-lake-connector-release
+              with:
+                  args:
+                      push 
+              env:
+                  BALLERINA_CENTRAL_ACCESS_TOKEN: ${{ secrets.BALLERINA_CENTRAL_ACCESS_TOKEN }}

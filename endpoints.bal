@@ -558,6 +558,11 @@ public client class Client {
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////
+    //    Following functions are not exposed as they are only acailable in          //
+    //    premium tiers and others only available at preview version                 //
+    ///////////////////////////////////////////////////////////////////////////////////
+
     # This Function Creates an Linked server
     #
     # + subscriptionId - Subscription Id of a subscription

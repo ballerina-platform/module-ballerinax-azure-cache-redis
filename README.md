@@ -1,7 +1,6 @@
 # Ballerina Azure Cache for Redis
 
 <!-- [![Build](https://github.com/ballerina-platform/module-ballerinax-azure-cache-redis/workflows/CI/badge.svg)](https://github.com/ballerina-platform/module-ballerinax-azure-cache-redis/actions?query=workflow%3ACI)
-[![GitHub Last Commit](https://img.shields.io/github/last-commit/ballerina-platform/module-ballerinax-azure-cache-redis.svg)](https://github.com/ballerina-platform/module-ballerinax-azure-cache-redis/commits/master)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) -->
 
 Connects to Microsoft Azure Cache for Redis using Ballerina.
@@ -10,7 +9,8 @@ Connects to Microsoft Azure Cache for Redis using Ballerina.
 
 ## What is Azure Cache for Redis?
 
-[Azure Cache for Redis](https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-overview)
+[Azure Cache for Redis](https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-overview) is Microsoft’s in-memory data store in Azure technology stack. Azure Cache for Redis improves the performance of an application that rely on large data stores. Key purpose of the Azure Cache for Redis is able to process mass amount of request by storing frequently requested data in the server that can be written to and read from  rapidly. Redis allow a low-latency and high-throughput data storage solution to modern applications. Azure Cache for Redis is created to manage Cache instances.
+
 
 ## Key Features of Azure Cache for Redis
 
@@ -127,7 +127,10 @@ azure_cache_redis:AzureRedisConfiguration config = {oauth2Config: {
 Client azureRedisManagementClient = new (config);
 ```
 
-<!-- ### Create Azure Cache Instance
+### Create Azure Cache Instance
+
+This part describes how to use the ballerina connector to create a azure cache for redis instance. We must pass subscription id, resource group name where cache instance should be created, cache instance name, location, properties of type CreateCacheProperty and optional parameters such as tags and array of zones as parameters to create a cache instance. It returns an RedisCacheInstance if  operation is successful or error if the operation is unsuccessful.
+Azure Cache for Redis istances are created and take some time to get deployed and start running. We can check for state of cache instance by keep track of provisioningState which is one property of the cache instance created. Once state is running we can perform operations on the cache instance.
 
 ```ballerina
     CreateCacheProperty properties = 
@@ -156,7 +159,7 @@ Client azureRedisManagementClient = new (config);
     } else {
         log:print(response.message());
     }
-``` -->
+```
 
 ### Get Azure Cache Instance
 
@@ -170,6 +173,7 @@ This part describes how to use the ballerina connector to get information regard
         log:print(response.message());
     }
 ```
+
 ### Get all Azure Cache Instances in a resource group
 
 This part describes how to use the ballerina connector to get information regarding a  azure cache for redis instances in a specific resource group. We must pass subscription id and resource group name where cache instances resides as parameters to get all the data associated with a cache instances. It returns an RedisCacheInstance[] if  operation is successful or error if the operation is unsuccessful.
@@ -219,7 +223,7 @@ Host name is used in redis clients for making connection to an Azure Cache for R
 SSL Port number is used in redis clients for making connection to an Azure Cache for Redis instance. It returns an integer which will be used as SSL port number in redis client if  operation is successful or error if the operation is unsuccessful.
 
 ```ballerina
-    int|error response = azureRedisManagementClient->getPortNumber(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup");
+    int|error response = azureRedisManagementClient->getSSLPortNumber(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup");
     if (response is int) {
         log:print(response);
     } else {
@@ -232,7 +236,7 @@ SSL Port number is used in redis clients for making connection to an Azure Cache
 Non SSL Port number is used in redis clients for making connection to an Azure Cache for Redis instance when only via SSL is disabled in instance. It returns an integer which will be used as non SSL port number (If NonSslPort is enabled only can connect through this port) in redis client if  operation is successful or error if the operation is unsuccessful.
 
 ```ballerina
-    int|error response = azureRedisManagementClient->getPortNumber(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup");
+    int|error response = azureRedisManagementClient->getNonSSLPortNumber(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup");
     if (response is int) {
         log:print(response);
     } else {
@@ -258,20 +262,38 @@ Primary Key is used in redis clients for making connection to an Azure Cache for
 Keys are also sometime referred as passwords used in redis clients for making connection to an Azure Cache for Redis instance. There are Primary and Secondary Keys. Those Keys are referred as access keys which can be optained by using this operation in a form of AccessKeys. It returns an AccessKey if  operation is successful or error if the operation is unsuccessful.
 
 ```ballerina
-    AccessKey|error keys = azureRedisManagementClient->listKeys<SUBSCRIPTION_ID>, ("TestCache", "TestResourceGroup");
-    if (keys is AccessKey) {
-        json primaryKey = keys.primaryKey;
-        json secondaryKey = keys.secondaryKey;
+    AccessKey|error response = azureRedisManagementClient->listKeys<SUBSCRIPTION_ID>, ("TestCache", "TestResourceGroup");
+    if (response is AccessKey) {
+        json primaryKey = response.primaryKey;
+        json secondaryKey = response.secondaryKey;
         log:print(primaryKey);
     } else {
         log:print(response.message());
     }
 ```
-<!-- ### Update a Azure Cache Instance
+
+### Regenerate Access Keys
+
+Those Primary and Secondary Keys can be regenerated by using this operation and opbained in a form of AccessKeys. It returns an AccessKey if  operation is successful or error if the operation is unsuccessful.
+
+```ballerina
+    AccessKey|error response = azureRedisManagementClient->regenerateKey<SUBSCRIPTION_ID>, ("TestCache", "TestResourceGroup", "Primary");
+    if (response is AccessKey) {
+        json primaryKey = response.primaryKey;
+        json secondaryKey = response.secondaryKey;
+        log:print(primaryKey);
+    } else {
+        log:print(response.message());
+    }
+```
+
+### Update a Azure Cache Instance
+
+This part describes how to use the ballerina connector to update a azure cache for redis instance. We must pass subscription id, resource group name where cache instance should be created, cache instance name and properties to be updated as parameters to update a cache instance. Some informations such as location and zones can't be updated once created. It returns an RedisCacheInstance if  operation is successful or error if the operation is unsuccessful.
 
 ```ballerina
     CreateCacheProperty properties = 
-    {
+    {        
         "sku": {
             "name": "Basic",
             "family": "C",
@@ -284,7 +306,7 @@ Keys are also sometime referred as passwords used in redis clients for making co
 
     RedisCacheInstance|error response = azureRedisManagementClient->updateRedisCache(SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup", properties);
     if (response is RedisCacheInstance) {
-        log:print("Azure cache instance created and deployment in progress");
+        log:print("Azure cache instance updating in progress");
         json state = response.properties.provisioningState;
         while (state != "Succeeded") {
             var getresponse = azureRedisManagementClient->getRedisCache((SUBSCRIPTION_ID>,  "TestCache", "TestResourceGroup");
@@ -292,7 +314,7 @@ Keys are also sometime referred as passwords used in redis clients for making co
                 state = getresponse.properties.provisioningState;
             }
         }
-        log:print("Azure cache instance deployed and running");
+        log:print("Azure cache instance updated and running");
     } else {
         log:print(response.message());
     }
@@ -300,24 +322,31 @@ Keys are also sometime referred as passwords used in redis clients for making co
 
 ### Delete a Azure Cache Instance
 
+This part describes how to use the ballerina connector to delete a specific azure cache for redis instance. We must pass subscription id, resource group name where cache instance resides and cache instance name as parameters to delete a specific azure cache for redis instance. It returns an boolean if  operation is successful or error if the operation is unsuccessful. Only after deleted completely another instance can be created with the same name. It takes some time to delete instance, so we can check for state of cache instance to ensure it is deleted.
+
 ```ballerina
-    RedisCacheInstance|error response = azureRedisManagementClient->deleteRedisCache(SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup");
-    if (response is RedisCacheInstance) {
-        boolean createSuccess = true;
-        log:print("Azure cache instance created and deployment in progress");
-        json state = response.properties.provisioningState;
-        while (state != "Succeeded") {
-            var getresponse = azureRedisManagementClient->getRedisCache((SUBSCRIPTION_ID>,  "TestCache", "TestResourceGroup");
-            if (getresponse is json) {
+    boolean|error response = azureRedisManagementClient->deleteRedisCache(SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup");
+    if (response is boolean) {
+        var getresponse = azureRedisManagementClient->getRedisCache(SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup");
+        json state = ();
+        if (getresponse is RedisCacheInstance) {
+            state = getresponse.properties.provisioningState;
+        }
+        while (state == "Deleting") {
+            var getresponse = azureRedisManagementClient->getRedisCacheSUBSCRIPTION_ID>, "TestCache", "TestResourceGroup");
+            if (getresponse is RedisCacheInstance) {
                 state = getresponse.properties.provisioningState;
             }
+            else {
+            state = "Deleted";
+            }
         }
-        log:print("Azure cache instance deployed and running");
+        log:print("Azure cache instance deleted");
     } else {
         log:print(response.message());
     }
     
-``` -->
+```
 
 ### Create Firewall Rule to a cache instance
 
