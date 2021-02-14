@@ -216,7 +216,7 @@ function testUpdateRedisCache() {
 function testCreateFirewallRule() {
     log:print("<---Running CreateFireWallRule Test--->");
     var response = azureRedisManagementClient->createFirewallRule(config:getAsString("SUBSCRIPTION_ID"), 
-    "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME"), "TestFilewallRule", "192.168.1.1", 
+    "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME"), "TestFirewallRule", "192.168.1.1", 
     "192.168.1.4");
     if (response is FirewallRule) {
         FirewallRule testValue = 
@@ -242,7 +242,7 @@ function testCreateFirewallRule() {
 function testGetFireWallRule() {
     log:print("<---Running GetFireWallRule Test--->");
     var response = azureRedisManagementClient->getFirewallRule(config:getAsString("SUBSCRIPTION_ID"), 
-    "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME"), "TestFilewallRule");
+    "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME"), "TestFirewallRule");
     if (response is FirewallRule) {
         FirewallRule testValue = 
         {
@@ -290,7 +290,7 @@ function testListFireWallRule() {
 function testDeleteFireWallRule() {
     log:print("<---Running DeleteFireWallRule Test--->");
     var response = azureRedisManagementClient->deleteFirewallRule(config:getAsString("SUBSCRIPTION_ID"), 
-    "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME"), "TestFilewallRule");
+    "TestRedisConnectorCache", config:getAsString("RESOURCE_GROUP_NAME"), "TestFirewallRule");
     if (response is boolean) {
         test:assertEquals(response, true, msg = "Deleting firewall rule test failed");
     } else {

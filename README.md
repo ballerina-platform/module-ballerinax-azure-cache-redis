@@ -129,7 +129,7 @@ AzureRedisCacheManagementClient azureRedisManagementClient = new (config);
 
 ### Create Azure Cache Instance
 
-This part describes how to use the ballerina connector to create a azure cache for redis instance. We must pass subscription id, resource group name where cache instance should be created, cache instance name, location, properties of type CreateCacheProperty and optional parameters such as tags and array of zones as parameters to create a cache instance. It returns an RedisCacheInstance if  operation is successful or error if the operation is unsuccessful.
+This part describes how to use the ballerina connector to create a azure cache for redis instance. We must pass subscription id, resource group name where cache instance should be created, cache instance name, location, properties of type CreateCacheProperty and optional parameters such as tags and array of zones as parameters to create a cache instance. It returns a RedisCacheInstance if the operation is successful or error if the operation is unsuccessful.
 Azure Cache for Redis istances are created and take some time to get deployed and start running. We can check for state of cache instance by keep track of provisioningState which is one property of the cache instance created. Once state is running we can perform operations on the cache instance.
 
 ```ballerina
@@ -163,7 +163,7 @@ if (response is RedisCacheInstance) {
 
 ### Get Azure Cache Instance
 
-This part describes how to use the ballerina connector to get information regarding a specific azure cache for redis instance. We must pass subscription id, resource group name where cache instance resides and cache instance name as parameters to get all the data associated with a specific cache instance. It returns an RedisCacheInstance if  operation is successful or error if the operation is unsuccessful.
+This part describes how to use the ballerina connector to get information regarding a specific azure cache for redis instance. We must pass subscription id, resource group name where cache instance resides and cache instance name as parameters to get all the data associated with a specific cache instance. It returns a RedisCacheInstance if the operation is successful or error if the operation is unsuccessful.
 
 ```ballerina
 RedisCacheInstance|error response = azureRedisManagementClient->getRedisCache(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup");
@@ -176,7 +176,7 @@ if (response is RedisCacheInstance) {
 
 ### Get all Azure Cache Instances in a resource group
 
-This part describes how to use the ballerina connector to get information regarding a  azure cache for redis instances in a specific resource group. We must pass subscription id and resource group name where cache instances resides as parameters to get all the data associated with a cache instances. It returns an RedisCacheInstance[] if  operation is successful or error if the operation is unsuccessful.
+This part describes how to use the ballerina connector to get information regarding an  azure cache for redis instances in a specific resource group. We must pass subscription id and resource group name where cache instances reside as parameters to get all the data associated with cache instances. It returns a RedisCacheInstance[] if the operation is successful or error if the operation is unsuccessful.
 
 ```ballerina
 RedisCacheInstance|error response = azureRedisManagementClient->getRedisCache(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup");
@@ -192,7 +192,7 @@ if (response is RedisCacheInstance[]) {
 
 ### Get all Azure Cache Instances in all resource group within a subscription
 
-This part describes how to use the ballerina connector to get information regarding a azure cache for redis instances within a subscription. We must pass subscription id as parameter to get all the data associated with a cache instances in that subscription. It returns an RedisCacheInstance[] if  operation is successful or error if the operation is unsuccessful.
+This part describes how to use the ballerina connector to get information regarding an azure cache for redis instances within a subscription. We must pass the subscription id as parameter to get all the data associated with cache instances in that subscription. It returns a RedisCacheInstance[] if the operation is successful or error if the operation is unsuccessful.
 
 ```ballerina
 RedisCacheInstance[]|error response = azureRedisManagementClient->listRedisCacheInstances(<SUBSCRIPTION_ID>);
@@ -207,7 +207,7 @@ if (response is RedisCacheInstance[]) {
 
 ### Get Host Name
 
-Host name is used in redis clients for making connection to an Azure Cache for Redis instance. It returns an string which will be used as host name(DNS name) in redis client if  operation is successful or error if the operation is unsuccessful.
+Host name is used in redis clients for making connection to an Azure Cache for Redis instance. It returns a string which will be used as host name(DNS name) in redis client if the operation is successful or error if the operation is unsuccessful.
 
 ```ballerina
 string|error response = azureRedisManagementClient->getHostName(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup");
@@ -220,7 +220,7 @@ if (response is string) {
 
 ### Get SSL Port Number
 
-SSL Port number is used in redis clients for making connection to an Azure Cache for Redis instance. It returns an integer which will be used as SSL port number in redis client if  operation is successful or error if the operation is unsuccessful.
+SSL Port number is used in redis clients for making connection to an Azure Cache for Redis instance. It returns a integer which will be used as SSL port number in redis client if the operation is successful or error if the operation is unsuccessful.
 
 ```ballerina
 int|error response = azureRedisManagementClient->getSSLPortNumber(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup");
@@ -233,7 +233,7 @@ if (response is int) {
 
 ### Get Non SSL Port Number
 
-Non SSL Port number is used in redis clients for making connection to an Azure Cache for Redis instance when only via SSL is disabled in instance. It returns an integer which will be used as non SSL port number (If NonSslPort is enabled only can connect through this port) in redis client if  operation is successful or error if the operation is unsuccessful.
+Non SSL Port number is used in redis clients for making connection to an Azure Cache for Redis instance when only via SSL is disabled in instance. It returns an integer which will be used as non SSL port number (If NonSslPort is enabled only can connect through this port) in redis client if the operation is successful or error if the operation is unsuccessful.
 
 ```ballerina
 int|error response = azureRedisManagementClient->getNonSSLPortNumber(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup");
@@ -246,7 +246,7 @@ if (response is int) {
 
 ### Get Primary Key
 
-Primary Key is used in redis clients for making connection to an Azure Cache for Redis instance. It returns an string which will be used as password in redis client if  operation is successful or error if the operation is unsuccessful.
+Primary Key is used in redis clients for making connection to an Azure Cache for Redis instance. It returns a string which will be used as password in redis client if the operation is successful or error if the operation is unsuccessful.
 
 ```ballerina
 string|error response = azureRedisManagementClient->getPrimaryKey(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup");
@@ -259,7 +259,7 @@ if (response is string) {
 
 ### Get Access Keys
 
-Keys are also sometime referred as passwords used in redis clients for making connection to an Azure Cache for Redis instance. There are Primary and Secondary Keys. Those Keys are referred as access keys which can be optained by using this operation in a form of AccessKeys. It returns an AccessKey if  operation is successful or error if the operation is unsuccessful.
+Keys are also sometime referred as passwords used in redis clients for making connection to an Azure Cache for Redis instance. There are Primary and Secondary Keys. Those Keys are referred as access keys which can be optained by using this operation in a form of AccessKeys. It returns an AccessKey if the operation is successful or error if the operation is unsuccessful.
 
 ```ballerina
 AccessKey|error response = azureRedisManagementClient->listKeys<SUBSCRIPTION_ID>, ("TestCache", "TestResourceGroup");
@@ -274,7 +274,7 @@ if (response is AccessKey) {
 
 ### Regenerate Access Keys
 
-Those Primary and Secondary Keys can be regenerated by using this operation and opbained in a form of AccessKeys. It returns an AccessKey if  operation is successful or error if the operation is unsuccessful.
+Those Primary and Secondary Keys can be regenerated by using this operation and opbained in a form of AccessKeys. It returns an AccessKey if the operation is successful or error if the operation is unsuccessful.
 
 ```ballerina
 AccessKey|error response = azureRedisManagementClient->regenerateKey<SUBSCRIPTION_ID>, ("TestCache", "TestResourceGroup", "Primary");
@@ -289,7 +289,7 @@ if (response is AccessKey) {
 
 ### Update a Azure Cache Instance
 
-This part describes how to use the ballerina connector to update a azure cache for redis instance. We must pass subscription id, resource group name where cache instance should be created, cache instance name and properties to be updated as parameters to update a cache instance. Some informations such as location and zones can't be updated once created. It returns an RedisCacheInstance if  operation is successful or error if the operation is unsuccessful.
+This part describes how to use the ballerina connector to update a azure cache for redis instance. We must pass subscription id, resource group name where cache instance should be created, cache instance name and properties to be updated as parameters to update a cache instance. Some informations such as location and zones can't be updated once created. It returns a RedisCacheInstance if the operation is successful or error if the operation is unsuccessful.
 
 ```ballerina
 CreateCacheProperty properties = 
@@ -322,7 +322,7 @@ if (response is RedisCacheInstance) {
 
 ### Delete a Azure Cache Instance
 
-This part describes how to use the ballerina connector to delete a specific azure cache for redis instance. We must pass subscription id, resource group name where cache instance resides and cache instance name as parameters to delete a specific azure cache for redis instance. It returns an boolean if  operation is successful or error if the operation is unsuccessful. Only after deleted completely another instance can be created with the same name. It takes some time to delete instance, so we can check for state of cache instance to ensure it is deleted.
+This part describes how to use the ballerina connector to delete a specific azure cache for redis instance. We must pass subscription id, resource group name where cache instance resides and cache instance name as parameters to delete a specific azure cache for redis instance. It returns boolean if the operation is successful or error if the operation is unsuccessful. Only after deleted completely another instance can be created with the same name. It takes some time to delete an instance, so we can check for the state of cache instance to ensure it is deleted.
 
 ```ballerina
 boolean|error response = azureRedisManagementClient->deleteRedisCache(SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup");
@@ -351,7 +351,7 @@ if (response is boolean) {
 ### Create Firewall Rule to a cache instance
 
 FireWall Rule can be created to allow particular ranges of IP addresses only connect to redis cache instance. This can be done by specifing statring and ending IP address of the range.
-This part describes how to use the ballerina connector to create a firewall rule for a specific azure cache for redis instance. We must pass subscription id, resource group name where cache instance resides, cache instance name, name of a firewall rule, start IP address of permitted range to be allowed and end IP address of permitted range to be allowed as parameters to create a firewall rule for a specific cache instance. It returns an FirewallRule if  operation is successful or error if the operation is unsuccessful.
+This part describes how to use the ballerina connector to create a firewall rule for a specific azure cache for redis instance. We must pass subscription id, resource group name where cache instance resides, cache instance name, name of a firewall rule, start IP address of permitted range to be allowed and end IP address of permitted range to be allowed as parameters to create a firewall rule for a specific cache instance. It returns a FirewallRule if the operation is successful or error if the operation is unsuccessful.
 
 ```ballerina
 FirewallRule|error response = azureRedisManagementClient->createFirewallRule(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup", "TestFilewallRule", "192.168.1.1", "192.168.1.4");
@@ -364,7 +364,7 @@ if (response is FirewallRule) {
 
 ### Get a Firewall Rule related to a cache instance
 
-This part describes how to use the ballerina connector to get information regarding a firewall rule for a specific azure cache for redis instance. We must pass subscription id, resource group name where cache instance resides, cache instance name and name of firewall rule as parameters to get all the data associated with a specific firewall rule of a specific cache instance. It returns an FirewallRule if  operation is successful or error if the operation is unsuccessful.
+This part describes how to use the ballerina connector to get information regarding a firewall rule for a specific azure cache for redis instance. We must pass subscription id, resource group name where cache instance resides, cache instance name and name of firewall rule as parameters to get all the data associated with a specific firewall rule of a specific cache instance. It returns a FirewallRule if the operation is successful or error if the operation is unsuccessful.
 
 ```ballerina
 FirewallRule|error response = azureRedisManagementClient->getFirewallRule(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup", "TestFilewallRule");
@@ -377,7 +377,7 @@ if (response is FirewallRule) {
 
 ### Get a all Firewall Rules related to a cache instance
 
-This part describes how to use the ballerina connector to get information regarding all the firewall rules for a specific azure cache for redis instance. We must pass subscription id, resource group name where cache instance resides and cache instance name as parameters to get all the data associated with firewall rules of a specific cache instance. It returns an Array of FirewallRule[] if  operation is successful or error if the operation is unsuccessful.
+This part describes how to use the ballerina connector to get information regarding all the firewall rules for a specific azure cache for redis instance. We must pass subscription id, resource group name where cache instance resides and cache instance name as parameters to get all the data associated with firewall rules of a specific cache instance. It returns  Array of FirewallRule[] if the operation is successful or error if the operation is unsuccessful.
 
 ```ballerina
 FirewallRule[]|error response = azureRedisManagementClient->listFirewallRule(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup");
@@ -389,7 +389,7 @@ if (response is FirewallRule) {
 ```
 ### Delete a Firewall Rule of a cache instance
 
-This part describes how to use the ballerina connector to delete a firewall rule for a specific azure cache for redis instance. We must pass subscription id, resource group name where cache instance resides, cache instance name and name of firewall rule as parameters to delete a specific firewall rule. It returns an boolean if  operation is successful or error if the operation is unsuccessful.
+This part describes how to use the ballerina connector to delete a firewall rule for a specific azure cache for redis instance. We must pass subscription id, resource group name where cache instance resides, cache instance name and name of firewall rule as parameters to delete a specific firewall rule. It returns boolean if the operation is successful or error if the operation is unsuccessful.
 
 ```ballerina
 boolean|error response = azureRedisManagementClient->deleteFirewallRule(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup", "TestFilewallRule");
@@ -404,7 +404,7 @@ if (response is boolean) {
 
 Azure Cache for Redis patch schedule is used to install important software updates in 
 specified time windows.
-This part describes how to use the ballerina connector to create a patch schedule for a specific azure cache for redis instance. We must pass subscription id, resource group name where cache instance resides, cache instance name, name of a patch schedule and properties of type PatchScheduleProperty as parameters to create a patch schedule for a specific cache instance. It returns an PatchSchedule if  operation is successful or error if the operation is unsuccessful.
+This part describes how to use the ballerina connector to create a patch schedule for a specific azure cache for redis instance. We must pass subscription id, resource group name where cache instance resides, cache instance name, name of a patch schedule and properties of type PatchScheduleProperty as parameters to create a patch schedule for a specific cache instance. It returns a PatchSchedule if the operation is successful or error if the operation is unsuccessful.
 
 ```ballerina
 PatchScheduleProperty properties = {scheduleEntries: [{
@@ -426,7 +426,7 @@ if (response is PatchSchedule) {
 
 ### Get a Patch Schedule related to a cache instance
 
-This part describes how to use the ballerina connector to get information regarding a patch schedule for a specific azure cache for redis instance. We must pass subscription id, resource group name where cache instance resides, cache instance name and name of a patch schedule as parameters to get all the data associated with a specific patch schedule of a specific cache instance. It returns an PatchSchedule if  operation is successful or error if the operation is unsuccessful.
+This part describes how to use the ballerina connector to get information regarding a patch schedule for a specific azure cache for redis instance. We must pass subscription id, resource group name where cache instance resides, cache instance name and name of a patch schedule as parameters to get all the data associated with a specific patch schedule of a specific cache instance. It returns a PatchSchedule if the operation is successful or error if the operation is unsuccessful.
 
 ```ballerina
 PatchSchedule|error response = azureRedisManagementClient->getPatchSchedule(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup", "TestPatchSchedule");
@@ -439,7 +439,7 @@ if (response is PatchSchedule) {
 
 ### Get a all Patch Schedules related to a cache instance
 
-This part describes how to use the ballerina connector to get information regarding all the patch schedules for a specific azure cache for redis instance. We must pass subscription id, resource group name where cache instance resides and cache instance name as parameters to get all the data associated with patch schedules of a specific cache instance. It returns an Array of Patch Schedule if  operation is successful or error if the operation is unsuccessful.
+This part describes how to use the ballerina connector to get information regarding all the patch schedules for a specific azure cache for redis instance. We must pass subscription id, resource group name where cache instance resides and cache instance name as parameters to get all the data associated with patch schedules of a specific cache instance. It returns an Array of Patch Schedule if the operation is successful or error if the operation is unsuccessful.
 
 ```ballerina
 PatchSchedule[]|error response = azureRedisManagementClient->listPatchSchedule(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup");
@@ -451,7 +451,7 @@ if (response is PatchSchedule[]) {
 ```
 ### Delete a Patch Schedule
 
-This part describes how to use the ballerina connector to delete a patch schedule for a specific azure cache for redis instance. We must pass subscription id, resource group name where cache instance resides, cache instance name and name of patch schedule as parameters to delete a specific patch scehedule. It returns an boolean if  operation is successful or error if the operation is unsuccessful.
+This part describes how to use the ballerina connector to delete a patch schedule for a specific azure cache for redis instance. We must pass subscription id, resource group name where cache instance resides, cache instance name and name of patch schedule as parameters to delete a specific patch schedule. It returns boolean if the operation is successful or error if the operation is unsuccessful.
 
 ```ballerina
 boolean|error response = azureRedisManagementClient->deletePatchSchedule(<SUBSCRIPTION_ID>, "TestCache", "TestResourceGroup", "TestPatchSchedule");
